@@ -1,10 +1,8 @@
-# Ignore server files (not needed for static deployment)
+# Ignore ALL server and Node.js files
 server.js
 package.json
 package-lock.json
-node_modules
-
-# Ignore environment files
+node_modules/
 .env
 .env.*
 
@@ -14,7 +12,7 @@ MIGRATION_V2.md
 ENHANCEMENTS.md
 QUICK_START.md
 
-# Ignore old versions
+# Ignore old versions (not used in production)
 index.html
 app.js
 app_enhanced.js
@@ -23,4 +21,6 @@ mockData.json
 integration_patch.js
 home_v3_render.js
 
-# Keep only the V2 files needed for production
+# Git files
+.git/
+.gitignore

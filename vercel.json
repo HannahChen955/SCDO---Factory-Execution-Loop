@@ -1,17 +1,11 @@
 {
-  "version": 2,
-  "builds": [
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": ".",
+  "framework": null,
+  "rewrites": [
     {
-      "src": "index_v2.html",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/index_v2.html"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
