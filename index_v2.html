@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCDO Control Tower — Factory Execution Loop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+    }
+    .sparkline {
+      fill: none;
+      stroke: #64748b;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <!-- Top Bar -->
+  <div class="no-print sticky top-0 z-50 bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div>
+        <div class="text-sm font-semibold" id="appName">SCDO Control Tower — Factory Execution Loop</div>
+        <div class="text-xs text-slate-500">
+          <span id="version"></span> · <span id="lastRefresh"></span> · Data: <span id="dqStatus" class="font-medium"></span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+          <input type="checkbox" id="prdModeToggle" class="rounded">
+          <span>PRD Mode</span>
+        </label>
+        <div class="border-l pl-2 ml-2">
+          <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+            <span class="text-slate-600">Mode:</span>
+            <input type="radio" name="viewMode" value="live" id="liveMode" class="rounded" checked>
+            <span>Live</span>
+            <input type="radio" name="viewMode" value="simulation" id="simulationMode" class="rounded ml-2">
+            <span>Simulation</span>
+          </label>
+          <div class="text-xs text-slate-500 mt-0.5">Live shows current signals and decisions. Simulation tests "what-if" impacts before changes hit the floor.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Navigation -->
+  <div class="no-print bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 py-2">
+      <div class="flex items-center gap-1">
+        <button onclick="STATE.activeView = 'overview'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="overview">
+          Overview
+        </button>
+        <span class="text-slate-300">|</span>
+        <button onclick="STATE.activeView = 'portfolio'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="portfolio">
+          Portfolio
+        </button>
+        <span class="text-slate-300">|</span>
+        <button onclick="STATE.activeView = 'home'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="program">
+          <span>Program: <span id="programNavText" class="font-semibold">Product A / WF</span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="no-print bg-slate-50 border-b">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex items-center gap-2 flex-wrap text-xs">
+      <label class="flex items-center gap-1.5">
+        <span class="text-slate-600">Product:</span>
+        <select id="productFilter" class="text-sm border rounded-lg px-2 py-1"></select>
+      </label>
+      <label class="flex items-center gap-1.5">
+        <span class="text-slate-600">Factory Site:</span>
+        <select id="factorySiteFilter" class="text-sm border rounded-lg px-2 py-1"></select>
+      </label>
+      <label class="flex items-center gap-1.5">
+        <span class="text-slate-600">Week:</span>
+        <select id="weekFilter" class="text-sm border rounded-lg px-2 py-1"></select>
+      </label>
+      <label class="flex items-center gap-1.5" id="presetFilterContainer" style="display:none;">
+        <span class="text-slate-600">Simulation Preset:</span>
+        <select id="presetSelect" class="text-sm border rounded-lg px-2 py-1">
+          <option>Material Slip (+2 days on IC-77 ETA)</option>
+          <option>Yield Drift (-3% at Test, 3-day trend)</option>
+          <option>Holiday Capacity Constraint (-15% available hours)</option>
+          <option>Demand Downside (-15% sell-through vs baseline)</option>
+          <option>Mixed Shock (ETA + Yield + Demand softness)</option>
+        </select>
+      </label>
+      <button id="runSimulationBtn" class="text-sm bg-blue-600 text-white rounded-lg px-3 py-1 hover:bg-blue-700" style="display:none;">Run Simulation</button>
+
+      <!-- Quick Data Update Button -->
+      <div id="updateDataBtn" class="ml-auto">
+        <button onclick="openDataUpdateModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all hover:scale-105 shadow-sm" title="Quick Data Update">
+          <span class="text-base font-bold">+</span>
+          <span>Update Data</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 py-5 grid grid-cols-12 gap-4">
+    <!-- Sidebar (only visible for Program workspace) -->
+    <aside id="sidebar" class="no-print col-span-12 md:col-span-3 hidden">
+      <div class="bg-white rounded-2xl shadow-sm border p-3">
+        <!-- Breadcrumb -->
+        <div id="breadcrumb" class="mb-3 pb-3 border-b text-xs text-slate-600"></div>
+
+        <!-- Program Navigation -->
+        <div class="text-xs font-semibold text-slate-500 mb-2">PROGRAM WORKSPACE</div>
+        <nav class="flex flex-col gap-1">
+          <button data-view="home" class="text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100">
+            <div class="font-semibold">Delivery Command Center</div>
+            <div class="text-xs text-slate-500">This week's commit, pacing, and actions.</div>
+          </button>
+          <button data-view="signals" class="text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100">
+            <div class="font-semibold">Signals</div>
+            <div class="text-xs text-slate-500">Data readiness and quality.</div>
+          </button>
+          <button data-view="radar" class="text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100">
+            <div class="font-semibold">Risk Radar</div>
+            <div class="text-xs text-slate-500">What threatens commit.</div>
+          </button>
+          <button data-view="actions" class="text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100">
+            <div class="font-semibold">Actions</div>
+            <div class="text-xs text-slate-500">Recovery playbooks.</div>
+          </button>
+          <button data-view="reports" class="text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100">
+            <div class="font-semibold">Reports</div>
+            <div class="text-xs text-slate-500">Briefings & evidence.</div>
+          </button>
+        </nav>
+
+        <!-- Back to Portfolio -->
+        <div class="mt-4 pt-3 border-t">
+          <button onclick="STATE.activeView = 'portfolio'; render();" class="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100 text-blue-600">
+            <div class="font-semibold">← Back to Portfolio</div>
+            <div class="text-xs text-slate-500">View all programs</div>
+          </button>
+        </div>
+
+        <div class="mt-4 p-3 bg-slate-50 rounded-xl border">
+          <div class="text-xs font-semibold text-slate-500">DEMO NOTES</div>
+          <ul class="text-xs text-slate-600 list-disc pl-4 mt-2 space-y-1">
+            <li>Delivery-first decision prototype with mocked data.</li>
+            <li>Primary goal: protect weekly commit while avoiding avoidable overbuild.</li>
+            <li>Use Simulation mode to test pacing trade-offs.</li>
+            <li>PRD Mode reveals spec-style tooltips and field definitions.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main id="mainContent" class="col-span-12">
+      <div id="content" class="space-y-4"></div>
+    </main>
+  </div>
+
+  <!-- Case Drawer (Right Sidebar) -->
+  <div id="caseDrawerBackdrop" class="no-print hidden fixed inset-0 bg-black/20 z-40" onclick="closeCaseDrawer()"></div>
+  <div id="caseDrawer" class="no-print hidden fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto transform transition-transform duration-300">
+    <div class="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+      <div class="font-semibold text-sm">Active Case</div>
+      <button onclick="closeCaseDrawer()" class="text-slate-500 hover:text-slate-900">✕</button>
+    </div>
+    <div id="caseDrawerBody" class="p-4"></div>
+  </div>
+
+  <!-- Modal (Evidence Pack Full View) -->
+  <div id="modalBackdrop" class="no-print hidden fixed inset-0 bg-black/40 z-50"></div>
+  <div id="modal" class="no-print hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white">
+        <div class="font-semibold text-sm" id="modalTitle">Evidence Pack</div>
+        <div class="flex items-center gap-2">
+          <button id="generateReportBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">📄 Generate Report</button>
+          <button id="printBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">Print</button>
+          <button id="closeModalBtn" class="text-sm bg-slate-900 text-white rounded-lg px-3 py-1.5 hover:bg-slate-800">Close</button>
+        </div>
+      </div>
+      <div id="modalBody" class="p-4"></div>
+    </div>
+  </div>
+
+  <!-- Report Preview Modal -->
+  <div id="reportModalBackdrop" class="no-print hidden fixed inset-0 bg-black/40 z-60"></div>
+  <div id="reportModal" class="no-print hidden fixed inset-0 z-60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white">
+        <div class="font-semibold text-sm">Report Preview</div>
+        <div class="flex items-center gap-2">
+          <button id="downloadHTMLBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">Download HTML</button>
+          <button id="downloadPDFBtn" class="text-sm bg-blue-600 text-white rounded-lg px-3 py-1.5 hover:bg-blue-700">Download PDF</button>
+          <button id="closeReportModalBtn" class="text-sm bg-slate-900 text-white rounded-lg px-3 py-1.5 hover:bg-slate-800">Close</button>
+        </div>
+      </div>
+      <div id="reportPreview" class="p-4 bg-slate-50"></div>
+    </div>
+  </div>
+
+  <!-- Data Update Modal -->
+  <div id="dataUpdateModalBackdrop" class="no-print hidden fixed inset-0 bg-black/40 z-60"></div>
+  <div id="dataUpdateModal" class="no-print hidden fixed inset-0 z-60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white">
+        <div>
+          <div class="font-semibold text-lg">Quick Data Update</div>
+          <div class="text-xs text-slate-500 mt-1">Upload file or paste text, AI will parse and update the system</div>
+        </div>
+        <button onclick="closeDataUpdateModal()" class="text-slate-500 hover:text-slate-900 text-2xl leading-none">&times;</button>
+      </div>
+      <div class="p-6">
+        <!-- Input Method Tabs -->
+        <div class="flex gap-2 mb-4 border-b">
+          <button onclick="switchDataInputMethod('text')" id="textInputTab" class="px-4 py-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600">
+            Text Input
+          </button>
+          <button onclick="switchDataInputMethod('file')" id="fileInputTab" class="px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+            File Upload
+          </button>
+        </div>
+
+        <!-- Text Input Panel -->
+        <div id="textInputPanel">
+          <div class="mb-4">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Paste your data update</label>
+            <textarea id="dataTextInput" rows="8" class="w-full border rounded-lg px-3 py-2 text-sm font-mono" placeholder="Example:
+- Material IC-77 ETA changed to 2026-02-15
+- Product A yield at Test dropped to 94.2%
+- WF factory capacity reduced by 10% for W05
+- Product B demand forecast increased by 5k units
+
+Or paste CSV, JSON, or any structured data..."></textarea>
+          </div>
+          <div class="text-xs text-slate-500 mb-4">
+            💡 Tip: AI can understand natural language, CSV, JSON, or structured text. Just describe what changed.
+          </div>
+        </div>
+
+        <!-- File Upload Panel -->
+        <div id="fileUploadPanel" class="hidden">
+          <div class="mb-4">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Upload data file</label>
+            <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+              <input type="file" id="dataFileInput" class="hidden" accept=".txt,.csv,.json,.xlsx,.xls" onchange="handleFileSelect(event)">
+              <label for="dataFileInput" class="cursor-pointer">
+                <div class="text-4xl mb-2">📁</div>
+                <div class="text-sm font-semibold text-slate-700 mb-1">Click to upload or drag & drop</div>
+                <div class="text-xs text-slate-500">Supports: TXT, CSV, JSON, Excel</div>
+              </label>
+            </div>
+            <div id="filePreview" class="mt-3 hidden">
+              <div class="bg-slate-50 border rounded-lg p-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">📄</span>
+                    <div>
+                      <div class="text-sm font-semibold" id="fileName"></div>
+                      <div class="text-xs text-slate-500" id="fileSize"></div>
+                    </div>
+                  </div>
+                  <button onclick="clearFileUpload()" class="text-slate-500 hover:text-red-600">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3">
+          <button onclick="processDataUpdate()" id="processDataBtn" class="flex-1 bg-blue-600 text-white rounded-lg px-4 py-3 font-semibold hover:bg-blue-700 transition-all">
+            🤖 Process with AI
+          </button>
+          <button onclick="closeDataUpdateModal()" class="px-4 py-3 border rounded-lg text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+        </div>
+
+        <!-- Processing & Result Panel -->
+        <div id="dataUpdateResult" class="hidden mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Drawer (Right Sidebar for AI Responses) -->
+  <div id="aiDrawerBackdrop" class="no-print hidden fixed inset-0 bg-black/20 z-70" onclick="closeAIDrawer()"></div>
+  <div id="aiDrawer" class="no-print hidden fixed right-0 top-0 h-full w-[32rem] bg-white shadow-2xl z-75 overflow-y-auto transform transition-transform duration-300">
+    <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-b p-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="text-2xl">🤖</div>
+        <div class="font-semibold text-sm">AI Assistant</div>
+      </div>
+      <button onclick="closeAIDrawer()" class="text-white hover:text-slate-200">✕</button>
+    </div>
+    <div id="aiDrawerBody" class="p-4"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="./ai_system.js"></script>
+  <script src="./data_update_system.js"></script>
+  <script src="./app_v2.js"></script>
+</body>
+</html>

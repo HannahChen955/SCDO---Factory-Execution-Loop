@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCDO Execution & Pacing Layer — Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body { background: #fff !important; }
+      .no-print { display: none !important; }
+      .print-area { display: block !important; }
+    }
+    .sparkline {
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .accordion-content.open {
+      max-height: 2000px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <!-- Top Bar -->
+  <div class="no-print sticky top-0 z-50 bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div>
+        <div class="text-sm font-semibold" id="appName">SCDO Control Tower — Factory Execution Loop</div>
+        <div class="text-xs text-slate-500">
+          <span id="version"></span> · <span id="lastRefresh"></span> · Data: <span id="dqStatus" class="font-medium"></span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+          <input type="checkbox" id="prdModeToggle" class="rounded">
+          <span>Show Spec (PRD Mode)</span>
+        </label>
+
+        <div class="border-l h-6 mx-2"></div>
+
+        <select id="scenarioSelect" class="text-sm border rounded-lg px-2 py-1"></select>
+        <select id="productLineSelect" class="text-sm border rounded-lg px-2 py-1"></select>
+        <select id="factorySelect" class="text-sm border rounded-lg px-2 py-1"></select>
+        <select id="weekSelect" class="text-sm border rounded-lg px-2 py-1"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 py-5 grid grid-cols-12 gap-4">
+    <!-- Sidebar -->
+    <aside class="no-print col-span-12 md:col-span-3">
+      <div class="bg-white rounded-2xl shadow-sm border p-3">
+        <div class="text-xs font-semibold text-slate-500 mb-2">NAVIGATION</div>
+        <nav id="moduleNav" class="flex flex-col gap-1"></nav>
+
+        <div class="mt-4 p-3 bg-slate-50 rounded-xl border">
+          <div class="text-xs font-semibold text-slate-500">DEMO NOTES</div>
+          <ul class="text-xs text-slate-600 list-disc pl-4 mt-2 space-y-1">
+            <li>Visual-first prototype with mocked data</li>
+            <li>Toggle PRD Mode to see technical specs</li>
+            <li>Switch scenarios to see risk patterns</li>
+            <li>Click risk cards for evidence packs</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="col-span-12 md:col-span-9">
+      <div id="content" class="space-y-4"></div>
+    </main>
+  </div>
+
+  <!-- Case Drawer (Right Sidebar) -->
+  <div id="caseDrawerBackdrop" class="no-print hidden fixed inset-0 bg-black/20 z-40" onclick="closeCaseDrawer()"></div>
+  <div id="caseDrawer" class="no-print hidden fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto transform transition-transform duration-300">
+    <div class="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+      <div class="font-semibold text-sm">Active Case</div>
+      <button onclick="closeCaseDrawer()" class="text-slate-500 hover:text-slate-900">✕</button>
+    </div>
+    <div id="caseDrawerBody" class="p-4"></div>
+  </div>
+
+  <!-- Modal (Evidence Pack Full View) -->
+  <div id="modalBackdrop" class="no-print hidden fixed inset-0 bg-black/40 z-50"></div>
+  <div id="modal" class="no-print hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white">
+        <div class="font-semibold text-sm" id="modalTitle">Evidence Pack</div>
+        <div class="flex items-center gap-2">
+          <button id="generateReportBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">📄 Generate Report</button>
+          <button id="printBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">Print</button>
+          <button id="closeModalBtn" class="text-sm bg-slate-900 text-white rounded-lg px-3 py-1.5 hover:bg-slate-800">Close</button>
+        </div>
+      </div>
+      <div id="modalBody" class="p-4"></div>
+    </div>
+  </div>
+
+  <!-- Report Preview Modal -->
+  <div id="reportModalBackdrop" class="no-print hidden fixed inset-0 bg-black/40 z-60"></div>
+  <div id="reportModal" class="no-print hidden fixed inset-0 z-60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white">
+        <div class="font-semibold text-sm">Report Preview</div>
+        <div class="flex items-center gap-2">
+          <button id="downloadHTMLBtn" class="text-sm border rounded-lg px-3 py-1.5 hover:bg-slate-50">Download HTML</button>
+          <button id="downloadPDFBtn" class="text-sm bg-blue-600 text-white rounded-lg px-3 py-1.5 hover:bg-blue-700">Download PDF</button>
+          <button id="closeReportModalBtn" class="text-sm bg-slate-900 text-white rounded-lg px-3 py-1.5 hover:bg-slate-800">Close</button>
+        </div>
+      </div>
+      <div id="reportPreview" class="p-4 bg-slate-50"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

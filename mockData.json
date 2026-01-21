@@ -1,0 +1,372 @@
+{
+  "meta": {
+    "appName": "SCDO Execution & Pacing Layer — Concept Prototype",
+    "version": "0.1",
+    "lastRefresh": "2026-01-19 10:30",
+    "dataQuality": {
+      "status": "PARTIAL",
+      "notes": [
+        "Mocked data for demo purpose",
+        "Some signals missing for certain factories"
+      ]
+    }
+  },
+  "dimensions": {
+    "productLines": ["Line A (Wearables)", "Line B (Accessories)", "Line C (Robotics)"],
+    "factories": ["Factory SZ-01", "Factory DG-02", "Factory ZS-03"],
+    "weeks": ["2026-W03", "2026-W04", "2026-W05"]
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "Scenario A — Late Risk (Supply Shortage / Execution)",
+      "description": "Material shortages + yield drop cause high late risk. Focus on commit confidence and expedite actions.",
+      "defaultFilters": { "productLine": "Line A (Wearables)", "factory": "Factory SZ-01", "week": "2026-W04" }
+    },
+    {
+      "id": "B",
+      "name": "Scenario B — Overbuild Risk (Demand-down / Inventory Pressure)",
+      "description": "Sell-through weaker than forecast. Inventory & WIP pressure rises. Focus on pacing down and freeze guardrails.",
+      "defaultFilters": { "productLine": "Line B (Accessories)", "factory": "Factory DG-02", "week": "2026-W04" }
+    },
+    {
+      "id": "C",
+      "name": "Scenario C — Mixed Signals (Regional imbalance)",
+      "description": "Some regions face shortage while others have excess. Focus on orchestration, routing, and evidence-based decisions.",
+      "defaultFilters": { "productLine": "Line C (Robotics)", "factory": "Factory ZS-03", "week": "2026-W05" }
+    }
+  ],
+  "workflow": [
+    {
+      "id": "signals",
+      "name": "Signals",
+      "title": "Signal Layer",
+      "tagline": "Normalize signals + emit events",
+      "description": "Turn scattered data into trusted signals with quality labels and event streams",
+      "underlyingModules": [1]
+    },
+    {
+      "id": "radar",
+      "name": "Risk Radar",
+      "title": "Sense & Rank",
+      "tagline": "Rank late & excess risks",
+      "description": "Identify dual risks with explainable drivers and confidence scores",
+      "underlyingModules": [2, 3, 4]
+    },
+    {
+      "id": "orchestration",
+      "name": "Orchestration",
+      "title": "Decide & Route",
+      "tagline": "Route actions: auto vs human",
+      "description": "Turn recommendations into routable workflows with playbooks",
+      "underlyingModules": [5]
+    },
+    {
+      "id": "evidence",
+      "name": "Evidence & Learning",
+      "title": "Evidence & Feedback",
+      "tagline": "Briefing + decision log + feedback",
+      "description": "Generate evidence packs and learn from outcomes",
+      "underlyingModules": [6]
+    }
+  ],
+  "modules": [
+    {
+      "id": 1,
+      "title": "Signal Ingestion & Normalization",
+      "tagline": "Unify scattered signals into a consistent dataset & event stream.",
+      "decides": "What data is trusted, how it is normalized, and what events are emitted for downstream decisioning.",
+      "inputs": [
+        { "name": "Weekly Build Plan", "source": "Planning", "refresh": "Weekly", "owner": "Planning", "quality": "OK" },
+        { "name": "Daily Output", "source": "Factory", "refresh": "Daily", "owner": "China Delivery", "quality": "OK" },
+        { "name": "WIP Snapshot", "source": "Factory MES", "refresh": "Daily", "owner": "Factory", "quality": "PARTIAL" },
+        { "name": "Yield / FPY Trend", "source": "Quality", "refresh": "Daily", "owner": "PQE", "quality": "OK" },
+        { "name": "Material Shortage List", "source": "Procurement", "refresh": "Daily", "owner": "Sourcing", "quality": "OK" },
+        { "name": "FG / Transit Inventory", "source": "ERP/WMS", "refresh": "Daily", "owner": "Supply Planning", "quality": "PARTIAL" },
+        { "name": "Forecast Revision Events", "source": "Demand Planning", "refresh": "Ad-hoc", "owner": "Demand Planning", "quality": "OK" }
+      ],
+      "outputs": [
+        { "name": "Unified Execution Dataset", "type": "table", "example": "normalized_records[]" },
+        { "name": "Data Quality Flags", "type": "event", "example": "dq_flags[]" },
+        { "name": "Event Stream", "type": "event", "example": "events[]" }
+      ],
+      "actions": [
+        { "who": "Platform Team", "do": "Map fields & connect sources via Auger pipelines", "sla": "TBD" },
+        { "who": "China Delivery", "do": "Validate business definitions & thresholds", "sla": "Weekly review" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Supply Execution Health",
+      "tagline": "Quantify execution health & commit confidence.",
+      "decides": "Whether supply execution is healthy and what the commit confidence is for each order/week.",
+      "inputs": [
+        { "name": "Plan vs Actual Output", "source": "Factory", "refresh": "Daily" },
+        { "name": "WIP by station", "source": "MES", "refresh": "Daily" },
+        { "name": "Yield/FPY trend", "source": "Quality", "refresh": "Daily" },
+        { "name": "Critical material status", "source": "Procurement", "refresh": "Daily" },
+        { "name": "Capacity constraints", "source": "Factory", "refresh": "Weekly" }
+      ],
+      "outputs": [
+        { "name": "Execution Health Score", "type": "metric", "example": "0-100 + RYG" },
+        { "name": "Bottleneck Diagnosis", "type": "explain", "example": "Top drivers" },
+        { "name": "Commit Confidence", "type": "probability", "example": "0-1" },
+        { "name": "Early Alerts", "type": "event", "example": "alerts[]" }
+      ],
+      "actions": [
+        { "who": "China Delivery", "do": "Trigger expedite / re-sequence / escalation playbook", "sla": "24h" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Demand & Inventory Pressure",
+      "tagline": "Detect overbuild risks early and recommend production pacing guardrails.",
+      "decides": "Whether to pace down/freeze production releases to reduce WIP & obsolescence risk.",
+      "inputs": [
+        { "name": "FG Inventory", "source": "ERP/WMS", "refresh": "Daily" },
+        { "name": "WIP Inventory", "source": "MES", "refresh": "Daily" },
+        { "name": "In-transit Inventory", "source": "Logistics", "refresh": "Daily" },
+        { "name": "Forecast revision events", "source": "Demand Planning", "refresh": "Ad-hoc" },
+        { "name": "Sell-through signal", "source": "Sales/Channel", "refresh": "Weekly" }
+      ],
+      "outputs": [
+        { "name": "Inventory Pressure Index", "type": "metric", "example": "0-100 + drivers" },
+        { "name": "Overbuild Risk Flag", "type": "flag", "example": "High/Med/Low" },
+        { "name": "Liability-at-risk", "type": "estimate", "example": "$ WIP locked cost (rough)" },
+        { "name": "Pacing Guardrails", "type": "recommendation", "example": "max WIP / freeze window" }
+      ],
+      "actions": [
+        { "who": "Supply Planning + China Delivery", "do": "Align pacing plan with factory release-to-line", "sla": "48h" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Risk Radar Dashboard",
+      "tagline": "Rank dual risks (late & excess) with explainable drivers and actions.",
+      "decides": "What risks to focus on today, and whether they can be auto-actioned or require human review.",
+      "inputs": [
+        { "name": "Execution Health Score", "source": "Module 2", "refresh": "Daily" },
+        { "name": "Inventory Pressure Index", "source": "Module 3", "refresh": "Daily" },
+        { "name": "Events stream", "source": "Module 1", "refresh": "Real-time" }
+      ],
+      "outputs": [
+        { "name": "Late Risk TopN", "type": "ranked_list", "example": "riskItemsLate[]" },
+        { "name": "Excess Risk TopN", "type": "ranked_list", "example": "riskItemsExcess[]" },
+        { "name": "Risk Drivers", "type": "explain", "example": "drivers[]" },
+        { "name": "Recommended Actions", "type": "action", "example": "actions[]" }
+      ],
+      "actions": [
+        { "who": "China Delivery", "do": "Open evidence pack and route to playbook / approval", "sla": "Same day" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Decision Orchestration & Playbooks",
+      "tagline": "Turn recommendations into routable workflows (auto vs human-in-loop).",
+      "decides": "Which playbook to run, who approves, and what actions are triggered.",
+      "inputs": [
+        { "name": "Risk Items (with confidence)", "source": "Module 4", "refresh": "Daily" },
+        { "name": "Business rules & priorities", "source": "Ops policy", "refresh": "Ad-hoc" }
+      ],
+      "outputs": [
+        { "name": "Workflow Routing", "type": "route", "example": "auto/human approval" },
+        { "name": "Playbook Steps", "type": "checklist", "example": "step list + owners" },
+        { "name": "Auto-actions triggers", "type": "trigger", "example": "freeze release / expedite request" }
+      ],
+      "actions": [
+        { "who": "Approvers", "do": "Approve pacing down / freeze window / re-sequence", "sla": "24-48h" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Exception Triage & Evidence Pack",
+      "tagline": "One-click evidence pack + decision log + feedback loop.",
+      "decides": "How exceptions are summarized, what decision is made, and how learning feeds back into scoring & playbooks.",
+      "inputs": [
+        { "name": "Exception routed from Module 5", "source": "Workflow", "refresh": "Real-time" },
+        { "name": "Signals snapshot", "source": "Modules 1-4", "refresh": "On-demand" },
+        { "name": "Qualitative updates (emails/IM)", "source": "Ops comms", "refresh": "Ad-hoc" }
+      ],
+      "outputs": [
+        { "name": "Evidence Pack (printable)", "type": "document", "example": "1-page summary" },
+        { "name": "Decision Log", "type": "audit", "example": "who/when/why" },
+        { "name": "Feedback", "type": "label", "example": "effective/ineffective + reason" }
+      ],
+      "actions": [
+        { "who": "China Delivery", "do": "Close the loop with outcome feedback", "sla": "Within 7 days" }
+      ]
+    }
+  ],
+  "demoData": {
+    "A": {
+      "kpis": {
+        "executionHealth": { "score": 62, "status": "YELLOW", "drivers": ["Yield trending down", "WIP building at Test", "Critical material ETA slipped"] },
+        "inventoryPressure": { "score": 38, "status": "GREEN", "drivers": ["FG within target", "No major forecast down-rev"] }
+      },
+      "events": [
+        { "time": "09:10", "type": "QUALITY", "title": "FPY down 3% for SKU-A1 at Test", "severity": "MED" },
+        { "time": "08:45", "type": "MATERIAL", "title": "Critical IC-77 ETA slipped by 2 days", "severity": "HIGH" },
+        { "time": "08:05", "type": "PLAN", "title": "Build plan unchanged (v12)", "severity": "LOW" }
+      ],
+      "riskItemsLate": [
+        {
+          "id": "R-L-001",
+          "object": "SKU-A1 / Factory SZ-01 / 2026-W04",
+          "score": 86,
+          "confidence": 0.78,
+          "drivers": ["IC-77 shortage risk", "FPY drop at Test", "WIP pile-up at Test"],
+          "recommendedAction": "Expedite IC-77 + prioritize re-test lane + adjust sequence",
+          "route": "HUMAN_REVIEW",
+          "evidence": {
+            "impact": "Potential slip 3-5 days; 18k units affected",
+            "signals": ["IC-77 shortage (ETA +2d)", "FPY 92%→89%", "Test WIP +24% WoW"],
+            "options": ["Expedite material", "Pull capacity from SKU-A2", "Ship partial"],
+            "recommendation": "Approve expedite + re-sequence within 24h"
+          }
+        },
+        {
+          "id": "R-L-002",
+          "object": "Order-48392 / SKU-A2 / 2026-W04",
+          "score": 74,
+          "confidence": 0.67,
+          "drivers": ["Capacity constraint at Line 2", "Changeover window limited"],
+          "recommendedAction": "Shift overtime + lock changeover plan",
+          "route": "AUTO_ACTION_CANDIDATE",
+          "evidence": {
+            "impact": "Potential slip 1-2 days; 6k units affected",
+            "signals": ["Line2 capacity -8%", "Changeover window 1 day"],
+            "options": ["OT approved", "Re-sequence"],
+            "recommendation": "Auto-trigger OT request; notify owner"
+          }
+        }
+      ],
+      "riskItemsExcess": [
+        {
+          "id": "R-E-101",
+          "object": "SKU-A3 / Factory SZ-01 / 2026-W05",
+          "score": 52,
+          "confidence": 0.55,
+          "drivers": ["Early channel softness signal"],
+          "recommendedAction": "Monitor only; no pacing change",
+          "route": "NO_ACTION",
+          "evidence": {
+            "impact": "Low; early signal only",
+            "signals": ["Sell-through -3% WoW"],
+            "options": ["Hold", "Monitor"],
+            "recommendation": "No action until forecast revision"
+          }
+        }
+      ],
+      "playbooks": [
+        { "name": "Late Risk — Material Expedite", "when": "Critical shortage risk + high late score", "steps": ["Confirm ETA", "Expedite request", "Update commit", "Escalate if SLA breached"] },
+        { "name": "Late Risk — Yield Drop", "when": "FPY down + WIP building", "steps": ["Containment", "Rework plan", "Capacity re-balance", "Daily readout"] }
+      ]
+    },
+    "B": {
+      "kpis": {
+        "executionHealth": { "score": 78, "status": "GREEN", "drivers": ["Stable output", "Yield normal"] },
+        "inventoryPressure": { "score": 81, "status": "RED", "drivers": ["Forecast down-rev", "FG DOH rising", "High WIP locked cost"] }
+      },
+      "events": [
+        { "time": "09:25", "type": "DEMAND", "title": "Forecast down-rev: -18% for SKU-B1 (v08→v09)", "severity": "HIGH" },
+        { "time": "09:00", "type": "INVENTORY", "title": "FG DOH exceeded threshold for SKU-B1", "severity": "HIGH" },
+        { "time": "08:20", "type": "FACTORY", "title": "WIP increased due to prior release", "severity": "MED" }
+      ],
+      "riskItemsLate": [
+        {
+          "id": "R-L-011",
+          "object": "SKU-B2 / Factory DG-02 / 2026-W04",
+          "score": 41,
+          "confidence": 0.52,
+          "drivers": ["Minor logistics variability"],
+          "recommendedAction": "No action",
+          "route": "NO_ACTION",
+          "evidence": { "impact": "Low", "signals": ["ETA variability"], "options": ["Monitor"], "recommendation": "No action" }
+        }
+      ],
+      "riskItemsExcess": [
+        {
+          "id": "R-E-201",
+          "object": "SKU-B1 / Factory DG-02 / 2026-W04",
+          "score": 92,
+          "confidence": 0.83,
+          "drivers": ["Forecast down -18%", "FG DOH high", "WIP release already in progress"],
+          "recommendedAction": "Pace down 30% + freeze release-to-line for 5 days",
+          "route": "HUMAN_REVIEW",
+          "evidence": {
+            "impact": "Overbuild risk 22k units; WIP locked cost est. $0.8M",
+            "signals": ["Forecast down -18%", "FG DOH 68 days", "WIP +31% WoW"],
+            "options": ["Pace down 30%", "Freeze release 5d", "Split batches", "Hold long-lead material"],
+            "recommendation": "Approve pacing down + freeze window today"
+          }
+        },
+        {
+          "id": "R-E-202",
+          "object": "SKU-B3 / Factory DG-02 / 2026-W05",
+          "score": 73,
+          "confidence": 0.66,
+          "drivers": ["Sell-through softness", "High transit inventory"],
+          "recommendedAction": "Freeze long-lead material POs + reduce next week release by 15%",
+          "route": "AUTO_ACTION_CANDIDATE",
+          "evidence": {
+            "impact": "Medium; WIP cost exposure increasing",
+            "signals": ["Transit +12% WoW", "Sell-through -9%"],
+            "options": ["Freeze POs", "Reduce release"],
+            "recommendation": "Auto-trigger PO freeze request; notify"
+          }
+        }
+      ],
+      "playbooks": [
+        { "name": "Overbuild — Soft Brake (Pacing Down)", "when": "Inventory pressure high + forecast down", "steps": ["Set freeze window", "Reduce release-to-line", "Align plan version", "Supplier comms"] },
+        { "name": "Overbuild — Long-lead Liability Control", "when": "Specialized material at risk", "steps": ["Freeze POs", "Review substitutes", "Negotiate MOQ", "Re-allocate if possible"] }
+      ]
+    },
+    "C": {
+      "kpis": {
+        "executionHealth": { "score": 69, "status": "YELLOW", "drivers": ["Capacity tight", "Yield stable"] },
+        "inventoryPressure": { "score": 66, "status": "YELLOW", "drivers": ["Regional imbalance", "Transit high"] }
+      },
+      "events": [
+        { "time": "09:40", "type": "ALLOCATION", "title": "Region EU shortage vs NA excess for SKU-C1", "severity": "HIGH" },
+        { "time": "09:05", "type": "LOGISTICS", "title": "Port congestion risk increasing", "severity": "MED" }
+      ],
+      "riskItemsLate": [
+        {
+          "id": "R-L-021",
+          "object": "SKU-C1 / Factory ZS-03 / 2026-W05",
+          "score": 79,
+          "confidence": 0.72,
+          "drivers": ["Port congestion", "Tight capacity window"],
+          "recommendedAction": "Prioritize EU allocation + pre-book alternate route",
+          "route": "HUMAN_REVIEW",
+          "evidence": {
+            "impact": "EU stockout risk; NA has surplus",
+            "signals": ["EU backlog rising", "Port congestion flag"],
+            "options": ["Re-allocate inventory", "Change route", "Pull-in build"],
+            "recommendation": "Approve allocation shift + logistics re-route"
+          }
+        }
+      ],
+      "riskItemsExcess": [
+        {
+          "id": "R-E-301",
+          "object": "SKU-C1 / Region NA / 2026-W05",
+          "score": 77,
+          "confidence": 0.68,
+          "drivers": ["NA sell-through weak", "Transit high"],
+          "recommendedAction": "Hold NA replenishment + divert to EU where possible",
+          "route": "HUMAN_REVIEW",
+          "evidence": {
+            "impact": "NA DOH rising; EU shortage",
+            "signals": ["NA sell-through -11%", "Transit +18%"],
+            "options": ["Divert", "Hold", "Promo"],
+            "recommendation": "Approve diversion and hold NA replenishment"
+          }
+        }
+      ],
+      "playbooks": [
+        { "name": "Mixed — Allocation + Pacing Coordination", "when": "Regional imbalance", "steps": ["Confirm ground truth", "Shift allocation", "Adjust pacing", "Stakeholder sign-off"] }
+      ]
+    }
+  }
+}

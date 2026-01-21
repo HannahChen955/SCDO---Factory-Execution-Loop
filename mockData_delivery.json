@@ -1,0 +1,611 @@
+{
+  "meta": {
+    "appName": "SCDO Control Tower — Factory Execution Loop",
+    "subtitle": "A closed-loop pacing layer that brings factory execution signals into SCDO to reduce late risk and overbuild liability.",
+    "version": "0.2",
+    "lastRefresh": "2026-01-19 14:30",
+    "dataQuality": {
+      "status": "PARTIAL",
+      "notes": ["Demo mode: mocked data for illustration"]
+    }
+  },
+  "dimensions": {
+    "products": ["All Programs", "Product A", "Product B", "Product C", "Product D"],
+    "factorySites": ["Total", "WF", "VN"],
+    "weeks": ["2026-W03", "2026-W04", "2026-W05"]
+  },
+  "overview": {
+    "hero": {
+      "title": "SCDO Vision — Close the Loop with Factory Execution",
+      "subtitle": "Unify data. Automate high-confidence decisions. Route uncertainty to humans.",
+      "valueChips": ["Unified Data", "High-confidence Automation", "Exception Orchestration"]
+    },
+    "scopeCoverage": {
+      "included": [
+        {"icon": "📦", "label": "Planning", "detail": "Forecast / Supply Plan / Build Plan"},
+        {"icon": "📊", "label": "Inventory", "detail": "FG / Transit / Targets"},
+        {"icon": "🚚", "label": "Logistics", "detail": "Shipments / ETA / Lane constraints"},
+        {"icon": "🧾", "label": "Order Management", "detail": "Demand signals / Allocations / Commit dates"},
+        {"icon": "⚠️", "label": "Exception Workflows", "detail": "Alerts / Escalations / Human review"}
+      ],
+      "missing": [
+        {"icon": "🏭", "label": "Manufacturing", "detail": "MES / Yield / Line capacity / WIP / Rework"},
+        {"icon": "✅", "label": "Execution-to-Commit", "detail": "What factory can truly deliver by week/day"},
+        {"icon": "🔄", "label": "Closed-loop Learning", "detail": "Outcomes feedback to planning decisions"}
+      ]
+    },
+    "whyFactory": [
+      {
+        "title": "Manufacturing Inertia",
+        "icon": "⏳",
+        "message": "Production cannot start/stop instantly",
+        "consequence": "Long lead times, multi-tier suppliers, and process constraints create delayed consequences",
+        "exampleSignal": "IC-77 ETA slip detected +2 days",
+        "severity": "HIGH"
+      },
+      {
+        "title": "Late Reaction → Shortages",
+        "icon": "📉",
+        "message": "If execution signals arrive late, risk is discovered too late",
+        "consequence": "Customers experience out-of-stock or missed ship windows",
+        "exampleSignal": "Yield drift at Test (3-day trend)",
+        "severity": "HIGH"
+      },
+      {
+        "title": "Slow Downside Response → Liability",
+        "icon": "💰",
+        "message": "If demand softens but factory keeps building due to delayed feedback",
+        "consequence": "Overbuild accumulates as FG/WIP/component liability",
+        "exampleSignal": "WIP building above target +18% WoW",
+        "severity": "MED"
+      }
+    ],
+    "proposal": [
+      {
+        "title": "Execution Truth",
+        "icon": "📡",
+        "description": "Yield, WIP, capacity, constraints, supplier ETA realism",
+        "inDemoNow": "Signal quality matrix with freshness, coverage, trust labels",
+        "nextPhase": "Connect real MES data with confidence scoring"
+      },
+      {
+        "title": "Commit Translation",
+        "icon": "🎯",
+        "description": "What can actually ship by week/day, with confidence",
+        "inDemoNow": "Weekly commit card with at-risk units and confidence %",
+        "nextPhase": "Daily/hourly commit updates with early warning"
+      },
+      {
+        "title": "Action Orchestration",
+        "icon": "🔀",
+        "description": "Playbooks with owners, SLAs, and routing rules",
+        "inDemoNow": "Recovery actions with priority, owner, SLA, expected impact",
+        "nextPhase": "Auto-route low-risk actions; escalate high-risk to human review"
+      },
+      {
+        "title": "Closed-loop Learning",
+        "icon": "🔄",
+        "description": "Capture outcomes to improve future decisions",
+        "inDemoNow": "Feedback mechanism for each risk case",
+        "nextPhase": "Model learning from outcomes to improve risk scoring"
+      }
+    ],
+    "challenges": [
+      {
+        "title": "Messier Data",
+        "severity": "HIGH",
+        "description": "Manual logs, inconsistent naming, non-standard station definitions, frequent human edits",
+        "impact": "Low data trust without confidence scoring"
+      },
+      {
+        "title": "Faster Change Rate",
+        "severity": "HIGH",
+        "description": "Hourly/daily shifts in yield, constraints, staffing, line balance",
+        "impact": "Decisions need shorter cadence and real-time signals"
+      },
+      {
+        "title": "Strong On-site Dependency",
+        "severity": "MED",
+        "description": "Truth often lives in meetings, photos, or engineer notes before hitting systems",
+        "impact": "System must support hybrid (automated + human input)"
+      },
+      {
+        "title": "Multiple 'Truths' at Once",
+        "severity": "MED",
+        "description": "Planning, MES, and supplier updates may disagree",
+        "impact": "Confidence scoring becomes essential for decision routing"
+      },
+      {
+        "title": "High Noise, High Stakes",
+        "severity": "MED",
+        "description": "Not every anomaly matters — but the few that do can break weekly commit",
+        "impact": "Need intelligent filtering and risk ranking"
+      },
+      {
+        "title": "Actionability Gap",
+        "severity": "HIGH",
+        "description": "Raw factory metrics don't directly tell leaders what to do",
+        "impact": "System must translate signals into decisions with clear owners"
+      }
+    ],
+    "roadmap": [
+      {
+        "phase": "Phase 0 — Prototype",
+        "status": "NOW",
+        "goal": "Demonstrate the decision loop and leadership-ready outputs using mocked data",
+        "successMetrics": [
+          "Weekly commit view with confidence scoring",
+          "Top risks ranked by impact × confidence",
+          "Recovery actions with owners and SLAs",
+          "One-click reports for leadership briefings"
+        ]
+      },
+      {
+        "phase": "Phase 1 — Data Foundation",
+        "status": "NEXT",
+        "goal": "Connect minimum viable factory signals with confidence scoring",
+        "successMetrics": [
+          "Stable signal definitions established",
+          "Daily cut discipline adopted",
+          "Yield, WIP, capacity data flowing reliably",
+          "Key material ETA tracking integrated"
+        ]
+      },
+      {
+        "phase": "Phase 2 — Decision Orchestration",
+        "status": "FUTURE",
+        "goal": "Standard routing rules and recovery playbooks for repeatable exception handling",
+        "successMetrics": [
+          "Playbooks with owners & SLAs adopted",
+          "Reduced manual coordination time",
+          "Faster recovery cycles (24-48h SLA hit rate)",
+          "Clear ownership and accountability"
+        ]
+      },
+      {
+        "phase": "Phase 3 — Closed-Loop Optimization",
+        "status": "FUTURE",
+        "goal": "Learn from outcomes and improve commit prediction + action effectiveness",
+        "successMetrics": [
+          "Better early warning (reduced surprises)",
+          "Measurable reduction in late risk",
+          "Measurable reduction in overbuild liability",
+          "Model continuously learning from outcomes"
+        ]
+      }
+    ]
+  },
+  "portfolio": {
+    "week": "2026-W04",
+    "summary": {
+      "programsInScope": 12,
+      "commitHealth": "YELLOW",
+      "atRiskUnits": 38600,
+      "inventoryPressure": "YELLOW"
+    },
+    "programs": [
+      {
+        "id": "product-a",
+        "name": "Product A",
+        "buildSites": "WF, VN-02",
+        "commitHealth": "YELLOW",
+        "atRiskUnits": 12400,
+        "topDriver": "Critical IC-77 ETA slip + yield drift at Test",
+        "nextAction": "Expedite IC-77 + prioritize re-test lane",
+        "owner": "Sourcing",
+        "sla": "24h",
+        "pacingGuardrail": "Freeze incremental pull until commit returns GREEN"
+      },
+      {
+        "id": "product-b",
+        "name": "Product B",
+        "buildSites": "VN-02",
+        "commitHealth": "GREEN",
+        "atRiskUnits": 0,
+        "topDriver": "Demand softness (monitoring)",
+        "nextAction": "Monitor demand signals for W05 pacing",
+        "owner": "Demand Planning",
+        "sla": "72h",
+        "pacingGuardrail": "Freeze new releases for 7 days"
+      },
+      {
+        "id": "product-c",
+        "name": "Product C",
+        "buildSites": "WF, SZ-01",
+        "commitHealth": "YELLOW",
+        "atRiskUnits": 5200,
+        "topDriver": "Line changeover window limited",
+        "nextAction": "Lock changeover plan + targeted overtime",
+        "owner": "Factory Ops",
+        "sla": "24h",
+        "pacingGuardrail": "None"
+      },
+      {
+        "id": "product-d",
+        "name": "Product D",
+        "buildSites": "SZ-01, VN-02",
+        "commitHealth": "GREEN",
+        "atRiskUnits": 0,
+        "topDriver": "On track",
+        "nextAction": "Continue current pacing",
+        "owner": "China Delivery",
+        "sla": "—",
+        "pacingGuardrail": "None"
+      }
+    ],
+    "topExceptions": [
+      {
+        "program": "Product A",
+        "issue": "IC-77 ETA slip (+2d)",
+        "severity": "HIGH"
+      },
+      {
+        "program": "Product C",
+        "issue": "Line changeover window limited",
+        "severity": "MED"
+      },
+      {
+        "program": "Product D",
+        "issue": "Demand downside signal (pending confirm)",
+        "severity": "LOW"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "Scenario A — Delivery Risk (Supply + Yield Drift)",
+      "description": "Goal: protect W04 commit and stabilize execution with a clear recovery plan.",
+      "defaultFilters": {
+        "product": "Product A",
+        "factorySite": "WF",
+        "week": "2026-W04"
+      }
+    },
+    {
+      "id": "B",
+      "name": "Scenario B — Overbuild Risk (Demand Downside)",
+      "description": "Channel softness + forecast down-rev elevate WIP/FG liability. Goal: pace down while protecting commit.",
+      "defaultFilters": {
+        "product": "Product B",
+        "factorySite": "VN",
+        "week": "2026-W04"
+      }
+    },
+    {
+      "id": "C",
+      "name": "Scenario C — Mixed Signals (Regional Imbalance)",
+      "description": "Some regions shortage, others excess. Focus on orchestration and routing.",
+      "defaultFilters": {
+        "product": "Product C",
+        "factorySite": "Total",
+        "week": "2026-W05"
+      }
+    }
+  ],
+  "demoData": {
+    "A": {
+      "deliveryCommit": {
+        "week": "2026-W04",
+        "product": "Product A",
+        "factorySite": "WF",
+        "commitHealth": "YELLOW",
+        "commitHealthLabel": "Recoverable with actions",
+        "atRiskUnits": 12400,
+        "confidence": 78,
+        "recoveryActions": [
+          {
+            "priority": 1,
+            "action": "Expedite IC-77 (Supplier + logistics option)",
+            "owner": "Sourcing",
+            "sla": "24h",
+            "status": "IN_PROGRESS"
+          },
+          {
+            "priority": 2,
+            "action": "Prioritize re-test lane + containment",
+            "owner": "PQE / Factory",
+            "sla": "48h",
+            "status": "PENDING"
+          },
+          {
+            "priority": 3,
+            "action": "Re-sequence build to protect W04 ship window",
+            "owner": "Ops / SCDO",
+            "sla": "Same day",
+            "status": "PENDING"
+          }
+        ],
+        "nextCheckpoint": "Daily 16:00 cut — commit updated after material ETA confirmation"
+      },
+      "topDeliveryRisks": [
+        {
+          "id": "RISK-A1-001",
+          "sku": "SKU-A1",
+          "factory": "SZ-01",
+          "week": "2026-W04",
+          "type": "LATE",
+          "score": 86,
+          "confidence": 78,
+          "driver": "IC-77 ETA slipped +2 days + FPY drift at Test",
+          "impact": "W04 ship window at risk without IC-77 recovery",
+          "action": "Expedite IC-77 + prioritize re-test lane + adjust sequence",
+          "route": "HUMAN_REVIEW",
+          "routeReason": "Cross-team impact",
+          "owner": "China Delivery + Sourcing",
+          "sla": "24-48h"
+        },
+        {
+          "id": "RISK-A1-002",
+          "sku": "SKU-A2",
+          "order": "Order-48392",
+          "factory": "SZ-01",
+          "week": "2026-W04",
+          "type": "LATE",
+          "score": 74,
+          "confidence": 67,
+          "driver": "Line 2 changeover window limited",
+          "impact": "Potential 2-day delay if changeover not locked",
+          "action": "Lock changeover plan + targeted overtime",
+          "route": "AUTO_ACTION",
+          "routeReason": "Within policy",
+          "owner": "Factory Ops",
+          "sla": "24h"
+        },
+        {
+          "id": "RISK-A1-003",
+          "sku": "SKU-A3",
+          "factory": "SZ-01",
+          "week": "2026-W05",
+          "type": "EXCESS",
+          "score": 61,
+          "confidence": 55,
+          "driver": "Early demand softness signal (not yet confirmed)",
+          "impact": "Monitor only — does not affect W04 commit",
+          "action": "Monitor only; do not change W04 recovery plan",
+          "route": "MONITOR",
+          "routeReason": "Early signal, low confidence",
+          "owner": "Demand Planning",
+          "sla": "72h re-check"
+        }
+      ],
+      "todaysLoop": {
+        "caseId": "SKU-A1 / SZ-01 / 2026-W04",
+        "deliveryImpact": "W04 ship window at risk without IC-77 recovery",
+        "lateScore": 86,
+        "excessScore": 32,
+        "confidence": 78,
+        "signals": [
+          "Critical material IC-77 ETA slipped (+2 days)",
+          "FPY drift at Test (92% → 89%, 3-day trend)",
+          "Test WIP building: 8.4k units (+18% WoW)"
+        ],
+        "factoryReality": [
+          "Test WIP building: 8.4k units (+18% WoW)",
+          "Re-test lane constrained (staffing + equipment)",
+          "Line 2 changeover window limited"
+        ],
+        "decision": "Human review",
+        "actions": [
+          "Expedite IC-77 (Sourcing, 24h)",
+          "Prioritize re-test lane (PQE/Factory, 48h)",
+          "Re-sequence build (Ops/SCDO, same day)"
+        ],
+        "evidencePack": "Ready — open briefing",
+        "feedback": "Pending (next cut: 24h)"
+      },
+      "pacingGuardrail": {
+        "message": "We avoid avoidable overbuild while protecting W04 commit.",
+        "rule": "No new release pulls unless delivery recovery remains GREEN.",
+        "status": "ACTIVE"
+      },
+      "kpis": {
+        "executionHealth": 62,
+        "executionHealthStatus": "YELLOW",
+        "executionHealthDrivers": "Yield drift; WIP building at Test",
+        "inventoryPressure": 71,
+        "inventoryPressureStatus": "YELLOW",
+        "inventoryPressureDrivers": "FG above target; forecast down-rev risk"
+      },
+      "signals": {
+        "dataQuality": [
+          { "source": "Planning", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Factory MES", "freshness": "GREEN", "coverage": "YELLOW", "trust": "GREEN" },
+          { "source": "Materials / Supplier ETA", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Inventory (FG/WIP/Transit)", "freshness": "YELLOW", "coverage": "YELLOW", "trust": "GREEN" },
+          { "source": "Demand / Sell-through", "freshness": "GREEN", "coverage": "YELLOW", "trust": "GREEN" }
+        ],
+        "eventStream": [
+          {
+            "time": "09:10",
+            "type": "MATERIAL",
+            "severity": "HIGH",
+            "message": "Critical IC-77 ETA slipped by 2 days (supplier constraint)"
+          },
+          {
+            "time": "09:05",
+            "type": "QUALITY",
+            "severity": "MED",
+            "message": "FPY down 3% for SKU-A1 at Test (3-day drift)"
+          },
+          {
+            "time": "08:45",
+            "type": "INVENTORY",
+            "severity": "MED",
+            "message": "Test WIP building: 8.4k units (+18% WoW)"
+          },
+          {
+            "time": "08:05",
+            "type": "PLAN",
+            "severity": "LOW",
+            "message": "Weekly build plan unchanged (v12)"
+          },
+          {
+            "time": "07:30",
+            "type": "DEMAND",
+            "severity": "LOW",
+            "message": "Early channel softness signal (sell-through below baseline)"
+          }
+        ]
+      },
+      "riskRadar": {
+        "lateRisks": [
+          {
+            "id": "RISK-A1-001",
+            "object": "SKU-A1 / SZ-01 / 2026-W04",
+            "score": 86,
+            "confidence": 78,
+            "drivers": [
+              "IC-77 shortage risk",
+              "FPY drop at Test",
+              "WIP building at Test"
+            ],
+            "impact": "12.4k units at risk for W04 commit",
+            "recommendedAction": "Expedite IC-77 + prioritize re-test lane + adjust sequence",
+            "route": "HUMAN_REVIEW"
+          },
+          {
+            "id": "RISK-A1-002",
+            "object": "Order-48392 / SKU-A2 / 2026-W04",
+            "score": 74,
+            "confidence": 67,
+            "drivers": [
+              "Capacity constraint on Line 2",
+              "Changeover window limited"
+            ],
+            "impact": "Potential 2-day delay",
+            "recommendedAction": "Shift overtime + lock changeover plan",
+            "route": "AUTO_ACTION"
+          }
+        ],
+        "excessRisks": [
+          {
+            "id": "RISK-A1-003",
+            "object": "SKU-A3 / SZ-01 / 2026-W05",
+            "score": 61,
+            "confidence": 55,
+            "drivers": [
+              "Early channel softness",
+              "Forecast down-rev risk (pending confirmation)"
+            ],
+            "impact": "Monitor only — does not affect W04",
+            "recommendedAction": "Monitor only; do not change W04 recovery plan",
+            "route": "MONITOR"
+          }
+        ]
+      },
+      "orchestration": {
+        "routingRules": {
+          "autoAction": "Confidence ≥ 80% AND Risk < 70 AND within policy guardrails.",
+          "humanReview": "Confidence 60–80% OR Risk 70–85 OR cross-team impact OR pacing change (freeze/slow down).",
+          "monitor": "Risk < 60 OR early signal only; re-check next cut."
+        },
+        "playbooks": [
+          {
+            "id": "PB-001",
+            "name": "Late Risk: Material Expedite",
+            "trigger": "Critical material ETA slip + high late score",
+            "steps": [
+              "Confirm supplier ETA + allocation",
+              "Expedite request + logistics options",
+              "Update commit & build sequence",
+              "Escalate if SLA breached"
+            ]
+          },
+          {
+            "id": "PB-002",
+            "name": "Late Risk: Yield Drift at Test",
+            "trigger": "FPY down + WIP building",
+            "steps": [
+              "Containment & triage",
+              "Rework/repair plan + staffing",
+              "Capacity re-balance",
+              "Daily readout + recovery tracking"
+            ]
+          },
+          {
+            "id": "PB-003",
+            "name": "Excess Risk: Demand Downside / Release Freeze",
+            "trigger": "Forecast down-rev + FG/WIP exposure above target",
+            "steps": [
+              "Freeze new releases (time-boxed)",
+              "Adjust weekly targets (-X%)",
+              "Supplier hold / postpone where cancellable",
+              "Re-open releases if signal recovers"
+            ]
+          }
+        ]
+      },
+      "evidencePacks": [
+        {
+          "id": "EP-001",
+          "caseId": "SKU-A1 / SZ-01 / 2026-W04",
+          "lateScore": 86,
+          "excessScore": 32,
+          "confidence": 78,
+          "decision": "Human review",
+          "actions": "Expedite IC-77; prioritize re-test; adjust sequence",
+          "status": "Briefing ready"
+        },
+        {
+          "id": "EP-002",
+          "caseId": "Order-48392 / SKU-A2 / 2026-W04",
+          "lateScore": 74,
+          "confidence": 67,
+          "decision": "Auto-action (pending)",
+          "actions": "Overtime + lock changeover plan",
+          "status": "In progress"
+        },
+        {
+          "id": "EP-003",
+          "caseId": "SKU-A3 / SZ-01 / 2026-W05",
+          "excessScore": 61,
+          "confidence": 55,
+          "decision": "Monitor / pending confirmation",
+          "actions": "Consider release freeze + W05 re-balance",
+          "status": "Needs validation"
+        }
+      ]
+    },
+    "B": {
+      "deliveryCommit": {
+        "week": "2026-W04",
+        "product": "Product B",
+        "factorySite": "VN",
+        "commitHealth": "GREEN",
+        "commitHealthLabel": "On track with pacing constraints",
+        "atRiskUnits": 0,
+        "confidence": 85,
+        "recoveryActions": [],
+        "nextCheckpoint": "Monitor demand signals for W05 pacing decision"
+      },
+      "topDeliveryRisks": [],
+      "pacingGuardrail": {
+        "message": "Demand softness detected. Freeze new releases to avoid liability.",
+        "rule": "No new release for next 7 days; re-balance W05 build (-10%).",
+        "status": "ACTIVE"
+      }
+    },
+    "C": {
+      "deliveryCommit": {
+        "week": "2026-W05",
+        "product": "Product C",
+        "factorySite": "Total",
+        "commitHealth": "YELLOW",
+        "commitHealthLabel": "Regional imbalance requires routing",
+        "atRiskUnits": 5200,
+        "confidence": 72,
+        "recoveryActions": [
+          {
+            "priority": 1,
+            "action": "Re-route allocation from excess region to shortage region",
+            "owner": "Planning + Logistics",
+            "sla": "48h",
+            "status": "IN_PROGRESS"
+          }
+        ],
+        "nextCheckpoint": "Re-check allocation after transit confirmation"
+      }
+    }
+  }
+}
