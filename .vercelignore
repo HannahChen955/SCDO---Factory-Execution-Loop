@@ -1,0 +1,26 @@
+# Ignore server files (not needed for static deployment)
+server.js
+package.json
+package-lock.json
+node_modules
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore documentation
+README_AI_SETUP.md
+MIGRATION_V2.md
+ENHANCEMENTS.md
+QUICK_START.md
+
+# Ignore old versions
+index.html
+app.js
+app_enhanced.js
+test.html
+mockData.json
+integration_patch.js
+home_v3_render.js
+
+# Keep only the V2 files needed for production
