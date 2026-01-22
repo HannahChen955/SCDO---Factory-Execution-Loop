@@ -245,7 +245,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
-  const isProgramWorkspace = ["home", "delivery", "production-plan", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
+  const isProgramWorkspace = ["home", "delivery", "production-plan", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
   const sidebar = $("sidebar");
@@ -337,6 +337,12 @@ function render() {
       break;
     case "fv-management":
       renderFVManagement();
+      break;
+    case "labor-fulfillment":
+      renderLaborFulfillment();
+      break;
+    case "campus-readiness":
+      renderCampusReadiness();
       break;
     case "signals":
       renderSignals();
@@ -2739,6 +2745,565 @@ function renderFVManagement() {
         <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded p-4">
           <div class="text-xs font-semibold text-yellow-900 mb-2">⚠️ Budget Pressure</div>
           <div class="text-sm text-yellow-900">Final costs still 21% over budget ($2.9M vs $2.4M). Consider tighter variance controls and prevention strategies for next year.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 6. Labor Fulfillment
+function renderLaborFulfillment() {
+  const html = `
+    <div class="space-y-4">
+      <!-- Overview Card -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Labor Fulfillment — Weekly Headcount Status</div>
+        <div class="text-sm text-slate-600 mb-4">Monitor weekly labor availability and fulfillment across all factory sites</div>
+
+        <!-- Summary Metrics -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Overall Fulfillment</div>
+            <div class="text-4xl font-bold text-green-700 mb-1">96%</div>
+            <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">EXCELLENT</div>
+          </div>
+          <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Total Headcount Needed</div>
+            <div class="text-3xl font-bold text-blue-700">2,450</div>
+            <div class="text-xs text-slate-600 mt-1">Direct Labor</div>
+          </div>
+          <div class="bg-green-50 border-2 border-green-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Current Headcount</div>
+            <div class="text-3xl font-bold text-green-700">2,352</div>
+            <div class="text-xs text-slate-600 mt-1">+45 temp workers</div>
+          </div>
+          <div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Gap</div>
+            <div class="text-3xl font-bold text-yellow-700">-98</div>
+            <div class="text-xs text-slate-600 mt-1">4% shortage</div>
+          </div>
+        </div>
+
+        <!-- Weekly Trend Chart Placeholder -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border rounded-xl p-6 mb-6">
+          <div class="text-sm font-semibold text-slate-700 mb-4">12-Week Labor Fulfillment Trend</div>
+          <div class="flex items-end justify-between gap-2 h-40">
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-green-400 rounded-t" style="height: 92%"></div>
+              <div class="text-xs text-slate-600 mt-2">W49</div>
+              <div class="text-xs font-semibold text-green-700">92%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-green-400 rounded-t" style="height: 94%"></div>
+              <div class="text-xs text-slate-600 mt-2">W50</div>
+              <div class="text-xs font-semibold text-green-700">94%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-green-400 rounded-t" style="height: 95%"></div>
+              <div class="text-xs text-slate-600 mt-2">W51</div>
+              <div class="text-xs font-semibold text-green-700">95%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-yellow-400 rounded-t" style="height: 89%"></div>
+              <div class="text-xs text-slate-600 mt-2">W52</div>
+              <div class="text-xs font-semibold text-yellow-700">89%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-yellow-400 rounded-t" style="height: 88%"></div>
+              <div class="text-xs text-slate-600 mt-2">W01</div>
+              <div class="text-xs font-semibold text-yellow-700">88%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-green-400 rounded-t" style="height: 93%"></div>
+              <div class="text-xs text-slate-600 mt-2">W02</div>
+              <div class="text-xs font-semibold text-green-700">93%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center">
+              <div class="w-full bg-green-400 rounded-t" style="height: 95%"></div>
+              <div class="text-xs text-slate-600 mt-2">W03</div>
+              <div class="text-xs font-semibold text-green-700">95%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center border-2 border-blue-500 rounded-t">
+              <div class="w-full bg-green-400 rounded-t" style="height: 96%"></div>
+              <div class="text-xs text-blue-600 mt-2 font-bold">W04</div>
+              <div class="text-xs font-semibold text-green-700">96%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center opacity-50">
+              <div class="w-full bg-slate-300 rounded-t" style="height: 95%"></div>
+              <div class="text-xs text-slate-500 mt-2">W05</div>
+              <div class="text-xs text-slate-500">95%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center opacity-50">
+              <div class="w-full bg-slate-300 rounded-t" style="height: 94%"></div>
+              <div class="text-xs text-slate-500 mt-2">W06</div>
+              <div class="text-xs text-slate-500">94%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center opacity-50">
+              <div class="w-full bg-slate-300 rounded-t" style="height: 96%"></div>
+              <div class="text-xs text-slate-500 mt-2">W07</div>
+              <div class="text-xs text-slate-500">96%</div>
+            </div>
+            <div class="flex-1 flex flex-col justify-end items-center opacity-50">
+              <div class="w-full bg-slate-300 rounded-t" style="height: 97%"></div>
+              <div class="text-xs text-slate-500 mt-2">W08</div>
+              <div class="text-xs text-slate-500">97%</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center gap-4 mt-4 text-xs">
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-green-400 rounded"></div>
+              <span>≥90% (Good)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+              <span>80-90% (At Risk)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 bg-slate-300 rounded"></div>
+              <span>Forecast</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- By Factory Site -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Headcount by Factory Site (Week 2026-W04)</div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Factory Site</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Required</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Direct Labor</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Temp Workers</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Total Available</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Gap</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Fulfillment %</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">WF (CN)</td>
+                <td class="px-4 py-3 text-right">1,450</td>
+                <td class="px-4 py-3 text-right">1,420</td>
+                <td class="px-4 py-3 text-right">25</td>
+                <td class="px-4 py-3 text-right font-bold">1,445</td>
+                <td class="px-4 py-3 text-right text-yellow-700">-5</td>
+                <td class="px-4 py-3 text-right font-bold text-green-700">99.7%</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✅ Excellent</span>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">VN-02 (VN)</td>
+                <td class="px-4 py-3 text-right">850</td>
+                <td class="px-4 py-3 text-right">782</td>
+                <td class="px-4 py-3 text-right">20</td>
+                <td class="px-4 py-3 text-right font-bold">802</td>
+                <td class="px-4 py-3 text-right text-red-700 font-bold">-48</td>
+                <td class="px-4 py-3 text-right font-bold text-yellow-700">94.4%</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Below Target</span>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50 bg-yellow-50">
+                <td class="px-4 py-3 font-medium">SZ-01 (CN)</td>
+                <td class="px-4 py-3 text-right">150</td>
+                <td class="px-4 py-3 text-right">150</td>
+                <td class="px-4 py-3 text-right">0</td>
+                <td class="px-4 py-3 text-right font-bold">150</td>
+                <td class="px-4 py-3 text-right text-green-700">0</td>
+                <td class="px-4 py-3 text-right font-bold text-green-700">100%</td>
+                <td class="px-4 py-3">
+                  <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✅ Perfect</span>
+                </td>
+              </tr>
+              <tr class="bg-slate-100 font-bold">
+                <td class="px-4 py-3">Total</td>
+                <td class="px-4 py-3 text-right">2,450</td>
+                <td class="px-4 py-3 text-right">2,352</td>
+                <td class="px-4 py-3 text-right">45</td>
+                <td class="px-4 py-3 text-right">2,397</td>
+                <td class="px-4 py-3 text-right text-red-700">-53</td>
+                <td class="px-4 py-3 text-right text-lg text-green-700">97.8%</td>
+                <td class="px-4 py-3"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+          <div class="text-xs font-semibold text-yellow-900 mb-2">⚠️ Action Required</div>
+          <div class="text-sm text-yellow-900">VN-02 site has a 48-person shortage (5.6% below target). Recommend recruiting additional temp workers or shifting capacity to WF for critical programs.</div>
+        </div>
+      </div>
+
+      <!-- By Shift -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Labor Distribution by Shift</div>
+        
+        <div class="grid grid-cols-3 gap-4">
+          <div class="border rounded-lg p-4">
+            <div class="text-xs text-slate-600 font-semibold mb-2">Day Shift (7am - 7pm)</div>
+            <div class="text-3xl font-bold text-slate-900 mb-2">1,450</div>
+            <div class="flex items-center gap-2 text-xs">
+              <div class="flex-1 bg-slate-200 rounded-full h-2">
+                <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+              </div>
+              <span class="text-green-700 font-semibold">98%</span>
+            </div>
+            <div class="text-xs text-slate-600 mt-2">Required: 1,480</div>
+          </div>
+
+          <div class="border rounded-lg p-4">
+            <div class="text-xs text-slate-600 font-semibold mb-2">Night Shift (7pm - 7am)</div>
+            <div class="text-3xl font-bold text-slate-900 mb-2">780</div>
+            <div class="flex items-center gap-2 text-xs">
+              <div class="flex-1 bg-slate-200 rounded-full h-2">
+                <div class="bg-yellow-500 h-2 rounded-full" style="width: 93%"></div>
+              </div>
+              <span class="text-yellow-700 font-semibold">93%</span>
+            </div>
+            <div class="text-xs text-slate-600 mt-2">Required: 840</div>
+          </div>
+
+          <div class="border rounded-lg p-4">
+            <div class="text-xs text-slate-600 font-semibold mb-2">Weekend Shift (Sat-Sun)</div>
+            <div class="text-3xl font-bold text-slate-900 mb-2">167</div>
+            <div class="flex items-center gap-2 text-xs">
+              <div class="flex-1 bg-slate-200 rounded-full h-2">
+                <div class="bg-red-500 h-2 rounded-full" style="width: 64%"></div>
+              </div>
+              <span class="text-red-700 font-semibold">64%</span>
+            </div>
+            <div class="text-xs text-slate-600 mt-2">Required: 260</div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+          <div class="text-xs font-semibold text-red-900 mb-2">🔴 Critical Shortage</div>
+          <div class="text-sm text-red-900">Weekend shift is significantly under-staffed (36% shortage). This impacts ability to run accelerated production schedules. Immediate action required.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 7. Campus Readiness
+function renderCampusReadiness() {
+  const html = `
+    <div class="space-y-4">
+      <!-- Overview -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Campus Readiness — Location & Space Utilization</div>
+        <div class="text-sm text-slate-600 mb-4">Monitor program distribution across campuses and facility utilization</div>
+
+        <!-- Summary Metrics -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Total Campuses</div>
+            <div class="text-4xl font-bold text-blue-700">4</div>
+            <div class="text-xs text-slate-600 mt-1">Active locations</div>
+          </div>
+          <div class="bg-purple-50 border-2 border-purple-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Total Buildings</div>
+            <div class="text-4xl font-bold text-purple-700">12</div>
+            <div class="text-xs text-slate-600 mt-1">Production facilities</div>
+          </div>
+          <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Avg Utilization</div>
+            <div class="text-4xl font-bold text-yellow-700 mb-1">78%</div>
+            <div class="inline-block px-2 py-1 bg-yellow-100 border border-yellow-300 rounded text-xs font-semibold text-yellow-800">MODERATE</div>
+          </div>
+          <div class="bg-green-50 border-2 border-green-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Available Capacity</div>
+            <div class="text-4xl font-bold text-green-700">22%</div>
+            <div class="text-xs text-slate-600 mt-1">For expansion</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campus Distribution -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Program Distribution by Campus</div>
+
+        <div class="space-y-4">
+          <!-- WF Campus (Wuxi, China) -->
+          <div class="border-2 border-blue-300 rounded-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-100 to-indigo-100 px-4 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-lg text-slate-900">WF Campus (Wuxi, China)</div>
+                <div class="text-sm text-slate-600">Primary production site for Product A & C</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-blue-700">82%</div>
+                <div class="text-xs text-slate-600">Utilization</div>
+              </div>
+            </div>
+
+            <div class="p-4">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Building</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Floor</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Programs</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Floor Space (m²)</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Utilization</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building A</td>
+                    <td class="px-3 py-2">F1, F2</td>
+                    <td class="px-3 py-2">Product A (SMT, Assembly)</td>
+                    <td class="px-3 py-2 text-right">12,500</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">85%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building A</td>
+                    <td class="px-3 py-2">F3</td>
+                    <td class="px-3 py-2">Product A (Test, Pack)</td>
+                    <td class="px-3 py-2 text-right">6,800</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-yellow-500 h-2 rounded-full" style="width: 92%"></div>
+                        </div>
+                        <span class="font-semibold text-yellow-700">92%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building B</td>
+                    <td class="px-3 py-2">F1-F3</td>
+                    <td class="px-3 py-2">Product C (Full line)</td>
+                    <td class="px-3 py-2 text-right">18,200</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">78%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- VN-02 Campus (Vietnam) -->
+          <div class="border-2 border-purple-300 rounded-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-100 to-pink-100 px-4 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-lg text-slate-900">VN-02 Campus (Ho Chi Minh, Vietnam)</div>
+                <div class="text-sm text-slate-600">Secondary production site for Product A</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-purple-700">68%</div>
+                <div class="text-xs text-slate-600">Utilization</div>
+              </div>
+            </div>
+
+            <div class="p-4">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Building</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Floor</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Programs</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Floor Space (m²)</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Utilization</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building VN-1</td>
+                    <td class="px-3 py-2">F1, F2</td>
+                    <td class="px-3 py-2">Product A (Assembly, Test)</td>
+                    <td class="px-3 py-2 text-right">9,500</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 72%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">72%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building VN-2</td>
+                    <td class="px-3 py-2">F1</td>
+                    <td class="px-3 py-2">Warehouse & Logistics</td>
+                    <td class="px-3 py-2 text-right">5,200</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 64%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">64%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SZ Campus (Shenzhen, China) -->
+          <div class="border-2 border-green-300 rounded-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-lg text-slate-900">SZ-01 Campus (Shenzhen, China)</div>
+                <div class="text-sm text-slate-600">R&D and pilot production</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-green-700">55%</div>
+                <div class="text-xs text-slate-600">Utilization</div>
+              </div>
+            </div>
+
+            <div class="p-4">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Building</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Floor</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Programs</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Floor Space (m²)</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Utilization</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building SZ-A</td>
+                    <td class="px-3 py-2">F2</td>
+                    <td class="px-3 py-2">Product B (NPI), Product D (Pilot)</td>
+                    <td class="px-3 py-2 text-right">4,200</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 55%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">55%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building SZ-A</td>
+                    <td class="px-3 py-2">F3</td>
+                    <td class="px-3 py-2">Lab & Testing facilities</td>
+                    <td class="px-3 py-2 text-right">3,800</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-green-500 h-2 rounded-full" style="width: 55%"></div>
+                        </div>
+                        <span class="font-semibold text-green-700">55%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MX Campus (Mexico) -->
+          <div class="border-2 border-orange-300 rounded-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-100 to-red-100 px-4 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-lg text-slate-900">MX-03 Campus (Guadalajara, Mexico)</div>
+                <div class="text-sm text-slate-600">Americas production hub</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-orange-700">88%</div>
+                <div class="text-xs text-slate-600">Utilization</div>
+              </div>
+            </div>
+
+            <div class="p-4">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Building</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Floor</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-700">Programs</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Floor Space (m²)</th>
+                    <th class="px-3 py-2 text-right font-semibold text-slate-700">Utilization</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50 bg-yellow-50">
+                    <td class="px-3 py-2 font-medium">Building M-1</td>
+                    <td class="px-3 py-2">F1-F2</td>
+                    <td class="px-3 py-2">Product B (Full line)</td>
+                    <td class="px-3 py-2 text-right">11,200</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-yellow-500 h-2 rounded-full" style="width: 88%"></div>
+                        </div>
+                        <span class="font-semibold text-yellow-700">88%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-3 py-2 font-medium">Building M-2</td>
+                    <td class="px-3 py-2">F1</td>
+                    <td class="px-3 py-2">Final Assembly & Pack</td>
+                    <td class="px-3 py-2 text-right">6,500</td>
+                    <td class="px-3 py-2 text-right">
+                      <div class="flex items-center gap-2 justify-end">
+                        <div class="w-20 bg-slate-200 rounded-full h-2">
+                          <div class="bg-yellow-500 h-2 rounded-full" style="width: 88%"></div>
+                        </div>
+                        <span class="font-semibold text-yellow-700">88%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">Campus Utilization Insights</div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-green-50 border-l-4 border-green-500 rounded p-4">
+            <div class="text-xs font-semibold text-green-900 mb-2">✅ Expansion Opportunity</div>
+            <div class="text-sm text-green-900">VN-02 and SZ-01 campuses have significant available capacity (32-45%). Consider shifting future programs to these sites to balance utilization.</div>
+          </div>
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded p-4">
+            <div class="text-xs font-semibold text-yellow-900 mb-2">⚠️ Capacity Constraint</div>
+            <div class="text-sm text-yellow-900">WF Building A F3 (Test/Pack) is at 92% utilization. Near capacity limit - may become bottleneck for Product A scale-up.</div>
+          </div>
+          <div class="bg-blue-50 border-l-4 border-blue-500 rounded p-4">
+            <div class="text-xs font-semibold text-blue-900 mb-2">💡 Optimization</div>
+            <div class="text-sm text-blue-900">MX-03 campus is well-utilized (88%) but has room for 12% growth. Ideal for Americas market expansion.</div>
+          </div>
+          <div class="bg-purple-50 border-l-4 border-purple-500 rounded p-4">
+            <div class="text-xs font-semibold text-purple-900 mb-2">📊 Planning</div>
+            <div class="text-sm text-purple-900">Overall campus utilization is 78% - healthy balance between productivity and flexibility for new program ramps.</div>
+          </div>
         </div>
       </div>
     </div>
