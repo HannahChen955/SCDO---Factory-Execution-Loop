@@ -2082,10 +2082,25 @@ function renderHomeV3() {
 // NEW PROGRAM PAGES
 // ========================================
 
+// Helper function to get current week's Monday 8am
+function getWeekMondayCutoff() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust if Sunday
+  const monday = new Date(now.setDate(diff));
+  monday.setHours(8, 0, 0, 0);
+
+  // Format: "Jan 20, 2026 8:00 AM"
+  const options = { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+  return monday.toLocaleString('en-US', options);
+}
+
 // 1. Delivery Command Center
 function renderDeliveryCommandCenter() {
+  const cutoffTime = getWeekMondayCutoff();
+
   const html = `
-    <!-- Scenario Focus -->
+    <!-- Scenario Focus with Cutoff Time -->
     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
       <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -2094,7 +2109,10 @@ function renderDeliveryCommandCenter() {
         </div>
         <div class="text-right">
           <div class="text-xs text-slate-600 font-semibold">Scope</div>
-          <div class="text-sm font-bold text-blue-700">Product A · Total · 2026-W04</div>
+          <div class="text-sm font-bold text-blue-700 mb-2">Product A · Total · 2026-W04</div>
+          <div class="text-xs text-slate-500 bg-white rounded px-2 py-1 border">
+            📅 Data Cut-off: <span class="font-semibold text-slate-700">${cutoffTime}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2144,7 +2162,7 @@ function renderDeliveryCommandCenter() {
       <div class="text-lg font-bold text-slate-900 mb-3">Completion Index</div>
       <div class="text-sm text-slate-600 mb-4">Key metrics showing progress and resource utilization</div>
 
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-5 gap-3">
         <!-- Ex-F to Supply Commit -->
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
           <div class="text-xs font-semibold text-slate-700 mb-2">Ex-F to Supply Commit</div>
@@ -2164,6 +2182,20 @@ function renderDeliveryCommandCenter() {
           <div class="text-xs font-semibold text-slate-700 mb-2">Labor Fulfillment</div>
           <div class="text-4xl font-bold text-green-700 mb-1">96%</div>
           <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">EXCELLENT</div>
+        </div>
+
+        <!-- Cum Output -->
+        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Cum Output</div>
+          <div class="text-3xl font-bold text-blue-700 mb-1">1.76M</div>
+          <div class="inline-block px-2 py-1 bg-blue-100 border border-blue-300 rounded text-xs font-semibold text-blue-800">62.8% OF TARGET</div>
+        </div>
+
+        <!-- Cum Shipment -->
+        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Cum Shipment</div>
+          <div class="text-3xl font-bold text-purple-700 mb-1">1.68M</div>
+          <div class="inline-block px-2 py-1 bg-purple-100 border border-purple-300 rounded text-xs font-semibold text-purple-800">95.5% SHIPPED</div>
         </div>
       </div>
     </div>
