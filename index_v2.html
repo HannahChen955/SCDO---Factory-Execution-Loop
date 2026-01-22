@@ -28,6 +28,10 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button onclick="toggleChatbot()" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm" title="AI Data Assistant">
+          <span class="text-base">🤖</span>
+          <span>Chat</span>
+        </button>
         <label class="flex items-center gap-1.5 text-xs cursor-pointer">
           <input type="checkbox" id="prdModeToggle" class="rounded">
           <span>PRD Mode</span>
@@ -286,6 +290,90 @@ Or paste CSV, JSON, or any structured data..."></textarea>
     </div>
   </div>
 
+  <!-- Chatbot Panel -->
+  <div id="chatbotBackdrop" class="no-print hidden fixed inset-0 bg-black/30 z-80" onclick="toggleChatbot()"></div>
+  <div id="chatbotPanel" class="no-print hidden fixed right-0 top-0 h-full w-[28rem] bg-white shadow-2xl z-85 flex flex-col transform transition-transform duration-300">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl">🤖</div>
+        <div>
+          <div class="font-bold text-base">AI Data Assistant</div>
+          <div class="text-xs text-blue-100">Ask about system data and metrics</div>
+        </div>
+      </div>
+      <button onclick="toggleChatbot()" class="text-white hover:text-slate-200 text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-slate-50 border-b p-3">
+      <div class="text-xs font-semibold text-slate-600 mb-2">Quick Questions:</div>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="askQuickQuestion('What is the current weekly yield?')" class="px-3 py-1 bg-white border rounded-full text-xs hover:bg-blue-50 hover:border-blue-300 transition-colors">
+          Weekly Yield?
+        </button>
+        <button onclick="askQuickQuestion('Show me completion status')" class="px-3 py-1 bg-white border rounded-full text-xs hover:bg-blue-50 hover:border-blue-300 transition-colors">
+          Completion Status?
+        </button>
+        <button onclick="askQuickQuestion('What are the critical bottlenecks?')" class="px-3 py-1 bg-white border rounded-full text-xs hover:bg-blue-50 hover:border-blue-300 transition-colors">
+          Bottlenecks?
+        </button>
+        <button onclick="askQuickQuestion('FV budget status?')" class="px-3 py-1 bg-white border rounded-full text-xs hover:bg-blue-50 hover:border-blue-300 transition-colors">
+          FV Budget?
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+      <!-- Welcome Message -->
+      <div class="flex gap-3">
+        <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm">🤖</div>
+        <div class="flex-1">
+          <div class="bg-white rounded-2xl rounded-tl-none shadow-sm border p-3">
+            <div class="text-sm text-slate-800">
+              Hi! I'm your AI Data Assistant. I can help you query the latest data in the system.
+              <br><br>
+              Try asking me about:
+              <ul class="list-disc pl-5 mt-2 space-y-1 text-xs text-slate-600">
+                <li>Current production metrics</li>
+                <li>Lead-time performance</li>
+                <li>Factory variance costs</li>
+                <li>Weekly summaries</li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-xs text-slate-500 mt-1 ml-2">Just now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="border-t bg-white p-4">
+      <div class="flex gap-2">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Ask about system data..."
+          class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onkeypress="if(event.key === 'Enter') sendChatMessage()"
+        />
+        <button
+          onclick="sendChatMessage()"
+          class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+        >
+          <span>Send</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="text-xs text-slate-500 mt-2">
+        💡 Tip: Ask specific questions for better results
+      </div>
+    </div>
+  </div>
+
   <!-- AI Drawer (Right Sidebar for AI Responses) -->
   <div id="aiDrawerBackdrop" class="no-print hidden fixed inset-0 bg-black/20 z-70" onclick="closeAIDrawer()"></div>
   <div id="aiDrawer" class="no-print hidden fixed right-0 top-0 h-full w-[32rem] bg-white shadow-2xl z-75 overflow-y-auto transform transition-transform duration-300">
@@ -302,6 +390,7 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="./ai_system.js"></script>
   <script src="./data_update_system.js"></script>
+  <script src="./chatbot_system.js"></script>
   <script src="./app_v2.js"></script>
 </body>
 </html>

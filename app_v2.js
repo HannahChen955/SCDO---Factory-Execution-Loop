@@ -2105,15 +2105,15 @@ function renderDeliveryCommandCenter() {
         </div>
         <div>
           <div class="text-xs text-slate-600 font-semibold mb-1">EOM (End of Manufacturing)</div>
-          <div class="text-2xl font-bold text-slate-900">2026-11</div>
+          <div class="text-lg text-slate-900">2026-11</div>
         </div>
         <div>
           <div class="text-xs text-slate-600 font-semibold mb-1">Primary Build Sites</div>
-          <div class="text-2xl font-bold text-slate-900">WF (CN), VN-02 (VN)</div>
+          <div class="text-lg text-slate-900">WF (CN), VN-02 (VN)</div>
         </div>
         <div>
           <div class="text-xs text-slate-600 font-semibold mb-1">Weekly Capacity (Nominal)</div>
-          <div class="text-2xl font-bold text-slate-900">150k / week</div>
+          <div class="text-lg text-slate-900">150k / week</div>
         </div>
       </div>
 
