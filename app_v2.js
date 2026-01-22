@@ -245,7 +245,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
-  const isProgramWorkspace = ["home", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
+  const isProgramWorkspace = ["home", "delivery", "production-plan", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
   const sidebar = $("sidebar");
@@ -323,7 +323,20 @@ function render() {
       renderPortfolio();
       break;
     case "home":
-      renderHomeV3();
+    case "delivery":
+      renderDeliveryCommandCenter();
+      break;
+    case "production-plan":
+      renderProductionPlan();
+      break;
+    case "mfg-leadtime":
+      renderManufacturingLeadtime();
+      break;
+    case "bto-cto-leadtime":
+      renderBTOCTOLeadtime();
+      break;
+    case "fv-management":
+      renderFVManagement();
       break;
     case "signals":
       renderSignals();
@@ -2054,6 +2067,681 @@ function renderHomeV3() {
         <div class="text-xs text-amber-800"><strong>Rule:</strong> ${pacingGuardrail.rule}</div>
       </div>
     ` : ''}
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// ========================================
+// NEW PROGRAM PAGES
+// ========================================
+
+// 1. Delivery Command Center
+function renderDeliveryCommandCenter() {
+  const html = `
+    <!-- Scenario Focus -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="text-lg font-bold text-slate-900 mb-1">Scenario Focus: Protect W04 Commit (Delivery Risk + Yield Drift)</div>
+          <div class="text-sm text-slate-700">Material constraint + yield drift are pressuring commit confidence. Prioritize actions that change outcomes within 48 hours.</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-600 font-semibold">Scope</div>
+          <div class="text-sm font-bold text-blue-700">Product A · Total · 2026-W04</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Snapshot -->
+    <div class="bg-white border rounded-xl p-6 mb-4">
+      <div class="text-lg font-bold text-slate-900 mb-3">Product Snapshot — Manufacturing Footprint</div>
+      <div class="text-sm text-slate-600 mb-4">A stable view of where and how this product is built. Use this to sanity-check capacity and pacing decisions.</div>
+
+      <div class="grid grid-cols-4 gap-4 mb-4">
+        <div>
+          <div class="text-xs text-slate-600 font-semibold mb-1">FY Volume (EoY)</div>
+          <div class="text-2xl font-bold text-slate-900">2.8M units</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-600 font-semibold mb-1">EOM (End of Manufacturing)</div>
+          <div class="text-2xl font-bold text-slate-900">2026-11</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-600 font-semibold mb-1">Primary Build Sites</div>
+          <div class="text-2xl font-bold text-slate-900">WF (CN), VN-02 (VN)</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-600 font-semibold mb-1">Weekly Capacity (Nominal)</div>
+          <div class="text-2xl font-bold text-slate-900">150k / week</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 border rounded-lg p-4">
+        <div class="text-xs font-semibold text-slate-700 mb-2">Lines & UPH</div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>WF (CN): 3 lines · 110–135 UPH</div>
+          <div>VN-02 (VN): 2 lines · 95–120 UPH</div>
+        </div>
+      </div>
+
+      <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <div class="text-xs font-semibold text-amber-900 mb-1">Notable Constraints:</div>
+        <div class="text-sm text-amber-800">Test lane shared across SKUs · IC-77 is single-source · Holiday labor availability impacts W05–W07</div>
+      </div>
+
+      <div class="text-xs text-slate-500 mt-3">Footprint metrics change infrequently; weekly execution signals update daily.</div>
+    </div>
+
+    <!-- Completion Index -->
+    <div class="bg-white border rounded-xl p-6 mb-4">
+      <div class="text-lg font-bold text-slate-900 mb-3">Completion Index</div>
+      <div class="text-sm text-slate-600 mb-4">Key metrics showing progress and resource utilization</div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <!-- Ex-F to Supply Commit -->
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Ex-F to Supply Commit</div>
+          <div class="text-4xl font-bold text-green-700 mb-1">94%</div>
+          <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">ON TRACK</div>
+        </div>
+
+        <!-- Capacity Utilization -->
+        <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Capacity Utilization</div>
+          <div class="text-4xl font-bold text-yellow-700 mb-1">87%</div>
+          <div class="inline-block px-2 py-1 bg-yellow-100 border border-yellow-300 rounded text-xs font-semibold text-yellow-800">MODERATE</div>
+        </div>
+
+        <!-- Labor Fulfillment -->
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Labor Fulfillment</div>
+          <div class="text-4xl font-bold text-green-700 mb-1">96%</div>
+          <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">EXCELLENT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Summary Table -->
+    <div class="bg-white border rounded-xl p-6">
+      <div class="text-lg font-bold text-slate-900 mb-3">Weekly Production Summary</div>
+      <div class="text-sm text-slate-600 mb-4">Highlighting weekly status and cumulative progress</div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">Metric</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-blue-50">Weekly</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">Cumulative</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Input</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">145,200</td>
+              <td class="px-4 py-3 text-right text-slate-700">1,824,500</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">97% of target</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Output</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">138,400</td>
+              <td class="px-4 py-3 text-right text-slate-700">1,756,800</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">92% of target</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Forecast</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">150,000</td>
+              <td class="px-4 py-3 text-right text-slate-700">1,875,000</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded">Baseline plan</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Material Supply (Cum)</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">—</td>
+              <td class="px-4 py-3 text-right text-slate-700">1,845,000</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">98% coverage</span>
+              </td>
+            </tr>
+            <tr class="bg-slate-50 hover:bg-slate-100">
+              <td class="px-4 py-3 font-bold text-slate-900">Yield (FPY)</td>
+              <td class="px-4 py-3 text-right bg-blue-100 font-bold text-blue-900">94.2%</td>
+              <td class="px-4 py-3 text-right text-slate-700">96.8%</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">⚠️ Below target (-3.3%)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+        <div class="text-xs font-semibold text-blue-900 mb-1">Key Insight</div>
+        <div class="text-sm text-blue-900">Weekly yield drift (-3.3%) at Test station is impacting output. Prioritize re-test lane capacity and containment actions to protect W04 commit.</div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 2. Production Plan
+function renderProductionPlan() {
+  const html = `
+    <div class="bg-white border rounded-xl p-6">
+      <div class="text-lg font-bold text-slate-900 mb-3">Production Plan</div>
+      <div class="text-sm text-slate-600 mb-4">Interactive planning tool - update conditions to auto-generate production schedule</div>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+        <div class="text-6xl mb-4">🏗️</div>
+        <div class="text-xl font-bold text-slate-900 mb-2">Production Planning Tool</div>
+        <div class="text-sm text-slate-600 mb-4">Configure parameters and generate optimized production schedules</div>
+        <div class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">Coming Soon</div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-3 gap-4">
+        <div class="bg-slate-50 border rounded-lg p-4">
+          <div class="text-xs text-slate-600 font-semibold mb-2">Planning Inputs</div>
+          <ul class="text-xs text-slate-700 space-y-1">
+            <li>• Demand forecast</li>
+            <li>• Capacity constraints</li>
+            <li>• Material availability</li>
+            <li>• Labor schedule</li>
+          </ul>
+        </div>
+        <div class="bg-slate-50 border rounded-lg p-4">
+          <div class="text-xs text-slate-600 font-semibold mb-2">Auto-generation</div>
+          <ul class="text-xs text-slate-700 space-y-1">
+            <li>• Weekly build plan</li>
+            <li>• Line allocation</li>
+            <li>• WIP scheduling</li>
+            <li>• Buffer recommendations</li>
+          </ul>
+        </div>
+        <div class="bg-slate-50 border rounded-lg p-4">
+          <div class="text-xs text-slate-600 font-semibold mb-2">Outputs</div>
+          <ul class="text-xs text-slate-700 space-y-1">
+            <li>• Production schedule</li>
+            <li>• Resource allocation</li>
+            <li>• Risk assessment</li>
+            <li>• Constraint analysis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 3. Manufacturing Lead-time
+function renderManufacturingLeadtime() {
+  const html = `
+    <div class="bg-white border rounded-xl p-6 mb-4">
+      <div class="text-lg font-bold text-slate-900 mb-3">Manufacturing Lead-time Overview</div>
+      <div class="text-sm text-slate-600 mb-4">Complete weekly lead-time from material receipt to warehouse</div>
+
+      <!-- Timeline Chart -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border rounded-xl p-6 mb-6">
+        <div class="text-sm font-semibold text-slate-700 mb-4">End-to-End Manufacturing Timeline (Weekly Average)</div>
+
+        <!-- Timeline -->
+        <div class="relative">
+          <!-- Timeline bar -->
+          <div class="flex items-center mb-4">
+            <div class="flex-1 h-12 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg flex items-center justify-center text-white font-bold">
+              Total: 28 Days
+            </div>
+          </div>
+
+          <!-- Process breakdown -->
+          <div class="grid grid-cols-6 gap-2 text-xs">
+            <div class="bg-blue-100 border border-blue-300 rounded p-2 text-center">
+              <div class="font-semibold text-blue-900">MIH</div>
+              <div class="text-blue-700">4 days</div>
+            </div>
+            <div class="bg-indigo-100 border border-indigo-300 rounded p-2 text-center">
+              <div class="font-semibold text-indigo-900">SMT Input</div>
+              <div class="text-indigo-700">3 days</div>
+            </div>
+            <div class="bg-purple-100 border border-purple-300 rounded p-2 text-center">
+              <div class="font-semibold text-purple-900">SMT Output</div>
+              <div class="text-purple-700">6 days</div>
+            </div>
+            <div class="bg-pink-100 border border-pink-300 rounded p-2 text-center">
+              <div class="font-semibold text-pink-900">FAT Input</div>
+              <div class="text-pink-700">5 days</div>
+            </div>
+            <div class="bg-rose-100 border border-rose-300 rounded p-2 text-center">
+              <div class="font-semibold text-rose-900">Packing</div>
+              <div class="text-rose-700">7 days</div>
+            </div>
+            <div class="bg-red-100 border border-red-300 rounded p-2 text-center">
+              <div class="font-semibold text-red-900">WH</div>
+              <div class="text-red-700">3 days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Process Breakdown Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">Process Stage</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard (Days)</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual (Days)</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">Variance</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">MIH (Material In-House)</td>
+              <td class="px-4 py-3 text-right">3.0</td>
+              <td class="px-4 py-3 text-right font-bold">4.2</td>
+              <td class="px-4 py-3 text-right text-red-700 font-semibold">+1.2</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">SMT Input</td>
+              <td class="px-4 py-3 text-right">2.5</td>
+              <td class="px-4 py-3 text-right font-bold">3.1</td>
+              <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.6</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">SMT Output</td>
+              <td class="px-4 py-3 text-right">5.0</td>
+              <td class="px-4 py-3 text-right font-bold">5.8</td>
+              <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.8</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">FAT Input</td>
+              <td class="px-4 py-3 text-right">4.0</td>
+              <td class="px-4 py-3 text-right font-bold">5.2</td>
+              <td class="px-4 py-3 text-right text-red-700 font-semibold">+1.2</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">🔴 Critical</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">Packing</td>
+              <td class="px-4 py-3 text-right">6.0</td>
+              <td class="px-4 py-3 text-right font-bold">6.9</td>
+              <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.9</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium">WH (Warehouse)</td>
+              <td class="px-4 py-3 text-right">2.5</td>
+              <td class="px-4 py-3 text-right font-bold">2.8</td>
+              <td class="px-4 py-3 text-right text-yellow-700 font-semibold">+0.3</td>
+              <td class="px-4 py-3">
+                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✅ Acceptable</span>
+              </td>
+            </tr>
+            <tr class="bg-slate-100 font-bold">
+              <td class="px-4 py-3">Total Lead-time</td>
+              <td class="px-4 py-3 text-right">23.0</td>
+              <td class="px-4 py-3 text-right text-lg">28.0</td>
+              <td class="px-4 py-3 text-right text-red-700 text-lg">+5.0</td>
+              <td class="px-4 py-3"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+        <div class="text-xs font-semibold text-red-900 mb-2">⚠️ Critical Bottleneck Identified</div>
+        <div class="text-sm text-red-900 mb-2"><strong>FAT Input stage:</strong> +1.2 days variance (30% over standard)</div>
+        <div class="text-xs text-red-800"><strong>Improvement Actions:</strong> Increase test capacity, optimize changeover time, add weekend shift for critical SKUs</div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 4. BTO/CTO Lead-time  
+function renderBTOCTOLeadtime() {
+  const html = `
+    <div class="space-y-4">
+      <!-- BTO Lead-time -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">BTO (Build-to-Order) Lead-time</div>
+        <div class="text-sm text-slate-600 mb-4">Standard vs actual performance with improvement areas</div>
+
+        <div class="grid grid-cols-2 gap-6 mb-4">
+          <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Standard BTO Lead-time</div>
+            <div class="text-4xl font-bold text-blue-700">18 days</div>
+          </div>
+          <div class="bg-red-50 border-2 border-red-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Actual BTO Lead-time</div>
+            <div class="text-4xl font-bold text-red-700">23 days</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">BTO Stage</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Gap</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Improvement Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Order Processing</td>
+                <td class="px-4 py-3 text-right">1 day</td>
+                <td class="px-4 py-3 text-right font-bold">1.5 days</td>
+                <td class="px-4 py-3 text-right text-red-700">+0.5</td>
+                <td class="px-4 py-3 text-xs">Automate order validation</td>
+              </tr>
+              <tr class="hover:bg-slate-50 bg-red-50">
+                <td class="px-4 py-3 font-medium">Material Kitting</td>
+                <td class="px-4 py-3 text-right">2 days</td>
+                <td class="px-4 py-3 text-right font-bold">4 days</td>
+                <td class="px-4 py-3 text-right text-red-700 font-bold">+2.0</td>
+                <td class="px-4 py-3 text-xs font-semibold text-red-700">🔴 Pre-stage critical parts, optimize warehouse layout</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Assembly</td>
+                <td class="px-4 py-3 text-right">8 days</td>
+                <td class="px-4 py-3 text-right font-bold">10 days</td>
+                <td class="px-4 py-3 text-right text-red-700">+2.0</td>
+                <td class="px-4 py-3 text-xs">Reduce changeover time, add flex capacity</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Testing & QC</td>
+                <td class="px-4 py-3 text-right">4 days</td>
+                <td class="px-4 py-3 text-right font-bold">4.5 days</td>
+                <td class="px-4 py-3 text-right text-yellow-700">+0.5</td>
+                <td class="px-4 py-3 text-xs">Parallel testing for high-volume SKUs</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Packing & Shipping</td>
+                <td class="px-4 py-3 text-right">3 days</td>
+                <td class="px-4 py-3 text-right font-bold">3 days</td>
+                <td class="px-4 py-3 text-right text-green-700">0.0</td>
+                <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CTO Lead-time -->
+      <div class="bg-white border rounded-xl p-6">
+        <div class="text-lg font-bold text-slate-900 mb-3">CTO (Configure-to-Order) Lead-time</div>
+        <div class="text-sm text-slate-600 mb-4">Standard vs actual performance with improvement areas</div>
+
+        <div class="grid grid-cols-2 gap-6 mb-4">
+          <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Standard CTO Lead-time</div>
+            <div class="text-4xl font-bold text-blue-700">12 days</div>
+          </div>
+          <div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
+            <div class="text-xs font-semibold text-slate-700 mb-2">Actual CTO Lead-time</div>
+            <div class="text-4xl font-bold text-yellow-700">14 days</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">CTO Stage</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700">Gap</th>
+                <th class="px-4 py-3 text-left font-semibold text-slate-700">Improvement Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Configuration Design</td>
+                <td class="px-4 py-3 text-right">1 day</td>
+                <td class="px-4 py-3 text-right font-bold">1 day</td>
+                <td class="px-4 py-3 text-right text-green-700">0.0</td>
+                <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
+              </tr>
+              <tr class="hover:bg-slate-50 bg-yellow-50">
+                <td class="px-4 py-3 font-medium">Part Sourcing</td>
+                <td class="px-4 py-3 text-right">3 days</td>
+                <td class="px-4 py-3 text-right font-bold">4 days</td>
+                <td class="px-4 py-3 text-right text-yellow-700 font-bold">+1.0</td>
+                <td class="px-4 py-3 text-xs font-semibold text-yellow-700">⚠️ Buffer stock for common configs</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Custom Assembly</td>
+                <td class="px-4 py-3 text-right">5 days</td>
+                <td class="px-4 py-3 text-right font-bold">6 days</td>
+                <td class="px-4 py-3 text-right text-yellow-700">+1.0</td>
+                <td class="px-4 py-3 text-xs">Dedicated CTO line, reduce setup time</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Final Test</td>
+                <td class="px-4 py-3 text-right">2 days</td>
+                <td class="px-4 py-3 text-right font-bold">2 days</td>
+                <td class="px-4 py-3 text-right text-green-700">0.0</td>
+                <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Fulfillment</td>
+                <td class="px-4 py-3 text-right">1 day</td>
+                <td class="px-4 py-3 text-right font-bold">1 day</td>
+                <td class="px-4 py-3 text-right text-green-700">0.0</td>
+                <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("content").innerHTML = html;
+}
+
+// 5. FV Management
+function renderFVManagement() {
+  const html = `
+    <div class="bg-white border rounded-xl p-6">
+      <div class="text-lg font-bold text-slate-900 mb-3">FV (Factory Variance) Management</div>
+      <div class="text-sm text-slate-600 mb-4">Track factory variance costs by program and category - Budget vs Actual vs Negotiated</div>
+
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Total Budget (2026)</div>
+          <div class="text-3xl font-bold text-blue-700">$2.4M</div>
+        </div>
+        <div class="bg-red-50 border-2 border-red-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Claimed by CM</div>
+          <div class="text-3xl font-bold text-red-700">$3.8M</div>
+          <div class="text-xs text-red-600 font-semibold mt-1">+158% over budget</div>
+        </div>
+        <div class="bg-green-50 border-2 border-green-400 rounded-xl p-4 text-center">
+          <div class="text-xs font-semibold text-slate-700 mb-2">Final After Negotiation</div>
+          <div class="text-3xl font-bold text-green-700">$2.9M</div>
+          <div class="text-xs text-green-600 font-semibold mt-1">Saved $900K (24%)</div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="mb-6">
+        <div class="text-sm font-semibold text-slate-700 mb-3">By Category (2026 Annual)</div>
+
+        <div class="space-y-4">
+          <!-- VXR Category -->
+          <div class="border rounded-lg overflow-hidden">
+            <div class="bg-slate-100 px-4 py-2 font-semibold text-sm border-b">VXR (Stinson, Ventura)</div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">Program</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Budget</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Claimed by CM</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Final (Negotiated)</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Savings</th>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">vs Budget</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Stinson</td>
+                    <td class="px-4 py-2 text-right">$850K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$1,450K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$1,050K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$400K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+24% over</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Ventura</td>
+                    <td class="px-4 py-2 text-right">$620K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$980K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$710K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$270K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+15% over</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Wearables Category -->
+          <div class="border rounded-lg overflow-hidden">
+            <div class="bg-slate-100 px-4 py-2 font-semibold text-sm border-b">Wearables (Hypernova, Ceres)</div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">Program</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Budget</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Claimed by CM</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Final (Negotiated)</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Savings</th>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">vs Budget</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Hypernova</td>
+                    <td class="px-4 py-2 text-right">$480K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$720K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$550K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$170K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+15% over</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Ceres</td>
+                    <td class="px-4 py-2 text-right">$320K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$520K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$380K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$140K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+19% over</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Smart Glasses Category -->
+          <div class="border rounded-lg overflow-hidden">
+            <div class="bg-slate-100 px-4 py-2 font-semibold text-sm border-b">Smart Glasses (RBM 2.0, Sprize, Charging Case)</div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">Program</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Budget</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Claimed by CM</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Final (Negotiated)</th>
+                    <th class="px-4 py-2 text-right font-semibold text-slate-700">Savings</th>
+                    <th class="px-4 py-2 text-left font-semibold text-slate-700">vs Budget</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">RBM 2.0</td>
+                    <td class="px-4 py-2 text-right">$180K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$280K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$210K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$70K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+17% over</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Sprize</td>
+                    <td class="px-4 py-2 text-right">$90K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$145K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$105K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$40K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+17% over</span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">Charging Case</td>
+                    <td class="px-4 py-2 text-right">$60K</td>
+                    <td class="px-4 py-2 text-right font-bold text-red-700">$105K</td>
+                    <td class="px-4 py-2 text-right font-bold text-blue-700">$70K</td>
+                    <td class="px-4 py-2 text-right text-green-700 font-semibold">$35K</td>
+                    <td class="px-4 py-2">
+                      <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">+17% over</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Insights -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-green-50 border-l-4 border-green-500 rounded p-4">
+          <div class="text-xs font-semibold text-green-900 mb-2">💰 Negotiation Success</div>
+          <div class="text-sm text-green-900">Team successfully negotiated down $900K (24%) from initial CM claims, demonstrating strong cost control.</div>
+        </div>
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded p-4">
+          <div class="text-xs font-semibold text-yellow-900 mb-2">⚠️ Budget Pressure</div>
+          <div class="text-sm text-yellow-900">Final costs still 21% over budget ($2.9M vs $2.4M). Consider tighter variance controls and prevention strategies for next year.</div>
+        </div>
+      </div>
+    </div>
   `;
 
   $("content").innerHTML = html;
