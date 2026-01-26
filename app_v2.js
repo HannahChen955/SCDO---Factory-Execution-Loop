@@ -6798,15 +6798,358 @@ function renderWhitePaper() {
       <!-- Header -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h1 class="text-2xl font-bold text-slate-900">White Paper</h1>
-        <p class="text-sm text-slate-600 mt-1">Strategic documentation and analysis</p>
+        <p class="text-sm text-slate-600 mt-1">Enterprise Decision Operations (EDO) - System Overview & Development Roadmap</p>
       </div>
 
-      <!-- Content -->
-      <div class="bg-white rounded-xl shadow-sm p-12">
-        <div class="text-center">
-          <div class="text-6xl mb-4">📄</div>
-          <h3 class="text-xl font-semibold text-slate-900 mb-2">White Paper</h3>
-          <p class="text-slate-600">This page is under construction. Content will be added soon.</p>
+      <!-- Executive Summary -->
+      <div class="bg-white rounded-xl shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">📋</span>
+          Executive Summary
+        </h2>
+        <div class="prose prose-slate max-w-none">
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Enterprise Decision Operations (EDO) is an integrated internal decision support system designed to transform how our organization manages manufacturing operations and supply chain execution. Built on the foundation of Manufacturing Operations (MO) expertise, this platform addresses critical operational challenges through systematic data integration, standardization, and intelligent automation.
+          </p>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            This system serves multiple interconnected purposes: it automates external data integration from contract manufacturers and suppliers, standardizes metrics and indices across the organization to ensure data integrity, and completes the supply chain decision loop by connecting planning, execution, and performance monitoring in a unified environment.
+          </p>
+          <p class="text-slate-700 leading-relaxed">
+            Beyond operational efficiency, EDO represents our evolution toward intelligent workflow reconstruction. By consolidating critical operational data, key performance indicators (KPI), and decision support tools in one platform, we establish a comprehensive knowledge base that reduces manual work, enables AI-powered analysis and recommendations, and supports faster, data-driven decision-making across the manufacturing supply chain.
+          </p>
+        </div>
+      </div>
+
+      <!-- Core Objectives -->
+      <div class="bg-white rounded-xl shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">🎯</span>
+          Core Objectives
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-blue-600">🔗</span>
+              External Data Integration & Automation
+            </h3>
+            <p class="text-sm text-slate-600">
+              Automate data collection from contract manufacturers, suppliers, and logistics partners. Eliminate manual data entry and email-based processes, establishing real-time or near-real-time data pipelines through API integration and system connections.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-green-600">📊</span>
+              Data & Index Standardization
+            </h3>
+            <p class="text-sm text-slate-600">
+              Establish unified definitions for operational metrics, KPIs, and indices across all programs and sites. Ensure data integrity, consistency, and reliability through standardized calculation logic and validation rules.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-purple-600">🔄</span>
+              Supply Chain Decision Loop
+            </h3>
+            <p class="text-sm text-slate-600">
+              Complete the closed-loop system connecting demand forecasting, production planning, execution monitoring, shipment tracking, and performance analysis. Enable proactive decision-making through real-time visibility and constraint identification.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-orange-600">📈</span>
+              KPI Visualization & Performance Monitoring
+            </h3>
+            <p class="text-sm text-slate-600">
+              Provide intuitive, role-based dashboards presenting critical operational data and KPIs. Enable stakeholders at all levels to access relevant metrics, identify trends, and monitor performance against targets in real-time.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-indigo-600">⚡</span>
+              Intelligent Workflow Reconstruction
+            </h3>
+            <p class="text-sm text-slate-600">
+              Evolve beyond traditional MO processes by embedding intelligence into daily workflows. Automate routine tasks, standardize decision frameworks, and free team members to focus on strategic problem-solving and continuous improvement.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-pink-600">🤖</span>
+              AI-Powered Analysis & Recommendations
+            </h3>
+            <p class="text-sm text-slate-600">
+              Leverage AI capabilities to analyze operational data, identify patterns and anomalies, generate actionable recommendations, and suggest specific actions. Support decision-makers with data-driven insights and predictive analytics.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-teal-600">💬</span>
+              Knowledge Base & Chatbot Assistant
+            </h3>
+            <p class="text-sm text-slate-600">
+              Build an organizational knowledge repository accessible through natural language queries. Enable team members to quickly retrieve data, understand metrics, and access historical context without navigating multiple systems or files.
+            </p>
+          </div>
+
+          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
+            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+              <span class="text-red-600">⚙️</span>
+              System-Based Work Management
+            </h3>
+            <p class="text-sm text-slate-600">
+              Transform manual, ad-hoc processes into systematic, repeatable workflows managed through the platform. Reduce manual effort, minimize errors, and ensure consistency in operational execution and reporting.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Development Phases -->
+      <div class="bg-white rounded-xl shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">🚀</span>
+          Development Phases
+        </h2>
+        <div class="space-y-4">
+          <!-- Phase 1 -->
+          <div class="border-l-4 border-blue-500 pl-4 py-2">
+            <h3 class="font-semibold text-slate-900 mb-2">Phase 1: Foundation & Core Capabilities</h3>
+            <p class="text-sm text-slate-600 mb-3">
+              Establish the fundamental system architecture, data models, and core operational modules. Focus on manual data input with standardized templates and calculation engines.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div class="bg-blue-50 rounded p-3">
+                <div class="font-medium text-blue-900 mb-1">Delivery Command Center</div>
+                <div class="text-blue-700">Weekly shipment tracking, demand attainment monitoring, gap analysis, constraint identification</div>
+              </div>
+              <div class="bg-blue-50 rounded p-3">
+                <div class="font-medium text-blue-900 mb-1">Production Plan Engine</div>
+                <div class="text-blue-700">Site-level capacity planning, input/output modeling, ramp curve simulation, scenario analysis</div>
+              </div>
+              <div class="bg-blue-50 rounded p-3">
+                <div class="font-medium text-blue-900 mb-1">Portfolio Overview</div>
+                <div class="text-blue-700">Multi-program aggregation, cross-site visibility, executive summary dashboards</div>
+              </div>
+              <div class="bg-blue-50 rounded p-3">
+                <div class="font-medium text-blue-900 mb-1">Data Foundation</div>
+                <div class="text-blue-700">Aligned index definitions, data source mapping, calculation logic documentation</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="border-l-4 border-green-500 pl-4 py-2">
+            <h3 class="font-semibold text-slate-900 mb-2">Phase 2: External Integration & Automation</h3>
+            <p class="text-sm text-slate-600 mb-3">
+              Connect with external systems to automate data collection and reduce manual input. Establish API integrations with contract manufacturers, suppliers, and logistics providers.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div class="bg-green-50 rounded p-3">
+                <div class="font-medium text-green-900 mb-1">CM/Supplier API Integration</div>
+                <div class="text-green-700">Real-time production data, shipment updates, material availability from WMS/ERP/MES systems</div>
+              </div>
+              <div class="bg-green-50 rounded p-3">
+                <div class="font-medium text-green-900 mb-1">Logistics Integration</div>
+                <div class="text-green-700">Shipment tracking, delivery confirmation, transit visibility from 3PL systems</div>
+              </div>
+              <div class="bg-green-50 rounded p-3">
+                <div class="font-medium text-green-900 mb-1">Automated Data Validation</div>
+                <div class="text-green-700">Real-time data quality checks, anomaly detection, automatic reconciliation</div>
+              </div>
+              <div class="bg-green-50 rounded p-3">
+                <div class="font-medium text-green-900 mb-1">Alert & Notification System</div>
+                <div class="text-green-700">Proactive alerts for constraint triggers, delivery risks, performance deviations</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="border-l-4 border-purple-500 pl-4 py-2">
+            <h3 class="font-semibold text-slate-900 mb-2">Phase 3: Intelligence & Advanced Analytics</h3>
+            <p class="text-sm text-slate-600 mb-3">
+              Embed AI capabilities for predictive analytics, automated recommendations, and natural language interaction. Transform from reactive monitoring to proactive optimization.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div class="bg-purple-50 rounded p-3">
+                <div class="font-medium text-purple-900 mb-1">AI Chatbot Assistant</div>
+                <div class="text-purple-700">Natural language data queries, metric explanations, historical context retrieval</div>
+              </div>
+              <div class="bg-purple-50 rounded p-3">
+                <div class="font-medium text-purple-900 mb-1">Predictive Analytics</div>
+                <div class="text-purple-700">Demand forecasting, constraint prediction, delivery risk scoring, capacity optimization</div>
+              </div>
+              <div class="bg-purple-50 rounded p-3">
+                <div class="font-medium text-purple-900 mb-1">Automated Recommendations</div>
+                <div class="text-purple-700">Action suggestions for constraint mitigation, resource allocation, expedite decisions</div>
+              </div>
+              <div class="bg-purple-50 rounded p-3">
+                <div class="font-medium text-purple-900 mb-1">Knowledge Base</div>
+                <div class="text-purple-700">Searchable repository of decisions, issue resolutions, best practices, lessons learned</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="border-l-4 border-orange-500 pl-4 py-2">
+            <h3 class="font-semibold text-slate-900 mb-2">Phase 4: Ecosystem Expansion & Optimization</h3>
+            <p class="text-sm text-slate-600 mb-3">
+              Extend system capabilities to adjacent processes, establish advanced collaboration tools, and implement continuous optimization mechanisms.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div class="bg-orange-50 rounded p-3">
+                <div class="font-medium text-orange-900 mb-1">Upstream Planning Integration</div>
+                <div class="text-orange-700">Demand planning sync, S&OP integration, forecast accuracy tracking</div>
+              </div>
+              <div class="bg-orange-50 rounded p-3">
+                <div class="font-medium text-orange-900 mb-1">Quality & Yield Analytics</div>
+                <div class="text-orange-700">Defect tracking, yield analysis, root cause identification, continuous improvement</div>
+              </div>
+              <div class="bg-orange-50 rounded p-3">
+                <div class="font-medium text-orange-900 mb-1">Collaboration Platform</div>
+                <div class="text-orange-700">Cross-functional issue tracking, decision documentation, stakeholder communication</div>
+              </div>
+              <div class="bg-orange-50 rounded p-3">
+                <div class="font-medium text-orange-900 mb-1">Advanced Simulation</div>
+                <div class="text-orange-700">What-if scenario modeling, optimization algorithms, capacity balancing tools</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roadmap & Timeline -->
+      <div class="bg-white rounded-xl shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">📅</span>
+          Roadmap & Timeline
+        </h2>
+        <div class="relative">
+          <!-- Timeline Line -->
+          <div class="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-green-500 via-purple-500 to-orange-500"></div>
+
+          <!-- Timeline Items -->
+          <div class="space-y-6">
+            <!-- Q1 2026 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg z-10">
+                Q1
+              </div>
+              <div class="flex-grow pt-2">
+                <h3 class="font-semibold text-slate-900 mb-1">Q1 2026: Foundation Launch</h3>
+                <p class="text-sm text-slate-600 mb-2">Complete Phase 1 core modules with manual data input capabilities</p>
+                <div class="text-xs text-blue-700 bg-blue-50 rounded px-2 py-1 inline-block">Jan - Mar 2026</div>
+              </div>
+            </div>
+
+            <!-- Q2 2026 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg z-10">
+                Q2
+              </div>
+              <div class="flex-grow pt-2">
+                <h3 class="font-semibold text-slate-900 mb-1">Q2 2026: Integration Pilot</h3>
+                <p class="text-sm text-slate-600 mb-2">Begin Phase 2 with pilot API integrations for 1-2 key contract manufacturers</p>
+                <div class="text-xs text-green-700 bg-green-50 rounded px-2 py-1 inline-block">Apr - Jun 2026</div>
+              </div>
+            </div>
+
+            <!-- Q3 2026 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg z-10">
+                Q3
+              </div>
+              <div class="flex-grow pt-2">
+                <h3 class="font-semibold text-slate-900 mb-1">Q3 2026: Integration Expansion</h3>
+                <p class="text-sm text-slate-600 mb-2">Scale Phase 2 integrations across all major suppliers and logistics partners</p>
+                <div class="text-xs text-green-700 bg-green-50 rounded px-2 py-1 inline-block">Jul - Sep 2026</div>
+              </div>
+            </div>
+
+            <!-- Q4 2026 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg z-10">
+                Q4
+              </div>
+              <div class="flex-grow pt-2">
+                <h3 class="font-semibold text-slate-900 mb-1">Q4 2026: AI Foundation</h3>
+                <p class="text-sm text-slate-600 mb-2">Launch Phase 3 with AI chatbot assistant and initial predictive analytics capabilities</p>
+                <div class="text-xs text-purple-700 bg-purple-50 rounded px-2 py-1 inline-block">Oct - Dec 2026</div>
+              </div>
+            </div>
+
+            <!-- 2027 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg z-10">
+                2027
+              </div>
+              <div class="flex-grow pt-2">
+                <h3 class="font-semibold text-slate-900 mb-1">2027: Intelligence & Ecosystem</h3>
+                <p class="text-sm text-slate-600 mb-2">Complete Phase 3 AI capabilities and initiate Phase 4 ecosystem expansion</p>
+                <div class="text-xs text-orange-700 bg-orange-50 rounded px-2 py-1 inline-block">Jan - Dec 2027</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Success Metrics -->
+      <div class="bg-white rounded-xl shadow-sm p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">📊</span>
+          Key Success Metrics
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-blue-600 mb-1">80%</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Manual Work Reduction</div>
+            <div class="text-xs text-slate-600">Eliminate repetitive data collection and reporting tasks through automation</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-green-600 mb-1">95%+</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Data Accuracy</div>
+            <div class="text-xs text-slate-600">Ensure data integrity through standardized processes and validation</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-purple-600 mb-1">50%</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Decision Speed</div>
+            <div class="text-xs text-slate-600">Accelerate decision-making through real-time visibility and AI insights</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-orange-600 mb-1">100%</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Process Standardization</div>
+            <div class="text-xs text-slate-600">Unified metrics and workflows across all programs and sites</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-indigo-600 mb-1">Real-time</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Data Visibility</div>
+            <div class="text-xs text-slate-600">Transition from weekly reports to continuous operational monitoring</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="text-3xl font-bold text-teal-600 mb-1">24/7</div>
+            <div class="text-sm font-medium text-slate-900 mb-1">Knowledge Access</div>
+            <div class="text-xs text-slate-600">On-demand information retrieval through AI chatbot assistant</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conclusion -->
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-sm p-8 border border-blue-100">
+        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <span class="text-2xl">💡</span>
+          Looking Forward
+        </h2>
+        <div class="prose prose-slate max-w-none">
+          <p class="text-slate-700 leading-relaxed">
+            Enterprise Decision Operations represents more than a technology implementation—it is a fundamental transformation in how we approach manufacturing operations management. By systematically building capabilities across data integration, standardization, intelligence, and automation, we create a sustainable competitive advantage rooted in operational excellence and informed decision-making.
+          </p>
+          <p class="text-slate-700 leading-relaxed mt-3">
+            This platform leverages our deep Manufacturing Operations expertise while positioning us at the forefront of intelligent supply chain management. As we progress through each development phase, we will continuously refine and expand capabilities based on real-world operational needs, user feedback, and emerging technology opportunities.
+          </p>
         </div>
       </div>
     </div>
