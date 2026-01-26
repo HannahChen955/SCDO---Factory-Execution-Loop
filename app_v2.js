@@ -85,30 +85,14 @@ function initControls() {
   console.log('[initControls] STATE.data:', STATE.data);
   console.log('[initControls] STATE.data.dimensions:', STATE.data?.dimensions);
 
-  // View Mode toggle (Live vs Simulation)
-  $("liveMode").addEventListener("change", (e) => {
-    if (e.target.checked) {
-      STATE.viewMode = "live";
-      $("presetFilterContainer").style.display = "none";
-      $("runSimulationBtn").style.display = "none";
-      STATE.simulationResults = null;
-      render();
-    }
-  });
-
-  $("simulationMode").addEventListener("change", (e) => {
-    if (e.target.checked) {
-      STATE.viewMode = "simulation";
-      $("presetFilterContainer").style.display = "flex";
-      $("runSimulationBtn").style.display = "block";
-      render();
-    }
-  });
-
-  // Run Simulation button
-  $("runSimulationBtn").addEventListener("click", () => {
-    runSimulation();
-  });
+  // Note: PRD Mode toggle (liveMode/simulationMode) has been removed from UI
+  // Run Simulation button (if it exists)
+  const runSimBtn = $("runSimulationBtn");
+  if (runSimBtn) {
+    runSimBtn.addEventListener("click", () => {
+      runSimulation();
+    });
+  }
 
   // Filters
   const { products, factorySites, weeks } = STATE.data.dimensions;
