@@ -59,6 +59,15 @@ function setMeta() {
 }
 
 function populateSelect(selectEl, options, value) {
+  if (!selectEl) {
+    console.error('[populateSelect] selectEl is null');
+    return;
+  }
+  if (!options || !Array.isArray(options)) {
+    console.error('[populateSelect] options is not an array:', options);
+    return;
+  }
+
   selectEl.innerHTML = "";
   options.forEach(opt => {
     const o = document.createElement("option");
@@ -67,9 +76,15 @@ function populateSelect(selectEl, options, value) {
     if (opt === value) o.selected = true;
     selectEl.appendChild(o);
   });
+
+  console.log(`[populateSelect] Populated ${selectEl.id} with ${options.length} options, selected: ${value}`);
 }
 
 function initControls() {
+  console.log('[initControls] Starting initialization');
+  console.log('[initControls] STATE.data:', STATE.data);
+  console.log('[initControls] STATE.data.dimensions:', STATE.data?.dimensions);
+
   // View Mode toggle (Live vs Simulation)
   $("liveMode").addEventListener("change", (e) => {
     if (e.target.checked) {
@@ -97,8 +112,13 @@ function initControls() {
 
   // Filters
   const { products, factorySites, weeks } = STATE.data.dimensions;
+  console.log('[initControls] Filter dimensions:', { products, factorySites, weeks });
+
   const scenario = getScenario();
+  console.log('[initControls] Scenario:', scenario);
+
   const { product, factorySite, week } = scenario.defaultFilters;
+  console.log('[initControls] Default filters:', { product, factorySite, week });
 
   STATE.filters = { product, factorySite, week };
 
