@@ -7105,34 +7105,34 @@ function renderWhitePaper() {
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-blue-600 mb-1">80%</div>
+            <div class="text-2xl font-bold text-blue-600 mb-2">📉</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Manual Work Reduction</div>
-            <div class="text-xs text-slate-600">Eliminate repetitive data collection and reporting tasks through automation</div>
+            <div class="text-xs text-slate-600">Measure reduction in repetitive data collection and reporting tasks through automation</div>
           </div>
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-green-600 mb-1">95%+</div>
+            <div class="text-2xl font-bold text-green-600 mb-2">✓</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Data Accuracy</div>
-            <div class="text-xs text-slate-600">Ensure data integrity through standardized processes and validation</div>
+            <div class="text-xs text-slate-600">Track data integrity improvement through standardized processes and validation</div>
           </div>
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-purple-600 mb-1">50%</div>
+            <div class="text-2xl font-bold text-purple-600 mb-2">⚡</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Decision Speed</div>
-            <div class="text-xs text-slate-600">Accelerate decision-making through real-time visibility and AI insights</div>
+            <div class="text-xs text-slate-600">Monitor acceleration in decision-making through real-time visibility and AI insights</div>
           </div>
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-orange-600 mb-1">100%</div>
+            <div class="text-2xl font-bold text-orange-600 mb-2">🔄</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Process Standardization</div>
-            <div class="text-xs text-slate-600">Unified metrics and workflows across all programs and sites</div>
+            <div class="text-xs text-slate-600">Measure adoption of unified metrics and workflows across all programs and sites</div>
           </div>
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-indigo-600 mb-1">Real-time</div>
+            <div class="text-2xl font-bold text-indigo-600 mb-2">👁️</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Data Visibility</div>
-            <div class="text-xs text-slate-600">Transition from weekly reports to continuous operational monitoring</div>
+            <div class="text-xs text-slate-600">Track transition from periodic reports to continuous operational monitoring</div>
           </div>
           <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-3xl font-bold text-teal-600 mb-1">24/7</div>
+            <div class="text-2xl font-bold text-teal-600 mb-2">💬</div>
             <div class="text-sm font-medium text-slate-900 mb-1">Knowledge Access</div>
-            <div class="text-xs text-slate-600">On-demand information retrieval through AI chatbot assistant</div>
+            <div class="text-xs text-slate-600">Monitor usage of on-demand information retrieval through AI chatbot assistant</div>
           </div>
         </div>
       </div>
