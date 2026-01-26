@@ -3961,14 +3961,25 @@ function renderProductionPlanGenerate() {
                 </label>
               </div>
 
-              <div class="mt-3 col-span-full">
-                <button onclick="openHolidayCalendarManager()"
-                        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 shadow-sm flex items-center gap-2">
-                  <span>📅</span>
-                  <span>Manage Holiday Calendar</span>
-                  <span class="text-xs opacity-75">(China & Vietnam 2026 pre-loaded)</span>
-                </button>
-                <div class="text-xs text-slate-500 mt-1">Configure public holidays for China and Vietnam sites, or add custom holidays</div>
+              <div class="mt-3 col-span-full flex gap-3">
+                <div class="flex-1">
+                  <button onclick="openHolidayCalendarManager()"
+                          class="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 shadow-sm flex items-center justify-center gap-2">
+                    <span>📅</span>
+                    <span>Manage Holiday Calendar</span>
+                    <span class="text-xs opacity-75">(China & Vietnam 2026)</span>
+                  </button>
+                  <div class="text-xs text-slate-500 mt-1">Configure public holidays for sites</div>
+                </div>
+                <div class="flex-1">
+                  <button onclick="openCurvePresetsManager()"
+                          class="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg text-sm font-semibold hover:from-green-700 hover:to-teal-700 shadow-sm flex items-center justify-center gap-2">
+                    <span>📈</span>
+                    <span>Manage Curve Presets</span>
+                    <span class="text-xs opacity-75">(UPH & Yield)</span>
+                  </button>
+                  <div class="text-xs text-slate-500 mt-1">Configure default ramp curves</div>
+                </div>
               </div>
             </div>
           </div>
@@ -4122,33 +4133,21 @@ function renderCapacityUnitsConfig() {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="text-xs text-slate-600 block mb-1">UPH Ramp Curve</label>
-              <div class="flex gap-2">
-                <select class="flex-1 border rounded px-2 py-1 text-sm">
-                  <option value="standard_30d" selected>Standard 30-day Ramp</option>
-                  <option value="fast_20d">Fast 20-day Ramp</option>
-                  <option value="slow_45d">Slow 45-day Ramp</option>
-                  <option value="custom">Custom Curve (${shift.uph_ramp_curve?.factors?.length || 0} points)</option>
-                </select>
-                <button onclick="editUPHCurve('${site.site_id}', '${line.line_id}', '${shift.shift_type}')"
-                        class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-semibold whitespace-nowrap">
-                  ✏️ Edit
-                </button>
-              </div>
+              <select class="w-full border rounded px-2 py-1 text-sm">
+                <option value="standard_30d" selected>Standard 30-day Ramp</option>
+                <option value="fast_20d">Fast 20-day Ramp</option>
+                <option value="slow_45d">Slow 45-day Ramp</option>
+                <option value="custom">Custom Curve (${shift.uph_ramp_curve?.factors?.length || 0} points)</option>
+              </select>
             </div>
             <div>
               <label class="text-xs text-slate-600 block mb-1">Yield Curve</label>
-              <div class="flex gap-2">
-                <select class="flex-1 border rounded px-2 py-1 text-sm">
-                  <option value="standard_30d" selected>Standard 30-day Yield</option>
-                  <option value="fast_20d">Fast 20-day Yield</option>
-                  <option value="slow_45d">Slow 45-day Yield</option>
-                  <option value="custom">Custom Curve (${shift.yield_ramp_curve?.factors?.length || 0} points)</option>
-                </select>
-                <button onclick="editYieldCurve('${site.site_id}', '${line.line_id}', '${shift.shift_type}')"
-                        class="px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded text-xs font-semibold whitespace-nowrap">
-                  ✏️ Edit
-                </button>
-              </div>
+              <select class="w-full border rounded px-2 py-1 text-sm">
+                <option value="standard_30d" selected>Standard 30-day Yield</option>
+                <option value="fast_20d">Fast 20-day Yield</option>
+                <option value="slow_45d">Slow 45-day Yield</option>
+                <option value="custom">Custom Curve (${shift.yield_ramp_curve?.factors?.length || 0} points)</option>
+              </select>
             </div>
           </div>
         </div>
