@@ -5582,7 +5582,7 @@ function renderLaborFulfillment() {
     <div class="space-y-4">
       <!-- Overview Card -->
       <div class="bg-white border rounded-xl p-6">
-        <div class="text-lg font-bold text-slate-900 mb-3">Labor Tracker — Weekly Headcount Status</div>
+        <div class="text-lg font-bold text-slate-900 mb-3">Labor Fulfillment — Weekly Headcount Status</div>
         <div class="text-sm text-slate-600 mb-4">Monitor weekly labor availability and fulfillment across all factory sites</div>
 
         <!-- Summary Metrics -->
