@@ -5,7 +5,7 @@ let STATE = {
   data: null,
   scenarioId: "A",
   filters: { product: null, factorySite: null, week: null },
-  activeView: "overview", // overview | portfolio | home | signals | radar | actions | reports
+  activeView: "overview", // overview | portfolio | home | signals | radar | actions | reports | dataFoundation
   currentProgram: null, // Current program context { product, factorySite, week }
   selectedRiskId: null,
   prdMode: false,
@@ -13,7 +13,8 @@ let STATE = {
   simulationPreset: null,
   simulationResults: null,
   aiMode: false, // AI mode toggle
-  aiContext: null // Current AI context for drawer
+  aiContext: null, // Current AI context for drawer
+  dataFoundationSubpage: "alignedIndex" // alignedIndex | dataSource | productionPlanLogic
 };
 
 const $ = (id) => document.getElementById(id);
@@ -356,6 +357,9 @@ function render() {
       break;
     case "reports":
       renderReports();
+      break;
+    case "dataFoundation":
+      renderDataFoundation();
       break;
     default:
       renderOverview();
@@ -6523,4 +6527,395 @@ function toggleFiscalCalendar() {
     calendar.style.display = 'none';
     button.textContent = '▶ Show Fiscal Calendar (2026)';
   }
+}
+
+// ========================================
+// DATA FOUNDATION
+// ========================================
+
+/**
+ * Render Data Foundation page with three subpages:
+ * 1. Aligned Index - Metrics dictionary
+ * 2. Data Source - Data sources and integration
+ * 3. Production Plan Logic - Detailed calculation logic
+ */
+function renderDataFoundation() {
+  const app = $("app");
+
+  app.innerHTML = `
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-slate-900">Data Foundation</h1>
+        <p class="text-sm text-slate-600 mt-1">Reference documentation for metrics, data sources, and calculation logic</p>
+      </div>
+
+      <!-- Subpage Navigation -->
+      <div class="bg-white rounded-xl shadow-sm">
+        <div class="border-b border-slate-200">
+          <nav class="flex gap-1 px-6" role="tablist">
+            <button
+              onclick="STATE.dataFoundationSubpage = 'alignedIndex'; render();"
+              class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'alignedIndex' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
+            >
+              Aligned Index
+            </button>
+            <button
+              onclick="STATE.dataFoundationSubpage = 'dataSource'; render();"
+              class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'dataSource' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
+            >
+              Data Source
+            </button>
+            <button
+              onclick="STATE.dataFoundationSubpage = 'productionPlanLogic'; render();"
+              class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'productionPlanLogic' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
+            >
+              Production Plan Logic
+            </button>
+          </nav>
+        </div>
+
+        <!-- Subpage Content -->
+        <div class="p-6">
+          <div id="dataFoundationContent"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Render appropriate subpage
+  switch (STATE.dataFoundationSubpage) {
+    case 'alignedIndex':
+      renderAlignedIndex();
+      break;
+    case 'dataSource':
+      renderDataSource();
+      break;
+    case 'productionPlanLogic':
+      renderProductionPlanLogic();
+      break;
+    default:
+      renderAlignedIndex();
+  }
+}
+
+/**
+ * Render Aligned Index (Metrics Dictionary)
+ */
+function renderAlignedIndex() {
+  const content = $("dataFoundationContent");
+
+  const metrics = [
+    {
+      name: "Ex-factory to Supply Commit Attainment %",
+      target: "90% for project with 5 or more SKUs<br>95% for project with 4 or less SKUs<br><em>* Project might have various targets based on its complexity</em>",
+      definition: "Measures the percentage of actual shipments against committed ExFactory quantities for each SKU, ensuring alignment with commitment.",
+      calculation: "Weighted (actual ship quantity / plan quantity) by SKU",
+      bgColor: "bg-orange-100"
+    },
+    {
+      name: "Production Schedule Adherence %",
+      target: "92%-95%<br><em>* Project might have various targets based on its complexity</em>",
+      definition: "Measures the actual production input against the planned production schedule for each SKU, helping to identify potential bottlenecks and risks to impact supply performance.",
+      calculation: "Weighted (actual input quantity / plan quantity) by SKU",
+      bgColor: ""
+    },
+    {
+      name: "Capacity Utilization",
+      target: "MR/AR: 88% for PVT & Ramp, Sustaining≥ 97%<br>Smart Glass: 80% for PVT & Ramp, Sustaining≥ 85%<br><em>* Project might have various targets based on its complexity</em>",
+      definition: "Measure if factory under or over utilize installed capacity, idle due to CTB shortage / technical line down or OT w/, extra cost will all impact this indicator",
+      calculation: "Actual output / Installed output capacity",
+      bgColor: ""
+    },
+    {
+      name: "Manufacturing Lead Time Achieve Rate",
+      target: "90%",
+      definition: "Calculates the percentage of parts produced within the committed lead time, ensuring that production is meeting supply commitment and minimizing delays.",
+      calculation: "Units produced within committed lead time / total units produced",
+      bgColor: ""
+    },
+    {
+      name: "BTO On-Time Ship %",
+      target: "80%",
+      definition: "Measures the percentage of units shipped within the committed lead time 9 working days from EP receipt to ready to shipment on Hypernova), ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
+      calculation: "PO quantity shipped within committed lead time / total PO quantity",
+      bgColor: "bg-yellow-200"
+    },
+    {
+      name: "CTO On-Time Ship %",
+      target: "90%",
+      definition: "Measures the percentage of units shipped within the committed lead time, ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
+      calculation: "PO quantity shipped within committed lead time / total PO quantity",
+      bgColor: ""
+    },
+    {
+      name: "Labor Fulfillment %",
+      target: "100%",
+      definition: "Monitors the percentage of direct labor quantity to meet project requests, ensuring that the labor workforce is in place to support production demands and project timelines",
+      calculation: "labor demand quantity / actual onboarded labor quantity",
+      bgColor: ""
+    },
+    {
+      name: "Campus readiness on-time %",
+      target: "100%",
+      definition: "Evaluates the availability and readiness of campus facilities (e.g., workshops, meeting rooms) to support project requests",
+      calculation: "Ok2use campus space&facility / Total campus demands",
+      bgColor: ""
+    }
+  ];
+
+  content.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900">Aligned Index - Metrics Dictionary</h2>
+        <p class="text-sm text-slate-600">Reference: Program workspace metrics</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b-2 border-slate-900">
+              <th class="text-left font-bold p-3 border-r border-slate-300">Metric Name</th>
+              <th class="text-left font-bold p-3 border-r border-slate-300">Target</th>
+              <th class="text-left font-bold p-3 border-r border-slate-300">Definition</th>
+              <th class="text-left font-bold p-3">Calculation</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${metrics.map(metric => `
+              <tr class="border-b border-slate-200 ${metric.bgColor}">
+                <td class="p-3 border-r border-slate-300 font-medium align-top">${metric.name}</td>
+                <td class="p-3 border-r border-slate-300 text-sm align-top">${metric.target}</td>
+                <td class="p-3 border-r border-slate-300 text-sm align-top">${metric.definition}</td>
+                <td class="p-3 text-sm align-top">${metric.calculation}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <p class="text-sm text-slate-700">
+          <strong>Note:</strong> Highlighted metrics (orange/yellow) indicate areas requiring special attention or have unique calculation considerations.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render Data Source mapping
+ */
+function renderDataSource() {
+  const content = $("dataFoundationContent");
+
+  const dataSources = [
+    {
+      category: "Ex-f: Plan/Actual",
+      source: "Contract Manufacturer",
+      method: "Email (WMS/ERP)",
+      destination: "Internal Team",
+      team: "Planning",
+      bgColor: "bg-purple-50"
+    },
+    {
+      category: "CTB File",
+      source: "Contract Manufacturer",
+      method: "ERP/MRP",
+      destination: "Internal Team",
+      team: "MPM",
+      bgColor: "bg-purple-50"
+    },
+    {
+      category: "Production Plan",
+      source: "Contract Manufacturer",
+      method: "CM AI?",
+      destination: "Internal Team",
+      team: "MO",
+      bgColor: "bg-yellow-50"
+    }
+  ];
+
+  content.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900">Data Source Mapping</h2>
+        <p class="text-sm text-slate-600">Integration flow between Contract Manufacturer and Internal Teams</p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse border border-slate-300">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="text-left font-bold p-3 border border-slate-300">Data Category</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Source</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Integration Method</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Destination</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Internal Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dataSources.map(ds => `
+              <tr class="${ds.bgColor} border border-slate-300">
+                <td class="p-3 font-medium border border-slate-300">${ds.category}</td>
+                <td class="p-3 border border-slate-300">${ds.source}</td>
+                <td class="p-3 border border-slate-300">${ds.method}</td>
+                <td class="p-3 border border-slate-300">${ds.destination}</td>
+                <td class="p-3 font-semibold border border-slate-300">${ds.team}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+        <h3 class="font-semibold text-amber-900 mb-2">⚠️ Integration Status</h3>
+        <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
+          <li><strong>Ex-f Plan/Actual:</strong> Email-based (WMS/ERP) - Manual process</li>
+          <li><strong>CTB File:</strong> ERP/MRP integration - Automated</li>
+          <li><strong>Production Plan:</strong> CM AI integration - Under development</li>
+        </ul>
+      </div>
+
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h3 class="font-semibold text-blue-900 mb-2">📊 Data Flow Diagram</h3>
+        <div class="mt-3 p-4 bg-white rounded border border-blue-200">
+          <div class="flex items-start justify-between gap-8">
+            <!-- Contract Manufacturer Side -->
+            <div class="flex-1 border-2 border-yellow-400 bg-yellow-50 rounded-lg p-4">
+              <div class="text-center font-bold text-yellow-900 mb-4">Contract Manufacturer</div>
+              <div class="space-y-3">
+                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
+                  <div class="font-semibold">Ex-f: Plan/Actual</div>
+                </div>
+                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
+                  <div class="font-semibold">CTB File</div>
+                </div>
+                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
+                  <div class="font-semibold">Production Plan</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="flex flex-col justify-center">
+              <div class="text-2xl">→</div>
+              <div class="text-xs text-slate-600 mt-1">Integration</div>
+              <div class="text-xs text-slate-600">Methods</div>
+            </div>
+
+            <!-- Internal Team Side -->
+            <div class="flex-1 border-2 border-yellow-400 bg-yellow-50 rounded-lg p-4">
+              <div class="text-center font-bold text-yellow-900 mb-4">Internal Team</div>
+              <div class="space-y-3">
+                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
+                  <div class="font-semibold">Planning</div>
+                </div>
+                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
+                  <div class="font-semibold">MPM</div>
+                </div>
+                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
+                  <div class="font-semibold">MO</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render Production Plan Logic from markdown documentation
+ */
+async function renderProductionPlanLogic() {
+  const content = $("dataFoundationContent");
+
+  // Show loading state
+  content.innerHTML = `
+    <div class="text-center py-12">
+      <div class="text-4xl mb-4">⏳</div>
+      <div class="text-slate-600">Loading Production Plan Logic...</div>
+    </div>
+  `;
+
+  try {
+    // Load the markdown documentation
+    const response = await fetch('./OUTPUT_LOGIC_DISCUSSION.md');
+    if (!response.ok) throw new Error('Failed to load documentation');
+
+    const markdownText = await response.text();
+
+    // Convert markdown to HTML (simple conversion)
+    const htmlContent = convertMarkdownToHTML(markdownText);
+
+    content.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-900">Production Plan Generation Logic</h2>
+          <a href="./OUTPUT_LOGIC_DISCUSSION.md" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">
+            📄 View Original Document
+          </a>
+        </div>
+
+        <div class="prose prose-sm max-w-none bg-white">
+          ${htmlContent}
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error loading Production Plan Logic:', error);
+    content.innerHTML = `
+      <div class="text-center py-12">
+        <div class="text-4xl mb-4">❌</div>
+        <div class="text-red-600 font-semibold">Failed to load documentation</div>
+        <div class="text-sm text-slate-600 mt-2">${error.message}</div>
+        <a href="./OUTPUT_LOGIC_DISCUSSION.md" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Open Document Directly
+        </a>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Simple Markdown to HTML converter
+ * Supports: headers, bold, italic, code blocks, lists, tables
+ */
+function convertMarkdownToHTML(markdown) {
+  let html = markdown;
+
+  // Code blocks
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-slate-100 p-4 rounded-lg overflow-x-auto"><code class="language-$1">$2</code></pre>');
+
+  // Headers
+  html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-6 mb-3 text-slate-900">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-8 mb-4 text-slate-900 border-b pb-2">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-10 mb-5 text-slate-900">$1</h1>');
+
+  // Bold and italic
+  html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
+
+  // Lists
+  html = html.replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>');
+  html = html.replace(/(<li class="ml-4">.*<\/li>\n?)+/g, '<ul class="list-disc list-inside space-y-1 my-2">$&</ul>');
+
+  // Line breaks
+  html = html.replace(/\n\n/g, '</p><p class="my-3">');
+  html = '<p class="my-3">' + html + '</p>';
+
+  // Tables (basic support)
+  html = html.replace(/\|(.+)\|/g, function(match) {
+    const cells = match.split('|').filter(c => c.trim());
+    return '<tr>' + cells.map(c => `<td class="border border-slate-300 px-3 py-2">${c.trim()}</td>`).join('') + '</tr>';
+  });
+  html = html.replace(/(<tr>.*<\/tr>\n?)+/g, '<table class="w-full border-collapse my-4">$&</table>');
+
+  return html;
 }
