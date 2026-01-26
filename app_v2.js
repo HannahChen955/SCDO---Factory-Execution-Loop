@@ -70,12 +70,6 @@ function populateSelect(selectEl, options, value) {
 }
 
 function initControls() {
-  // PRD Mode toggle
-  $("prdModeToggle").addEventListener("change", (e) => {
-    STATE.prdMode = e.target.checked;
-    render();
-  });
-
   // View Mode toggle (Live vs Simulation)
   $("liveMode").addEventListener("change", (e) => {
     if (e.target.checked) {
@@ -246,6 +240,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
+  // Portfolio and Data Foundation are global pages - no sidebar filters
   const isProgramWorkspace = ["home", "delivery", "production-plan", "command-center", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
@@ -293,13 +288,9 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview") {
-    // Hide filters on Overview page
+  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "dataFoundation") {
+    // Hide filters on global pages (Overview, Portfolio, Data Foundation)
     if (filtersBar) filtersBar.style.display = "none";
-  } else if (STATE.activeView === "portfolio") {
-    // Show filters but hide Update Data button on Portfolio page
-    if (filtersBar) filtersBar.style.display = "block";
-    if (updateDataBtn) updateDataBtn.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
     if (filtersBar) filtersBar.style.display = "block";
@@ -5400,7 +5391,7 @@ function renderBTOCTOLeadtime() {
 function renderFVManagement() {
   const html = `
     <div class="bg-white border rounded-xl p-6">
-      <div class="text-lg font-bold text-slate-900 mb-3">FV (Factory Variance) Management</div>
+      <div class="text-lg font-bold text-slate-900 mb-3">FV Tracker (Factory Variance)</div>
       <div class="text-sm text-slate-600 mb-4">Track factory variance costs by program and category - Budget vs Actual vs Negotiated</div>
 
       <!-- Summary Cards -->
@@ -5584,7 +5575,7 @@ function renderLaborFulfillment() {
     <div class="space-y-4">
       <!-- Overview Card -->
       <div class="bg-white border rounded-xl p-6">
-        <div class="text-lg font-bold text-slate-900 mb-3">Labor Fulfillment — Weekly Headcount Status</div>
+        <div class="text-lg font-bold text-slate-900 mb-3">Labor Tracker — Weekly Headcount Status</div>
         <div class="text-sm text-slate-600 mb-4">Monitor weekly labor availability and fulfillment across all factory sites</div>
 
         <!-- Summary Metrics -->
@@ -5827,7 +5818,7 @@ function renderCampusReadiness() {
     <div class="space-y-4">
       <!-- Overview -->
       <div class="bg-white border rounded-xl p-6">
-        <div class="text-lg font-bold text-slate-900 mb-3">Campus Readiness — Location & Space Utilization</div>
+        <div class="text-lg font-bold text-slate-900 mb-3">Campus Status — Location & Space Utilization</div>
         <div class="text-sm text-slate-600 mb-4">Monitor program distribution across campuses and facility utilization</div>
 
         <!-- Summary Metrics -->
@@ -6540,9 +6531,10 @@ function toggleFiscalCalendar() {
  * 3. Production Plan Logic - Detailed calculation logic
  */
 function renderDataFoundation() {
-  const app = $("app");
+  console.log('[DataFoundation] renderDataFoundation called, subpage:', STATE.dataFoundationSubpage);
+  const content = $("content");
 
-  app.innerHTML = `
+  content.innerHTML = `
     <div class="space-y-6">
       <!-- Header -->
       <div class="bg-white rounded-xl shadow-sm p-6">
@@ -6583,67 +6575,71 @@ function renderDataFoundation() {
     </div>
   `;
 
-  // Render appropriate subpage
-  switch (STATE.dataFoundationSubpage) {
-    case 'alignedIndex':
-      renderAlignedIndex();
-      break;
-    case 'dataSource':
-      renderDataSource();
-      break;
-    case 'productionPlanLogic':
-      renderProductionPlanLogic();
-      break;
-    default:
-      renderAlignedIndex();
-  }
+  // Render appropriate subpage (after DOM update)
+  setTimeout(() => {
+    switch (STATE.dataFoundationSubpage) {
+      case 'alignedIndex':
+        renderAlignedIndex();
+        break;
+      case 'dataSource':
+        renderDataSource();
+        break;
+      case 'productionPlanLogic':
+        renderProductionPlanLogic();
+        break;
+      default:
+        renderAlignedIndex();
+    }
+  }, 0);
 }
 
 /**
  * Render Aligned Index (Metrics Dictionary)
  */
 function renderAlignedIndex() {
+  console.log('[DataFoundation] renderAlignedIndex called');
   const content = $("dataFoundationContent");
+  console.log('[DataFoundation] dataFoundationContent element:', content);
 
   const metrics = [
     {
       name: "Ex-factory to Supply Commit Attainment %",
-      target: "90% for project with 5 or more SKUs<br>95% for project with 4 or less SKUs<br><em>* Project might have various targets based on its complexity</em>",
+      target: "≥90%",
       definition: "Measures the percentage of actual shipments against committed ExFactory quantities for each SKU, ensuring alignment with commitment.",
       calculation: "Weighted (actual ship quantity / plan quantity) by SKU",
-      bgColor: "bg-orange-100"
+      bgColor: ""
     },
     {
       name: "Production Schedule Adherence %",
-      target: "92%-95%<br><em>* Project might have various targets based on its complexity</em>",
+      target: "92%-95%",
       definition: "Measures the actual production input against the planned production schedule for each SKU, helping to identify potential bottlenecks and risks to impact supply performance.",
       calculation: "Weighted (actual input quantity / plan quantity) by SKU",
       bgColor: ""
     },
     {
       name: "Capacity Utilization",
-      target: "MR/AR: 88% for PVT & Ramp, Sustaining≥ 97%<br>Smart Glass: 80% for PVT & Ramp, Sustaining≥ 85%<br><em>* Project might have various targets based on its complexity</em>",
+      target: "≥85%",
       definition: "Measure if factory under or over utilize installed capacity, idle due to CTB shortage / technical line down or OT w/, extra cost will all impact this indicator",
       calculation: "Actual output / Installed output capacity",
       bgColor: ""
     },
     {
       name: "Manufacturing Lead Time Achieve Rate",
-      target: "90%",
+      target: "≥90%",
       definition: "Calculates the percentage of parts produced within the committed lead time, ensuring that production is meeting supply commitment and minimizing delays.",
       calculation: "Units produced within committed lead time / total units produced",
       bgColor: ""
     },
     {
       name: "BTO On-Time Ship %",
-      target: "80%",
-      definition: "Measures the percentage of units shipped within the committed lead time 9 working days from EP receipt to ready to shipment on Hypernova), ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
+      target: "≥80%",
+      definition: "Measures the percentage of units shipped within the committed lead time, ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
       calculation: "PO quantity shipped within committed lead time / total PO quantity",
-      bgColor: "bg-yellow-200"
+      bgColor: ""
     },
     {
       name: "CTO On-Time Ship %",
-      target: "90%",
+      target: "≥90%",
       definition: "Measures the percentage of units shipped within the committed lead time, ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
       calculation: "PO quantity shipped within committed lead time / total PO quantity",
       bgColor: ""
@@ -6729,7 +6725,7 @@ function renderDataSource() {
     {
       category: "Production Plan",
       source: "Contract Manufacturer",
-      method: "CM AI?",
+      method: "MES",
       destination: "Internal Team",
       team: "MO",
       bgColor: "bg-yellow-50"
@@ -6773,54 +6769,8 @@ function renderDataSource() {
         <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
           <li><strong>Ex-f Plan/Actual:</strong> Email-based (WMS/ERP) - Manual process</li>
           <li><strong>CTB File:</strong> ERP/MRP integration - Automated</li>
-          <li><strong>Production Plan:</strong> CM AI integration - Under development</li>
+          <li><strong>Production Plan:</strong> MES integration - Automated</li>
         </ul>
-      </div>
-
-      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 class="font-semibold text-blue-900 mb-2">📊 Data Flow Diagram</h3>
-        <div class="mt-3 p-4 bg-white rounded border border-blue-200">
-          <div class="flex items-start justify-between gap-8">
-            <!-- Contract Manufacturer Side -->
-            <div class="flex-1 border-2 border-yellow-400 bg-yellow-50 rounded-lg p-4">
-              <div class="text-center font-bold text-yellow-900 mb-4">Contract Manufacturer</div>
-              <div class="space-y-3">
-                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
-                  <div class="font-semibold">Ex-f: Plan/Actual</div>
-                </div>
-                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
-                  <div class="font-semibold">CTB File</div>
-                </div>
-                <div class="bg-purple-100 border-2 border-purple-400 rounded p-3 text-center">
-                  <div class="font-semibold">Production Plan</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Arrow -->
-            <div class="flex flex-col justify-center">
-              <div class="text-2xl">→</div>
-              <div class="text-xs text-slate-600 mt-1">Integration</div>
-              <div class="text-xs text-slate-600">Methods</div>
-            </div>
-
-            <!-- Internal Team Side -->
-            <div class="flex-1 border-2 border-yellow-400 bg-yellow-50 rounded-lg p-4">
-              <div class="text-center font-bold text-yellow-900 mb-4">Internal Team</div>
-              <div class="space-y-3">
-                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
-                  <div class="font-semibold">Planning</div>
-                </div>
-                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
-                  <div class="font-semibold">MPM</div>
-                </div>
-                <div class="bg-purple-100 border-2 border-purple-400 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
-                  <div class="font-semibold">MO</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   `;
