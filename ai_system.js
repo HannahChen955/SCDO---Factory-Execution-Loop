@@ -81,7 +81,7 @@ function mockAI(context, action, params = {}) {
       actions: [
         { action: "Expedite IC-77 via air freight", owner: "Sourcing", sla: "24h", impact: "+6-10 pts confidence" },
         { action: "Prioritize re-test lane + add weekend shift", owner: "PQE/Factory", sla: "48h", impact: "Protect 6k units" },
-        { action: "Lock changeover plan for Product C", owner: "Factory Ops", sla: "24h", impact: "-2d schedule risk" }
+        { action: "Lock changeover plan for Product C", owner: "MO", sla: "24h", impact: "-2d schedule risk" }
       ],
       asks: [
         "Decision needed: Approve $120k expedite cost for IC-77 air freight",
@@ -237,7 +237,7 @@ Product C (WF, SZ-01): Changeover window limited → 5.2k units at risk
 **Actions (Next 48h):**
 1. Expedite IC-77 via air freight (Sourcing, 24h)
 2. Prioritize re-test lane + weekend OT (PQE/Factory, 48h)
-3. Lock changeover plan (Factory Ops, 24h)
+3. Lock changeover plan (MO, 24h)
 
 **Decision Needed:**
 • Approve $120k expedite cost

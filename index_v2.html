@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCDO Control Tower — Factory Execution Loop</title>
+  <title>FDOS — Factory Delivery Orchestration System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
@@ -21,7 +21,7 @@
   <div class="no-print sticky top-0 z-50 bg-white border-b shadow-sm">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
       <div>
-        <div class="text-sm font-semibold" id="appName">SCDO Control Tower — Factory Execution Loop</div>
+        <div class="text-sm font-semibold" id="appName">FDOS — Factory Delivery Orchestration System</div>
         <div class="text-xs text-slate-500">
           <span id="version"></span> · <span id="lastRefresh"></span> · Data: <span id="dqStatus" class="font-medium"></span>
         </div>
@@ -399,6 +399,28 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="./ai_system.js"></script>
   <script src="./data_update_system.js"></script>
   <script src="./chatbot_system.js"></script>
+  <!-- SheetJS for Excel file reading -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <script src="./production_plan_engine.js"></script>
+  <script src="./production_plan_seed_data.js"></script>
+  <script src="./production_plan_config.js"></script>
+  <script src="./command_center_data.js"></script>
+  <script src="./command_center_new.js"></script>
+  <script src="./forecast_ctb_manager.js"></script>
+  <script>
+    console.log('[Debug] Checking if forecast_ctb_manager.js loaded...');
+    console.log('[Debug] viewAllHistoricVersions type:', typeof window.viewAllHistoricVersions);
+    console.log('[Debug] uploadForecast type:', typeof window.uploadForecast);
+  </script>
+  <!-- v3.0 Metric System -->
+  <script src="./metric_dictionary_v0.js"></script>
+  <script src="./confidence_calculator.js"></script>
+  <script src="./routing_rules_config.js"></script>
+  <script src="./routing_engine.js"></script>
+  <!-- v3.0 Decision Components -->
+  <script src="./decision_inbox.js"></script>
+  <script src="./decision_chain_widget.js"></script>
   <script src="./app_v2.js"></script>
 </body>
 </html>

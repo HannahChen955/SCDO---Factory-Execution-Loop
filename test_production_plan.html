@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Production Plan Engine Test</title>
+  <script src="./production_plan_seed_data.js"></script>
+  <script src="./production_plan_engine.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    table { border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+    th { background: #f0f0f0; }
+    .header { font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Production Plan Engine Test</h1>
+  <button onclick="runTest()">Run Test</button>
+  <div id="output"></div>
+
+  <script>
+    function runTest() {
+      console.log('Starting test...');
+
+      try {
+        // Verify dependencies loaded
+        if (typeof PRODUCTION_PLAN_SEED_DATA === 'undefined') {
+          throw new Error('PRODUCTION_PLAN_SEED_DATA not loaded');
+        }
+        if (typeof ProductionPlanEngine === 'undefined') {
+          throw new Error('ProductionPlanEngine not loaded');
+        }
+
+        console.log('✓ Dependencies loaded successfully');
+
+        // Create engine instance
+        const engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+        console.log('✓ Engine instance created');
+
+        // Generate plan
+        const result = engine.generatePlan('2026-10-01', '2026-10-31', 'constrained');
+        console.log('✓ Plan generated successfully');
+        console.log('  Total days:', result.programResults.length);
+        console.log('  Weekly metrics:', result.weeklyMetrics.length);
+
+        // Display results
+        let html = '<div class="header">✓ TEST SUCCESSFUL</div>';
+        html += '<p>Plan generated successfully with ' + result.programResults.length + ' days and ' + result.weeklyMetrics.length + ' weeks of data.</p>';
+
+        html += '<div class="header">Program Results (First 10 days)</div>';
+      html += '<table><tr><th>Date</th><th>Input</th><th>Output</th><th>Ship</th><th>Cum Input</th><th>Cum Output</th><th>Cum Ship</th></tr>';
+
+      result.programResults.slice(0, 10).forEach(day => {
+        html += `<tr>
+          <td>${day.date}</td>
+          <td>${day.input_final.toFixed(0)}</td>
+          <td>${day.output_final.toFixed(0)}</td>
+          <td>${day.shipment_final.toFixed(0)}</td>
+          <td>${day.cum_input.toFixed(0)}</td>
+          <td>${day.cum_output.toFixed(0)}</td>
+          <td>${day.cum_shipment.toFixed(0)}</td>
+        </tr>`;
+      });
+      html += '</table>';
+
+      // Display weekly metrics
+      html += '<div class="header">Weekly Metrics</div>';
+      html += '<table><tr><th>Week</th><th>Input</th><th>Output</th><th>Ship</th><th>Demand</th><th>Gap</th></tr>';
+
+      result.weeklyMetrics.forEach(week => {
+        html += `<tr>
+          <td>${week.week_id}</td>
+          <td>${week.input.toFixed(0)}</td>
+          <td>${week.output.toFixed(0)}</td>
+          <td>${week.shipments.toFixed(0)}</td>
+          <td>${week.demand.toFixed(0)}</td>
+          <td style="color: ${week.gap < 0 ? 'red' : 'green'}">${week.gap.toFixed(0)}</td>
+        </tr>`;
+      });
+        html += '</table>';
+
+        document.getElementById('output').innerHTML = html;
+
+      } catch (error) {
+        console.error('Error during test:', error);
+        document.getElementById('output').innerHTML =
+          '<div style="color: red; font-weight: bold;">ERROR: ' + error.message + '</div>' +
+          '<pre>' + error.stack + '</pre>';
+      }
+    }
+
+    // Auto-run test on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('Page loaded, running test automatically...');
+      runTest();
+    });
+  </script>
+</body>
+</html>

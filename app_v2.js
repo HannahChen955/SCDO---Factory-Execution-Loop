@@ -1,5 +1,5 @@
-// SCDO Control Tower — Factory Execution Loop
-// Version 2.0 - Delivery-first Architecture
+// FDOS — Factory Delivery Orchestration System
+// Unified execution intelligence for manufacturing commit protection
 
 let STATE = {
   data: null,
@@ -245,7 +245,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
-  const isProgramWorkspace = ["home", "delivery", "production-plan", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
+  const isProgramWorkspace = ["home", "delivery", "production-plan", "command-center", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
   const sidebar = $("sidebar");
@@ -402,402 +402,483 @@ function renderOverview() {
     return;
   }
 
-  const { hero, scopeCoverage, whyFactory, proposal, challenges, roadmap } = overview;
-
   const html = `
-    <!-- Hero Section -->
-    <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-2xl p-12 mb-6 relative overflow-hidden shadow-2xl">
-      <!-- Decorative Grid Pattern -->
-      <div class="absolute inset-0 opacity-5">
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+    <!-- ============================================================ -->
+    <!-- 0) HERO: Restrained Introduction -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-300 rounded-xl p-8 mb-6">
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">FDOS — Factory Delivery Orchestration System</h1>
+      <div class="text-base text-slate-700 mb-3">
+        Turning factory execution into deliverable commitments across the supply chain.
       </div>
-
-      <!-- Decorative Glow Elements -->
-      <div class="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl -mr-48 -mt-48"></div>
-      <div class="absolute bottom-0 left-0 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl -ml-40 -mb-40"></div>
-
-      <div class="relative z-10 max-w-5xl">
-        <!-- Title with accent -->
-        <div class="mb-6">
-          <div class="inline-block px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-blue-100 mb-3 border border-white/20">
-            Factory Execution Loop
-          </div>
-          <h1 class="text-2xl font-bold text-white drop-shadow-lg">${hero.title}</h1>
-        </div>
-
-        <!-- Content Card with Modern Design -->
-        <div class="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 shadow-2xl border border-slate-200/50 backdrop-blur-sm">
-          <div class="relative pb-4">
-            <!-- Decorative Quote Accent -->
-            <div class="absolute -top-4 -left-4 w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg opacity-10 transform -rotate-6"></div>
-            <div class="absolute -top-2 -left-2 text-6xl text-blue-300/40 font-serif leading-none select-none pointer-events-none">"</div>
-
-            <div class="relative pl-8 pr-6 space-y-4 text-slate-700">
-              <p class="text-base leading-relaxed">
-                SCDO already connects planning, inventory, logistics, and orders — but the missing link is factory execution, where plans become deliverable commits.
-              </p>
-              <p class="text-base leading-relaxed">
-                This demo shows how we close that loop: we convert fast-changing factory reality into trusted signals with confidence labels, rank what threatens the weekly commit, and automatically route recovery actions (or escalate to human review) with owners and SLAs.
-              </p>
-
-              <!-- Highlighted conclusion box -->
-              <div class="relative bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg p-4 shadow-sm mt-5">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mt-1">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                  </div>
-                  <p class="text-base leading-relaxed font-semibold text-slate-800 flex-1">
-                    The output is a unified execution data stream — a clear, end-to-end view of factory reality. It completes the enterprise data loop, replacing siloed spreadsheets with shared context for faster, better decisions.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bottom quote mark - positioned carefully to not overlap text -->
-            <div class="absolute -bottom-2 right-4 text-6xl text-blue-300/40 font-serif leading-none select-none pointer-events-none">"</div>
-          </div>
-        </div>
+      <div class="text-sm text-slate-600 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
+        FDOS closes the missing factory link by standardizing execution signals and routing decisions with evidence.
       </div>
     </div>
 
-    <!-- Scope Coverage -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="mb-4">
-        <div class="text-lg font-bold mb-1">Current SCDO Scope vs Missing Link</div>
-        <div class="text-sm text-slate-600">Factory execution is the critical gap between planning and deliverable commit</div>
+    <!-- ============================================================ -->
+    <!-- 1) THE MISSING LINK: Why this exists -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-red-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">Why this exists</div>
+      <div class="text-sm text-slate-700 space-y-2 mb-5">
+        <p>Factory execution is the least standardized part of the end-to-end decision chain.</p>
+        <p>When factory signals are missing or inconsistent, planning and commitments become "best guesses" — and the loop cannot learn.</p>
+        <p><strong>FDOS exists to turn factory reality into decision-grade signals</strong> that can be used by planners and leaders.</p>
       </div>
 
-      <!-- Coverage Summary - Text Only -->
-      <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <div class="flex items-center gap-2 mb-2">
-          <div class="text-xl">⚠️</div>
-          <div class="text-sm font-semibold text-amber-900">Incomplete Loop without Factory Data</div>
-        </div>
-        <div class="text-sm text-slate-700">
-          SCDO currently connects planning, orders, logistics, and inventory — but without factory execution data, the loop cannot close. Planning operates blind to execution reality, leading to late surprises and liability accumulation.
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Included -->
-        <div>
-          <div class="text-sm font-semibold mb-3 text-green-700">✓ Included Today</div>
-          <div class="space-y-2">
-            ${scopeCoverage.included.map(item => `
-              <div class="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div class="text-2xl">${item.icon}</div>
-                <div class="flex-1">
-                  <div class="font-semibold text-sm">${item.label}</div>
-                  <div class="text-xs text-slate-600">${item.detail}</div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Missing -->
-        <div>
-          <div class="text-sm font-semibold mb-3 text-red-700">⚠️ Not Yet Included (Missing Link)</div>
-          <div class="space-y-2">
-            ${scopeCoverage.missing.map(item => `
-              <div class="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div class="text-2xl">${item.icon}</div>
-                <div class="flex-1">
-                  <div class="font-semibold text-sm">${item.label}</div>
-                  <div class="text-xs text-slate-600">${item.detail}</div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Closed-Loop Map (Simplified SVG Placeholder) -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">The SCDO Closed Loop — Factory is the Missing Link</div>
-      <div class="text-sm text-slate-600 mb-6">A plan is not a commit. The factory is where orders become deliverable reality.</div>
-
+      <!-- Supply Chain Flow Diagram -->
       <div class="relative">
-        <!-- Simple Flow Diagram -->
-        <div class="flex items-center justify-between gap-4 flex-wrap">
-          <div class="flex-1 min-w-[120px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-2xl mb-2">📦</div>
-            <div class="text-sm font-semibold">Planning</div>
-            <div class="text-xs text-slate-600">Forecast / Build Plan</div>
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
+            <div class="text-3xl mb-2">📦</div>
+            <div class="text-sm font-bold text-slate-900">Planning</div>
+            <div class="text-xs text-slate-600 mt-1">Forecast / Build Plan</div>
           </div>
-          <div class="text-2xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[120px] p-4 bg-red-50 border-2 border-red-400 border-dashed rounded-xl text-center">
-            <div class="text-2xl mb-2">🏭</div>
-            <div class="text-sm font-semibold text-red-700">Manufacturing</div>
-            <div class="text-xs text-red-600 font-semibold">MISSING TODAY</div>
+          <div class="text-3xl text-slate-400">→</div>
+          <div class="flex-1 min-w-[140px] p-4 bg-red-50 border-2 border-red-400 border-dashed rounded-xl text-center">
+            <div class="text-3xl mb-2">🏭</div>
+            <div class="text-sm font-bold text-red-700">Manufacturing</div>
+            <div class="text-xs text-red-600 font-bold mt-1">MISSING TODAY</div>
           </div>
-          <div class="text-2xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[120px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-2xl mb-2">🚚</div>
-            <div class="text-sm font-semibold">Logistics</div>
-            <div class="text-xs text-slate-600">Shipments / ETA</div>
+          <div class="text-3xl text-slate-400">→</div>
+          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
+            <div class="text-3xl mb-2">🚚</div>
+            <div class="text-sm font-bold text-slate-900">Logistics</div>
+            <div class="text-xs text-slate-600 mt-1">Shipments / ETA</div>
           </div>
-          <div class="text-2xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[120px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-2xl mb-2">📊</div>
-            <div class="text-sm font-semibold">Inventory</div>
-            <div class="text-xs text-slate-600">FG / Transit</div>
+          <div class="text-3xl text-slate-400">→</div>
+          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
+            <div class="text-3xl mb-2">📊</div>
+            <div class="text-sm font-bold text-slate-900">Inventory</div>
+            <div class="text-xs text-slate-600 mt-1">FG / Transit</div>
           </div>
-          <div class="text-2xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[120px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-2xl mb-2">🧾</div>
-            <div class="text-sm font-semibold">Orders</div>
-            <div class="text-xs text-slate-600">Demand / Commit</div>
-          </div>
-        </div>
-        <div class="text-center mt-4">
-          <div class="inline-block px-4 py-2 bg-amber-50 border border-amber-300 rounded-lg text-sm">
-            <strong>Without factory data:</strong> Planning operates blind to execution reality, leading to late surprises and liability accumulation
+          <div class="text-3xl text-slate-400">→</div>
+          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
+            <div class="text-3xl mb-2">🧾</div>
+            <div class="text-sm font-bold text-slate-900">Orders</div>
+            <div class="text-xs text-slate-600 mt-1">Demand / Commit</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Why Factory Matters (Risk Cards) -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">Why Factory Execution Must Be Part of the Loop</div>
-      <div class="text-sm text-slate-600 mb-6">Manufacturing has inertia. Late signals create shortages. Slow response creates liability.</div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        ${whyFactory.map(risk => `
-          <div class="border rounded-xl p-4 ${risk.severity === 'HIGH' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="text-3xl">${risk.icon}</div>
-              <div>
-                <div class="font-semibold text-sm">${risk.title}</div>
-                <span class="px-2 py-0.5 rounded text-xs font-semibold ${risk.severity === 'HIGH' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${risk.severity}</span>
-              </div>
-            </div>
-            <div class="text-sm font-semibold mb-2">${risk.message}</div>
-            <div class="text-xs text-slate-600 mb-3">${risk.consequence}</div>
-            <div class="p-2 bg-white border rounded text-xs">
-              <strong>Example signal:</strong> ${risk.exampleSignal}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-        <div class="text-sm font-semibold text-blue-900 mb-2">Our Proposal</div>
-        <div class="text-sm text-blue-900">If SCDO's goal is "automate high-confidence decisions + manage exceptions," then <strong>factory execution is the critical decision point that turns "orders/plans" into "deliverable commit."</strong></div>
-      </div>
-    </div>
-
-    <!-- Proposed Extension (Capability Tiles) -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">Proposed Extension: Factory Execution Decision Orchestration</div>
-      <div class="text-sm text-slate-600 mb-6">A factory-side decision layer that translates execution reality into trusted commit — and routes recovery actions with owners, SLAs, and evidence.</div>
+    <!-- ============================================================ -->
+    <!-- 2) WHY FACTORY DATA IS HARD: 4 compact challenge cards -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">Why factory signals don't travel well today</div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        ${proposal.map(cap => `
-          <details class="border rounded-xl overflow-hidden">
-            <summary class="p-4 cursor-pointer hover:bg-slate-50 flex items-start gap-3">
-              <div class="text-3xl">${cap.icon}</div>
-              <div class="flex-1">
-                <div class="font-semibold text-sm mb-1">${cap.title}</div>
-                <div class="text-xs text-slate-600">${cap.description}</div>
-              </div>
-              <div class="text-slate-400">▼</div>
-            </summary>
-            <div class="p-4 border-t bg-slate-50 space-y-2">
-              <div class="text-xs">
-                <div class="font-semibold text-green-700 mb-1">✓ In Demo Now:</div>
-                <div class="text-slate-700">${cap.inDemoNow}</div>
-              </div>
-              <div class="text-xs">
-                <div class="font-semibold text-blue-700 mb-1">→ Next Phase:</div>
-                <div class="text-slate-700">${cap.nextPhase}</div>
-              </div>
-            </div>
-          </details>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- Factory Data Challenges -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">Why Factory Data Is Hard (and why it matters)</div>
-      <div class="text-sm text-slate-600 mb-6">This is exactly why the factory layer should be "decision-oriented," not just another dashboard.</div>
-
-      <!-- Reality Gauges -->
-      <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-center">
-          <div class="text-xs text-slate-600 mb-1">Data Cleanliness</div>
-          <div class="text-2xl font-bold text-red-600">LOW</div>
-        </div>
-        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-center">
-          <div class="text-xs text-slate-600 mb-1">Change Speed</div>
-          <div class="text-2xl font-bold text-red-600">HIGH</div>
-        </div>
-        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <div class="text-xs text-slate-600 mb-1">On-site Dependency</div>
-          <div class="text-2xl font-bold text-yellow-600">HIGH</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        ${challenges.map(challenge => `
-          <div class="p-4 border rounded-lg ${challenge.severity === 'HIGH' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}">
-            <div class="flex items-center justify-between mb-2">
-              <div class="font-semibold text-sm">${challenge.title}</div>
-              <span class="px-2 py-0.5 rounded text-xs font-semibold ${challenge.severity === 'HIGH' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${challenge.severity}</span>
-            </div>
-            <div class="text-xs text-slate-600 mb-2">${challenge.description}</div>
-            <div class="text-xs text-slate-700 font-semibold">Impact: ${challenge.impact}</div>
+        <!-- Card 1: Metric inconsistency -->
+        <div class="border-2 border-amber-200 bg-amber-50 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-2">Metric inconsistency</div>
+          <div class="text-xs text-slate-700 space-y-1">
+            <div>• Same names, different definitions across sites/tools</div>
+            <div>• Reconciliation becomes manual</div>
           </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- What This Demo Shows (Stepper) -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">What This Demo Shows: The Factory Execution Loop</div>
-      <div class="text-sm text-slate-600 mb-6">This prototype demonstrates how factory execution can be integrated into SCDO as a delivery-first decision loop.</div>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-stretch">
-        <div class="relative">
-          <button onclick="STATE.activeView = 'signals'; render();" class="w-full h-full text-left p-5 border-2 border-blue-500 rounded-xl hover:bg-blue-50 transition flex flex-col justify-between" style="min-height: 156px;">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">1</div>
-                <div class="font-semibold text-sm">Signals</div>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">Data Readiness</div>
-            </div>
-            <div class="text-xs text-slate-700">Turn factory reality into trusted signals with freshness, coverage, and confidence labels.</div>
-          </button>
-          <div class="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-2xl text-blue-500">→</div>
         </div>
 
-        <div class="relative">
-          <button onclick="STATE.activeView = 'radar'; render();" class="w-full h-full text-left p-5 border-2 border-purple-500 rounded-xl hover:bg-purple-50 transition flex flex-col justify-between" style="min-height: 156px;">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-bold">2</div>
-                <div class="font-semibold text-sm">Risk Radar</div>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">What Threatens Commit</div>
-            </div>
-            <div class="text-xs text-slate-700">Rank late and liability risks by impact × confidence, with explainable drivers.</div>
-          </button>
-          <div class="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-2xl text-purple-500">→</div>
+        <!-- Card 2: Messy inputs -->
+        <div class="border-2 border-red-200 bg-red-50 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-2">Messy inputs</div>
+          <div class="text-xs text-slate-700 space-y-1">
+            <div>• Manual logs and missing fields</div>
+            <div>• Low trust without validation</div>
+          </div>
         </div>
 
-        <div class="relative">
-          <button onclick="STATE.activeView = 'actions'; render();" class="w-full h-full text-left p-5 border-2 border-green-500 rounded-xl hover:bg-green-50 transition flex flex-col justify-between" style="min-height: 156px;">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">3</div>
-                <div class="font-semibold text-sm">Actions</div>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">Recovery Playbooks</div>
-            </div>
-            <div class="text-xs text-slate-700">Convert recommendations into routable actions with owners, SLAs, and expected impact.</div>
-          </button>
-          <div class="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-2xl text-green-500">→</div>
+        <!-- Card 3: High change speed -->
+        <div class="border-2 border-orange-200 bg-orange-50 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-2">High change speed</div>
+          <div class="text-xs text-slate-700 space-y-1">
+            <div>• Yield/constraints/staffing shift daily</div>
+            <div>• Dashboards lag behind reality</div>
+          </div>
         </div>
 
-        <div>
-          <button onclick="STATE.activeView = 'reports'; render();" class="w-full h-full text-left p-5 border-2 border-amber-500 rounded-xl hover:bg-amber-50 transition flex flex-col justify-between" style="min-height: 156px;">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center text-sm font-bold">4</div>
-                <div class="font-semibold text-sm">Reports</div>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">Briefings & Evidence</div>
-            </div>
-            <div class="text-xs text-slate-700">Generate one-click leadership briefs that capture what we decided, why, and what happened next.</div>
-          </button>
+        <!-- Card 4: Truth lives offline -->
+        <div class="border-2 border-purple-200 bg-purple-50 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-2">Truth lives offline</div>
+          <div class="text-xs text-slate-700 space-y-1">
+            <div>• Key context sits in meetings/photos/notes</div>
+            <div>• Systems miss the "why"</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Phased Roadmap (Timeline) -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">Phased Roadmap: From Demo to Deployable Capability</div>
-      <div class="text-sm text-slate-600 mb-6">Progressive approach from prototype validation to closed-loop optimization.</div>
+    <!-- ============================================================ -->
+    <!-- 3) HOW FDOS WORKS: The 4-step mechanism -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-blue-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">How FDOS works (the mechanism)</div>
+      <div class="text-sm text-slate-600 mb-5">Four-step process to turn factory data into decision-grade signals</div>
 
       <div class="space-y-4">
-        ${roadmap.map((phase, index) => `
-          <div class="relative pl-8 ${phase.status === 'NOW' ? 'border-l-4 border-green-500' : 'border-l-4 border-slate-300'}">
-            <div class="absolute left-0 top-0 -ml-2 w-4 h-4 rounded-full ${phase.status === 'NOW' ? 'bg-green-500 ring-4 ring-green-100' : 'bg-slate-300'}"></div>
+        <!-- Step 1: Standardize -->
+        <div class="flex items-start gap-4 border-l-4 border-blue-500 pl-4 py-2">
+          <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
+          <div>
+            <div class="font-bold text-slate-900 mb-1">Standardize</div>
+            <div class="text-sm text-slate-700">Build a shared metric dictionary: definition, grain, owner, refresh rules — so "the same word means the same thing."</div>
+          </div>
+        </div>
 
-            <div class="pb-4">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="font-semibold">${phase.phase}</div>
-                ${phase.status === 'NOW' ? '<span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-semibold rounded">YOU ARE HERE</span>' : ''}
-                ${phase.status === 'NEXT' ? '<span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded">NEXT</span>' : ''}
+        <!-- Step 2: Validate -->
+        <div class="flex items-start gap-4 border-l-4 border-green-500 pl-4 py-2">
+          <div class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
+          <div>
+            <div class="font-bold text-slate-900 mb-1">Validate</div>
+            <div class="text-sm text-slate-700">Attach confidence to every key signal (freshness, coverage, reconciliation) so decisions can distinguish "real risk" vs "data noise."</div>
+          </div>
+        </div>
+
+        <!-- Step 3: Route decisions -->
+        <div class="flex items-start gap-4 border-l-4 border-amber-500 pl-4 py-2">
+          <div class="flex-shrink-0 w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+          <div>
+            <div class="font-bold text-slate-900 mb-1">Route decisions</div>
+            <div class="text-sm text-slate-700">When an outcome is at risk, the system routes it to the right owner with an SLA, linked evidence, and a small set of action options.</div>
+          </div>
+        </div>
+
+        <!-- Step 4: Close the loop -->
+        <div class="flex items-start gap-4 border-l-4 border-purple-500 pl-4 py-2">
+          <div class="flex-shrink-0 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
+          <div>
+            <div class="font-bold text-slate-900 mb-1">Close the loop</div>
+            <div class="text-sm text-slate-700">Record what decision was taken and what happened next — so the system can learn which actions actually change outcomes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 4) BUILT TO AVOID KPI THEATER: 4 hard guardrails -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-green-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">Built to avoid KPI theater</div>
+      <div class="text-sm text-slate-600 mb-4">Four hard-coded principles to ensure FDOS routes decisions, not ranks performance</div>
+
+      <div class="space-y-3">
+        <!-- Rule 1 -->
+        <div class="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-3">
+          <div class="text-sm font-bold text-slate-900 mb-1">No color without an action</div>
+          <div class="text-xs text-slate-700">Every Yellow/Red must have an owner, SLA, evidence, and options.</div>
+        </div>
+
+        <!-- Rule 2 -->
+        <div class="border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
+          <div class="text-sm font-bold text-slate-900 mb-1">Routing, not scoring</div>
+          <div class="text-xs text-slate-700">Status is a decision signal, never a performance grade.</div>
+        </div>
+
+        <!-- Rule 3 -->
+        <div class="border-l-4 border-amber-500 bg-amber-50 rounded-r-lg p-3">
+          <div class="text-sm font-bold text-slate-900 mb-1">No raw cross-site ranking</div>
+          <div class="text-xs text-slate-700">Comparisons require context and consistent definitions.</div>
+        </div>
+
+        <!-- Rule 4 -->
+        <div class="border-l-4 border-purple-500 bg-purple-50 rounded-r-lg p-3">
+          <div class="text-sm font-bold text-slate-900 mb-1">Confidence before conclusions</div>
+          <div class="text-xs text-slate-700">Low-confidence signals route to validation, not escalation.</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================ -->
+    <!-- 5) OPERATING MODEL: What runs in FDOS every week -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">What runs in FDOS every week</div>
+      <div class="text-sm text-slate-600 mb-5">The system operates on a predictable cadence to keep factory execution aligned with commitments</div>
+
+      <div class="space-y-3 mb-5">
+        <!-- Weekly -->
+        <div class="flex items-start gap-3 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
+          <div class="flex-shrink-0 font-bold text-sm text-blue-900 w-16">Weekly</div>
+          <div class="text-sm text-slate-700">Commitments are set → FDOS tracks whether factory execution can meet them.</div>
+        </div>
+
+        <!-- Daily -->
+        <div class="flex items-start gap-3 border-l-4 border-green-500 pl-4 py-2 bg-green-50 rounded-r-lg">
+          <div class="flex-shrink-0 font-bold text-sm text-green-900 w-16">Daily</div>
+          <div class="text-sm text-slate-700">Constraints (materials/capacity/yield) update → FDOS refreshes risk and routes decisions.</div>
+        </div>
+
+        <!-- 48h window -->
+        <div class="flex items-start gap-3 border-l-4 border-amber-500 pl-4 py-2 bg-amber-50 rounded-r-lg">
+          <div class="flex-shrink-0 font-bold text-sm text-amber-900 w-16">48h window</div>
+          <div class="text-sm text-slate-700">The system prioritizes the few decisions that can still change this week's outcome.</div>
+        </div>
+      </div>
+
+      <!-- Closed-loop chain -->
+      <div class="border-t pt-4">
+        <div class="text-xs font-semibold text-slate-700 mb-2">Closed-loop chain:</div>
+        <div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 font-mono">
+          Plan → Constraints → Input → Output → Shipment readiness → Commit → Exceptions → Actions → Learning
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 6) IMPLEMENTATION ROADMAP (keep as-is) -->
+    <!-- ============================================================ -->
+    <!-- Implementation Roadmap with Timeline -->
+    <div class="bg-white border rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold mb-2">Implementation Roadmap: Q1 2026 - Q4 2026</div>
+      <div class="text-sm text-slate-600 mb-6">Four-phase deployment strategy with clear milestones and deliverables</div>
+
+      <!-- Timeline Visualization -->
+      <div class="relative mb-8">
+        <!-- Timeline Bar -->
+        <div class="absolute top-6 left-0 right-0 h-1 bg-slate-200"></div>
+        <div class="absolute top-6 left-0 w-[25%] h-1 bg-green-500"></div>
+
+        <!-- Phase Markers -->
+        <div class="relative grid grid-cols-4 gap-2">
+          <!-- Q1 2026 -->
+          <div class="relative">
+            <div class="flex flex-col items-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold shadow-lg ring-4 ring-green-100 relative z-10">
+                Q1
               </div>
+              <div class="mt-2 text-center">
+                <div class="text-xs font-bold text-green-700">Phase 1</div>
+                <div class="text-xs text-slate-600">Jan - Mar 2026</div>
+                <span class="inline-block px-2 py-0.5 bg-green-100 text-green-800 text-xs font-semibold rounded mt-1">IN PROGRESS</span>
+              </div>
+            </div>
+          </div>
 
-              <div class="text-sm text-slate-700 mb-3">${phase.goal}</div>
+          <!-- Q2 2026 -->
+          <div class="relative">
+            <div class="flex flex-col items-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg relative z-10">
+                Q2
+              </div>
+              <div class="mt-2 text-center">
+                <div class="text-xs font-bold text-blue-700">Phase 2</div>
+                <div class="text-xs text-slate-600">Apr - Jun 2026</div>
+                <span class="inline-block px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded mt-1">PLANNED</span>
+              </div>
+            </div>
+          </div>
 
-              <div class="text-xs font-semibold text-slate-500 mb-2">SUCCESS METRICS:</div>
+          <!-- Q3 2026 -->
+          <div class="relative">
+            <div class="flex flex-col items-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white font-bold shadow-md relative z-10">
+                Q3
+              </div>
+              <div class="mt-2 text-center">
+                <div class="text-xs font-bold text-slate-700">Phase 3</div>
+                <div class="text-xs text-slate-600">Jul - Sep 2026</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q4 2026 -->
+          <div class="relative">
+            <div class="flex flex-col items-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white font-bold shadow-md relative z-10">
+                Q4
+              </div>
+              <div class="mt-2 text-center">
+                <div class="text-xs font-bold text-slate-700">Phase 4</div>
+                <div class="text-xs text-slate-600">Oct - Dec 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase Details -->
+      <div class="space-y-4">
+        <!-- Phase 1: Foundation -->
+        <div class="border-2 border-green-400 rounded-xl overflow-hidden">
+          <div class="bg-gradient-to-r from-green-50 to-green-100 px-4 py-3 border-b-2 border-green-400">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">1</div>
+                <div>
+                  <div class="font-bold text-slate-900">Phase 1: Foundation & Core Modules</div>
+                  <div class="text-xs text-slate-600">Q1 2026 (Jan - Mar) · 12 weeks</div>
+                </div>
+              </div>
+              <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">IN PROGRESS</span>
+            </div>
+          </div>
+          <div class="p-4 bg-white">
+            <div class="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Portfolio & Program Workspace UI</span></li>
+                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Delivery Command Center module</span></li>
+                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Manufacturing & BTO/CTO Lead-time tracking</span></li>
+                  <li class="flex items-start gap-2"><span class="text-yellow-600">⏳</span><span>Basic data ingestion pipeline</span></li>
+                </ul>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Demo validated with 5+ stakeholders</li>
+                  <li>• Core workflows tested with pilot factory</li>
+                  <li>• 90% positive feedback on UI/UX design</li>
+                </ul>
+              </div>
+            </div>
+            <div class="pt-3 border-t">
+              <div class="text-xs font-semibold text-slate-700 mb-1">Current Status:</div>
+              <div class="text-xs text-slate-600">Prototype complete. Gathering stakeholder feedback for Phase 2 prioritization.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 2: Integration -->
+        <div class="border-2 border-blue-300 rounded-xl overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b-2 border-blue-300">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">2</div>
+                <div>
+                  <div class="font-bold text-slate-900">Phase 2: Data Integration & AI Layer</div>
+                  <div class="text-xs text-slate-600">Q2 2026 (Apr - Jun) · 12 weeks</div>
+                </div>
+              </div>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">PLANNED</span>
+            </div>
+          </div>
+          <div class="p-4 bg-white">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Real-time data connectors (MES, ERP, WMS)</li>
+                  <li>• AI chatbot with natural language queries</li>
+                  <li>• Smart data update system (auto-parsing)</li>
+                  <li>• FV Management & Labor Fulfillment modules</li>
+                </ul>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Connect to 3+ factory data sources</li>
+                  <li>• 95% data accuracy vs. manual tracking</li>
+                  <li>• AI response accuracy >85%</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 3: Optimization -->
+        <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">3</div>
+              <div>
+                <div class="font-bold text-slate-900">Phase 3: Advanced Analytics & Predictive Intelligence</div>
+                <div class="text-xs text-slate-600">Q3 2026 (Jul - Sep) · 12 weeks</div>
+              </div>
+            </div>
+          </div>
+          <div class="p-4 bg-white">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Predictive risk modeling (ML-based)</li>
+                  <li>• Production Plan optimization engine</li>
+                  <li>• Campus Readiness capacity planning</li>
+                  <li>• Automated anomaly detection</li>
+                </ul>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Predict 70% of delays 5+ days early</li>
+                  <li>• Reduce manual planning time by 40%</li>
+                  <li>• Detect anomalies within 2 hours</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 4: Scale -->
+        <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">4</div>
+              <div>
+                <div class="font-bold text-slate-900">Phase 4: Enterprise Scale & Closed-Loop Automation</div>
+                <div class="text-xs text-slate-600">Q4 2026 (Oct - Dec) · 12 weeks</div>
+              </div>
+            </div>
+          </div>
+          <div class="p-4 bg-white">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• Multi-region deployment (APAC, Americas, EMEA)</li>
+                  <li>• Closed-loop action routing & tracking</li>
+                  <li>• Mobile app for factory floor visibility</li>
+                  <li>• Executive dashboard & automated reporting</li>
+                </ul>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
+                <ul class="text-xs text-slate-600 space-y-1">
+                  <li>• 20+ factories onboarded globally</li>
+                  <li>• 50% reduction in commit misses</li>
+                  <li>• <2 second average query response time</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Demo Information Footer -->
+    <div class="bg-gradient-to-r from-slate-50 to-slate-100 border-2 border-slate-300 rounded-xl p-6">
+      <div class="flex items-start gap-4">
+        <div class="text-3xl">ℹ️</div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-slate-900 mb-3">About This Demonstration</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+            <div>
+              <div class="font-semibold mb-2">Purpose</div>
               <ul class="space-y-1">
-                ${phase.successMetrics.map(metric => `
-                  <li class="flex items-start gap-2 text-xs text-slate-600">
-                    <span class="text-green-600">✓</span>
-                    <span>${metric}</span>
-                  </li>
-                `).join('')}
+                <li>• Executive-level system overview and value proposition</li>
+                <li>• Validate architecture and information design</li>
+                <li>• Demonstrate integrated workflow across all modules</li>
+              </ul>
+            </div>
+            <div>
+              <div class="font-semibold mb-2">Data & Interactions</div>
+              <ul class="space-y-1">
+                <li>• All data is mocked for demonstration purposes</li>
+                <li>• Click <strong>Portfolio</strong> to explore program-level details</li>
+                <li>• Try the chatbot and data update features</li>
               </ul>
             </div>
           </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- AI Integration Note -->
-    <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6 mb-6">
-      <div class="flex items-start gap-4">
-        <div class="text-4xl">🤖</div>
-        <div class="flex-1">
-          <div class="text-lg font-bold mb-2">Where AI Helps (Decision Support, Not Just Automation)</div>
-          <ul class="space-y-2 text-sm">
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600">•</span>
-              <span>Convert messy inputs (emails, notes, daily updates) into <strong>structured signals and confidence labels</strong></span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600">•</span>
-              <span>Explain <strong>"why commit is at risk"</strong> in plain language and generate decision-ready action options</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600">•</span>
-              <span>Generate <strong>leadership briefs and evidence packs automatically</strong>, so reviews focus on decisions, not data collection</span>
-            </li>
-          </ul>
-          <div class="mt-4 text-xs text-slate-600">
-            Click the 🤖 buttons throughout the demo to see AI-powered decision support in action.
+          <div class="mt-4 pt-4 border-t border-slate-300">
+            <div class="text-xs text-slate-600">
+              <strong>Next Steps:</strong> Schedule stakeholder demos, finalize Phase 2 requirements, establish data integration partnerships with factory teams.
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Demo Notes Footer -->
-    <div class="bg-slate-50 border rounded-xl p-6">
-      <div class="text-sm font-semibold text-slate-700 mb-3">Demo Notes</div>
-      <ul class="space-y-2 text-sm text-slate-600">
-        <li class="flex items-start gap-2">
-          <span>•</span>
-          <span>This page is designed for internal alignment: it translates the org SCDO direction into a concrete factory-side extension proposal.</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span>•</span>
-          <span>All data in this prototype is mocked for illustration; the goal is to validate the decision workflow and information design.</span>
-        </li>
-        <li class="flex items-start gap-2">
-          <span>•</span>
-          <span>Next step: confirm minimum viable factory signals and define confidence scoring + routing guardrails.</span>
-        </li>
-      </ul>
     </div>
   `;
 
@@ -807,6 +888,115 @@ function renderOverview() {
 // ========================================
 // PORTFOLIO - All Programs
 // ========================================
+// ========================================
+// Portfolio Helper Functions
+// ========================================
+
+function calculateDriverBreakdown(programs) {
+  const drivers = {};
+  let totalAtRisk = 0;
+
+  programs.forEach(prog => {
+    const constraint = extractPrimaryConstraint(prog.topDriver);
+    drivers[constraint] = (drivers[constraint] || 0) + prog.atRiskUnits;
+    totalAtRisk += prog.atRiskUnits;
+  });
+
+  const sorted = Object.entries(drivers)
+    .map(([driver, units]) => ({
+      driver,
+      units,
+      percentage: totalAtRisk > 0 ? Math.round((units / totalAtRisk) * 100) : 0
+    }))
+    .sort((a, b) => b.units - a.units);
+
+  return {
+    top: sorted[0] ? `${sorted[0].driver} (${sorted[0].percentage}%)` : 'N/A',
+    breakdown: sorted
+  };
+}
+
+function extractPrimaryConstraint(topDriver) {
+  if (!topDriver) return 'Unknown';
+
+  const lower = topDriver.toLowerCase();
+  if (lower.includes('ctb') || lower.includes('material')) return 'CTB';
+  if (lower.includes('yield')) return 'Yield';
+  if (lower.includes('capacity')) return 'Capacity';
+  if (lower.includes('shipment') || lower.includes('ship')) return 'Shipment';
+  if (lower.includes('lead time') || lower.includes('cycle')) return 'Lead time';
+  if (lower.includes('data') || lower.includes('confidence')) return 'Data confidence';
+
+  return 'Other';
+}
+
+function generateTopFocusCards(programs) {
+  // Generate top 3 focus items based on impact × confidence × urgency
+  return programs
+    .filter(prog => prog.commitHealth !== 'GREEN' && prog.atRiskUnits > 0)
+    .map(prog => {
+      const priority = prog.commitHealth === 'RED' || prog.atRiskUnits > 10000 ? 'HIGH' :
+                       prog.commitHealth === 'YELLOW' || prog.atRiskUnits > 5000 ? 'MEDIUM' : 'LOW';
+
+      const slaHours = prog.sla === '24h' ? 24 :
+                       prog.sla === '48h' ? 48 :
+                       prog.sla === '72h' ? 72 : 48;
+
+      const constraint = extractPrimaryConstraint(prog.topDriver);
+
+      return {
+        program: prog.name,
+        site: prog.buildSites.split(',')[0].trim(),
+        priority,
+        impact: `${prog.atRiskUnits.toLocaleString()} units at risk`,
+        whyNow: `${constraint} constraint detected`,
+        owner: prog.owner,
+        slaHours,
+        confidence: prog.confidence || 'HIGH'
+      };
+    })
+    .sort((a, b) => {
+      const priorityOrder = { HIGH: 1, MEDIUM: 2, LOW: 3 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    })
+    .slice(0, 3);
+}
+
+// Placeholder functions for card click handlers
+function filterPrograms(filter) {
+  console.log(`[Portfolio] Filter programs by: ${filter}`);
+  // TODO: Implement filtering logic
+}
+
+function openDecisionInbox() {
+  console.log('[Portfolio] Opening Decision Inbox');
+  // TODO: Implement decision inbox
+}
+
+function openAtRiskBreakdown() {
+  console.log('[Portfolio] Opening At-risk breakdown');
+  // TODO: Implement at-risk breakdown
+}
+
+function openInventoryDrilldown() {
+  console.log('[Portfolio] Opening Inventory drilldown');
+  // TODO: Implement inventory drilldown
+}
+
+function assignOrEscalate(program) {
+  console.log(`[Portfolio] Assign/Escalate for program: ${program}`);
+  // TODO: Implement assign/escalate flow
+}
+
+function openException(program, issue) {
+  console.log(`[Portfolio] Opening exception: ${program} - ${issue}`);
+  // TODO: Implement exception detail view
+}
+
+// ========================================
+// Portfolio Rendering
+// ========================================
+
 function renderPortfolio() {
   const portfolio = STATE.data.portfolio;
 
@@ -817,13 +1007,21 @@ function renderPortfolio() {
 
   const { summary, programs, topExceptions } = portfolio;
 
+  // Calculate top drivers distribution for At-risk Units card
+  const driverBreakdown = calculateDriverBreakdown(programs);
+
   const html = `
-    <!-- Page Header -->
-    <div class="bg-white border rounded-xl p-6 mb-4">
-      <div class="flex items-start justify-between mb-2">
+    <!-- Page Header: Weekly Decision Triage -->
+    <div class="bg-white border-2 border-slate-300 rounded-xl p-6 mb-4">
+      <div class="flex items-start justify-between mb-3">
         <div class="flex-1">
-          <div class="text-lg font-bold mb-2">Portfolio — All Programs</div>
-          <div class="text-sm text-slate-600">Single place to see which programs are at risk this week, where to focus, and which actions change outcomes.</div>
+          <div class="text-xl font-bold mb-2">Portfolio — Weekly Decision Triage</div>
+          <div class="text-sm text-slate-700 mb-3">Highlights where attention changes outcomes (not a performance ranking).</div>
+          <div class="grid grid-cols-3 gap-4 text-xs text-slate-600">
+            <div><span class="font-semibold text-slate-900">1.</span> What needs a decision this week / within 48h</div>
+            <div><span class="font-semibold text-slate-900">2.</span> Who owns it + what evidence is ready</div>
+            <div><span class="font-semibold text-slate-900">3.</span> What will change if we act</div>
+          </div>
         </div>
         <button onclick="openAIDrawer('portfolio_exec_summary')" class="flex items-center gap-2 text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg px-4 py-2 hover:from-blue-700 hover:to-purple-700 flex-shrink-0">
           <span>🤖</span>
@@ -832,96 +1030,283 @@ function renderPortfolio() {
       </div>
     </div>
 
-    <!-- Top KPI Strip -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-      <div class="bg-white border-2 border-blue-300 bg-blue-50 rounded-xl p-4">
-        <div class="text-xs text-slate-500 font-semibold mb-1">Programs in Scope</div>
-        <div class="text-3xl font-bold text-blue-700">${summary.programsInScope}</div>
-        <div class="text-xs text-slate-600 mt-1">Active programs with weekly commit.</div>
-      </div>
-      <div class="bg-white border-2 ${summary.commitHealth === 'GREEN' ? 'border-green-400 bg-green-50' : summary.commitHealth === 'YELLOW' ? 'border-yellow-400 bg-yellow-50' : 'border-red-400 bg-red-50'} rounded-xl p-4">
-        <div class="text-xs text-slate-500 font-semibold mb-1">Commit Health (Weighted)</div>
-        <div class="flex items-center gap-2">
-          <div class="text-3xl font-bold ${summary.commitHealth === 'GREEN' ? 'text-green-700' : summary.commitHealth === 'YELLOW' ? 'text-yellow-700' : 'text-red-700'}">${summary.commitHealth}</div>
+    <!-- Signals Strip (replacing KPI Cards) -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-4 mb-4">
+      <div class="text-xs font-semibold text-slate-700 mb-3">Weekly Signals</div>
+      <div class="space-y-2">
+        <!-- Signal 1: Commit coverage -->
+        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
+          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.commitHealth === 'GREEN' ? 'bg-green-500' : summary.commitHealth === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
+          <div class="flex-1 text-sm text-slate-700">
+            <span class="font-semibold">Commit coverage:</span> ${(summary.programsInScope * 5000).toLocaleString()} demand / ${summary.atRiskUnits.toLocaleString()} at-risk · confidence ${summary.dataConfidence || 'HIGH'} · needs ${generateTopFocusCards(programs).length} decisions
+          </div>
         </div>
-        <div class="text-xs text-slate-600 mt-1">Weighted by units at risk.</div>
-      </div>
-      <div class="bg-white border-2 ${summary.atRiskUnits > 20000 ? 'border-red-400 bg-red-50' : summary.atRiskUnits > 10000 ? 'border-yellow-400 bg-yellow-50' : 'border-green-400 bg-green-50'} rounded-xl p-4">
-        <div class="text-xs text-slate-500 font-semibold mb-1">At-risk Units (This Week)</div>
-        <div class="text-3xl font-bold ${summary.atRiskUnits > 20000 ? 'text-red-700' : summary.atRiskUnits > 10000 ? 'text-yellow-700' : 'text-green-700'}">${summary.atRiskUnits.toLocaleString()}</div>
-        <div class="text-xs text-slate-600 mt-1">Units that may miss ship window without actions.</div>
-      </div>
-      <div class="bg-white border-2 ${summary.inventoryPressure === 'GREEN' ? 'border-green-400 bg-green-50' : summary.inventoryPressure === 'YELLOW' ? 'border-yellow-400 bg-yellow-50' : 'border-red-400 bg-red-50'} rounded-xl p-4">
-        <div class="text-xs text-slate-500 font-semibold mb-1">Inventory & Liability Pressure</div>
-        <div class="flex items-center gap-2">
-          <div class="text-3xl font-bold ${summary.inventoryPressure === 'GREEN' ? 'text-green-700' : summary.inventoryPressure === 'YELLOW' ? 'text-yellow-700' : 'text-red-700'}">${summary.inventoryPressure}</div>
+
+        <!-- Signal 2: Top constraint -->
+        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
+          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.atRiskUnits > 20000 ? 'bg-red-500' : summary.atRiskUnits > 10000 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
+          <div class="flex-1 text-sm text-slate-700">
+            <span class="font-semibold">Primary constraint:</span> ${driverBreakdown.top || 'CTB (42%)'} driving most at-risk units
+          </div>
         </div>
-        <div class="text-xs text-slate-600 mt-1">FG/WIP/components exposure under downside signals.</div>
+
+        <!-- Signal 3: Inventory exposure -->
+        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
+          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.inventoryPressure === 'GREEN' ? 'bg-green-500' : summary.inventoryPressure === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
+          <div class="flex-1 text-sm text-slate-700">
+            <span class="font-semibold">Inventory exposure:</span> FG/WIP risk trending ${summary.inventoryPressure === 'GREEN' ? '→' : summary.inventoryPressure === 'YELLOW' ? '↑' : '↑↑'} · confidence ${summary.dataConfidence === 'HIGH' ? 'HIGH' : 'MED'} · ${summary.inventoryPressure !== 'GREEN' ? '1 review' : 'monitor'}
+          </div>
+        </div>
+
+        <!-- Signal 4: System load -->
+        <div class="flex items-start gap-3 py-2">
+          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${topExceptions.length > 3 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
+          <div class="flex-1 text-sm text-slate-700">
+            <span class="font-semibold">System load:</span> ${topExceptions.length} open decisions · SLA breaches: ${topExceptions.filter(ex => ex.slaHours && ex.slaHours <= 24).length}
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Portfolio Table -->
+    <!-- ============================================================ -->
+    <!-- DECISION QUEUE: What needs a decision this week -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-blue-200 rounded-xl p-6 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-lg font-bold text-slate-900">Decision Queue — This Week</div>
+          <div class="text-xs text-slate-600 mt-1">Ranked by Impact × Confidence × Urgency. Every card answers: Decision / Why now / Impact / Owner+SLA / Actions</div>
+        </div>
+        <div class="text-xs text-slate-500">Updated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+      </div>
+
+      <div class="space-y-4">
+        ${generateTopFocusCards(programs).map((focus, idx) => `
+          <div class="bg-white border-2 ${focus.priority === 'HIGH' ? 'border-red-300' : focus.priority === 'MEDIUM' ? 'border-yellow-300' : 'border-blue-300'} rounded-lg p-5 hover:shadow-md transition-shadow">
+            <!-- Header: Program + Priority -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg font-bold text-slate-400">#${idx + 1}</span>
+              <span class="text-base font-bold text-slate-900">${focus.program}</span>
+              ${focus.site ? `<span class="text-xs text-slate-500">/ ${focus.site}</span>` : ''}
+              <span class="px-2 py-0.5 rounded text-xs font-semibold ${focus.priority === 'HIGH' ? 'bg-red-100 text-red-800' : focus.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">${focus.priority}</span>
+            </div>
+
+            <!-- Decision needed (one sentence) -->
+            <div class="mb-3">
+              <div class="text-xs font-semibold text-slate-700 mb-1">Decision:</div>
+              <div class="text-sm text-slate-900 font-medium">Protect W04 commit (${focus.whyNow})</div>
+            </div>
+
+            <!-- Why now + Impact (grid) -->
+            <div class="grid grid-cols-2 gap-4 mb-3 pb-3 border-b border-slate-200">
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-1">Why now:</div>
+                <div class="text-xs text-slate-700">${focus.whyNow} · confidence <span class="font-semibold ${focus.confidence === 'HIGH' ? 'text-green-700' : focus.confidence === 'MEDIUM' ? 'text-yellow-700' : 'text-red-700'}">${focus.confidence || 'HIGH'}</span></div>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-700 mb-1">Impact:</div>
+                <div class="text-xs text-slate-700">${focus.impact} · SLA: <span class="font-semibold ${focus.slaHours <= 24 ? 'text-red-600' : 'text-slate-600'}">${focus.slaHours}h</span></div>
+              </div>
+            </div>
+
+            <!-- Owner + Actions -->
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-slate-600">
+                <span class="font-semibold">Owner:</span> ${focus.owner}
+              </div>
+              <div class="flex gap-2">
+                <button onclick="enterProgram('${focus.program}', '${focus.site || 'WF'}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
+                  [Open Plan]
+                </button>
+                <button onclick="openAtRiskBreakdown()" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
+                  [Check CTB]
+                </button>
+                <button onclick="assignOrEscalate('${focus.program}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
+                  [Run What-if]
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      ${generateTopFocusCards(programs).length === 0 ? `
+        <div class="bg-white border-2 border-green-300 rounded-lg p-6 text-center">
+          <div class="text-4xl mb-2">✅</div>
+          <div class="text-sm font-bold text-green-900 mb-1">All Programs On Track</div>
+          <div class="text-xs text-green-700">No urgent decisions needed this week. Continue monitoring for changes.</div>
+        </div>
+      ` : ''}
+    </div>
+
+    <!-- Program Summary Table (Browse Layer - lightened) -->
     <div class="bg-white border rounded-xl overflow-hidden mb-4">
-      <div class="p-4 border-b">
-        <div class="text-sm font-semibold">Program Summary — Week ${portfolio.week}</div>
-        <div class="text-xs text-slate-500 mt-1">Click a program to open Delivery Command Center.</div>
+      <div class="p-4 border-b bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-slate-700">Browse All Programs — Week ${portfolio.week}</div>
+            <div class="text-xs text-slate-500 mt-1">Facts + Routing layer. Click program to open detailed view.</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="filterPrograms('at-risk')" class="px-3 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded border border-slate-200">
+              At-risk only
+            </button>
+            <button onclick="filterPrograms('ctb')" class="px-3 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded border border-slate-200">
+              Filter: CTB
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead class="bg-slate-50 border-b">
             <tr>
-              <th class="text-left p-3 font-semibold">Program</th>
-              <th class="text-left p-3 font-semibold">Build Sites</th>
-              <th class="text-left p-3 font-semibold">Commit Health</th>
-              <th class="text-right p-3 font-semibold">At-risk Units</th>
-              <th class="text-left p-3 font-semibold">Top Driver</th>
-              <th class="text-left p-3 font-semibold">Next Action</th>
-              <th class="text-left p-3 font-semibold">Owner / SLA</th>
-              <th class="text-left p-3 font-semibold">Pacing Guardrail</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Program / Sites</th>
+              <th class="text-right p-3 font-semibold text-slate-700">Gap (units)</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Binding Constraint</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Decision Due</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Owner</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Open Module</th>
             </tr>
           </thead>
           <tbody>
-            ${programs.map(prog => `
-              <tr class="border-b hover:bg-slate-50 cursor-pointer" onclick="enterProgram('${prog.name}', '${prog.buildSites.split(',')[0].trim()}');">
-                <td class="p-3 font-semibold">${prog.name}</td>
-                <td class="p-3 text-slate-600">${prog.buildSites}</td>
+            ${programs.map(prog => {
+              const constraint = extractPrimaryConstraint(prog.topDriver);
+              const constraintIcon =
+                constraint === 'CTB' ? '📦' :
+                constraint === 'Yield' ? '🎯' :
+                constraint === 'Capacity' ? '🏭' :
+                constraint === 'Shipment' ? '🚚' : '📊';
+              const confidence = prog.confidence || 'HIGH';
+              const statusDot = prog.commitHealth === 'GREEN' ? '🟢' : prog.commitHealth === 'YELLOW' ? '🟡' : '🔴';
+
+              return `
+              <tr class="border-b hover:bg-blue-50 cursor-pointer transition" onclick="enterProgram('${prog.name}', '${prog.buildSites.split(',')[0].trim()}');">
                 <td class="p-3">
-                  <span class="px-2 py-1 rounded text-xs font-semibold ${prog.commitHealth === 'GREEN' ? 'bg-green-100 text-green-800' : prog.commitHealth === 'YELLOW' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
-                    ${prog.commitHealth}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm">${statusDot}</span>
+                    <div>
+                      <div class="font-semibold text-slate-900">${prog.name}</div>
+                      <div class="text-xs text-slate-500">${prog.buildSites}</div>
+                    </div>
+                    ${confidence !== 'HIGH' ? `
+                      <span class="px-1.5 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">
+                        ${confidence}
+                      </span>
+                    ` : ''}
+                  </div>
                 </td>
-                <td class="p-3 text-right font-semibold">${prog.atRiskUnits.toLocaleString()}</td>
-                <td class="p-3 text-slate-600">${prog.topDriver}</td>
-                <td class="p-3">${prog.nextAction}</td>
-                <td class="p-3 text-slate-600">${prog.owner} · ${prog.sla}</td>
-                <td class="p-3 text-slate-600">${prog.pacingGuardrail}</td>
+                <td class="p-3 text-right font-semibold text-slate-900">${prog.atRiskUnits > 0 ? prog.atRiskUnits.toLocaleString() : '—'}</td>
+                <td class="p-3">
+                  <div class="flex items-center gap-1.5">
+                    <span>${constraintIcon}</span>
+                    <span class="font-medium text-slate-700">${constraint}</span>
+                  </div>
+                </td>
+                <td class="p-3">
+                  <span class="font-medium ${prog.sla === '24h' ? 'text-red-600' : prog.sla === '48h' ? 'text-yellow-600' : 'text-slate-600'}">${prog.sla}</span>
+                </td>
+                <td class="p-3 text-slate-700">${prog.owner}</td>
+                <td class="p-3 text-center">
+                  <button onclick="enterProgram('${prog.name}', '${prog.buildSites.split(',')[0].trim()}'); event.stopPropagation();" class="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200">
+                    Production Plan
+                  </button>
+                </td>
               </tr>
-            `).join('')}
+            `}).join('')}
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Right-side panel: Top Exceptions -->
+    <!-- Top Exceptions (Evidence-backed) -->
     <div class="bg-white border rounded-xl p-6">
-      <div class="text-sm font-semibold mb-2">Top Exceptions (Across Programs)</div>
-      <div class="text-xs text-slate-500 mb-4">Exceptions are ranked by Impact × Confidence.</div>
+      <div class="text-sm font-semibold mb-2">Top Exceptions — Evidence-Backed Routing</div>
+      <div class="text-xs text-slate-500 mb-4">Every exception shows: Decision / Evidence ready / Threatens outcome / Owner+SLA / Actions</div>
 
-      <div class="space-y-2">
-        ${topExceptions.map((ex, idx) => `
-          <div class="border rounded-lg p-3 flex items-start gap-3">
-            <div class="text-lg font-bold text-slate-400">#${idx + 1}</div>
-            <div class="flex-1">
-              <div class="font-semibold text-sm">${ex.program} — ${ex.issue}</div>
-              <div class="mt-1">
-                <span class="px-2 py-0.5 rounded text-xs font-semibold ${ex.severity === 'HIGH' ? 'bg-red-100 text-red-800' : ex.severity === 'MED' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">
-                  ${ex.severity}
+      <div class="space-y-4">
+        ${topExceptions.map((ex, idx) => {
+          // Determine what outcome this threatens
+          const threatenedOutcome = ex.issue.toLowerCase().includes('ctb') || ex.issue.toLowerCase().includes('material') ? 'Commit fulfillment' :
+                                    ex.issue.toLowerCase().includes('yield') ? 'Output quality' :
+                                    ex.issue.toLowerCase().includes('ship') ? 'Delivery timing' : 'Plan execution';
+
+          return `
+          <div class="border-2 ${ex.severity === 'HIGH' ? 'border-red-300 bg-red-50' : ex.severity === 'MED' ? 'border-yellow-300 bg-yellow-50' : 'border-blue-300 bg-blue-50'} rounded-lg p-4">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-start gap-2 flex-1">
+                <div class="text-base font-bold text-slate-400">#${idx + 1}</div>
+                <div class="flex-1">
+                  <div class="font-semibold text-sm text-slate-900 mb-1">${ex.program} — ${ex.issue}</div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-xs font-semibold ${ex.severity === 'HIGH' ? 'bg-red-100 text-red-800' : ex.severity === 'MED' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">
+                      ${ex.severity}
+                    </span>
+                    ${ex.confidence ? `
+                      <span class="px-2 py-0.5 rounded text-xs font-semibold ${ex.confidence === 'HIGH' ? 'bg-green-100 text-green-700' : ex.confidence === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'} border ${ex.confidence === 'HIGH' ? 'border-green-300' : ex.confidence === 'MEDIUM' ? 'border-yellow-300' : 'border-red-300'}">
+                        ${ex.confidence}
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exception details grid -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <!-- Decision needed -->
+              <div class="bg-white border border-slate-200 rounded p-3">
+                <div class="text-xs font-semibold text-slate-700 mb-1">Exception:</div>
+                <div class="text-xs text-slate-900">${ex.decisionNeeded || ex.issue}</div>
+              </div>
+
+              <!-- Threatens -->
+              <div class="bg-white border border-slate-200 rounded p-3">
+                <div class="text-xs font-semibold text-slate-700 mb-1">Threatens:</div>
+                <div class="text-xs text-slate-900 font-medium">${threatenedOutcome}</div>
+              </div>
+            </div>
+
+            <!-- Evidence ready -->
+            ${ex.evidence && ex.evidence.length > 0 ? `
+              <div class="mb-3 bg-white border border-slate-200 rounded p-3">
+                <div class="text-xs font-semibold text-slate-700 mb-2">Evidence:</div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  ${ex.evidence.slice(0, 3).map(e => `
+                    <div class="text-xs text-slate-700 flex items-center gap-1">
+                      <span class="text-green-600">✅</span>
+                      <span>${e.split(':')[0] || e}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : `
+              <div class="mb-3 bg-white border border-amber-200 rounded p-3">
+                <div class="text-xs text-amber-800">⚠️ Evidence incomplete — needs validation before routing</div>
+              </div>
+            `}
+
+            <!-- Routing: Owner + SLA + Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+              <div class="text-xs text-slate-600">
+                <span class="font-semibold">Routing to:</span> ${ex.owner || 'Unassigned'} ·
+                <span class="font-semibold ${ex.slaHours && ex.slaHours <= 24 ? 'text-red-600' : 'text-slate-600'}">
+                  SLA ${ex.sla || ex.slaHours ? ex.slaHours + 'h' : 'TBD'}
                 </span>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="openException('${ex.program}', '${ex.issue}')" class="px-2 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded border border-slate-200">
+                  [Open evidence]
+                </button>
+                <button onclick="enterProgram('${ex.program}', 'WF')" class="px-2 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
+                  [Open plan]
+                </button>
               </div>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     </div>
   `;
@@ -1758,6 +2143,88 @@ function renderHomeV3() {
       </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- COMPONENT 1: Executive Scorecard (NEW) -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-sm font-bold text-slate-900">Executive Scorecard</div>
+          <div class="text-xs text-slate-600">This week's outcome metrics with data confidence and system routing</div>
+        </div>
+        <div class="text-xs text-slate-500">
+          Updated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">Metric</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">This Week</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700">vs Target</th>
+              <th class="px-4 py-3 text-center font-semibold text-slate-700">Confidence</th>
+              <th class="px-4 py-3 text-left font-semibold text-slate-700">System Routing</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <!-- Row 1: Plan Achievement -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Plan Achievement</td>
+              <td class="px-4 py-3 text-right font-bold text-slate-900">92%</td>
+              <td class="px-4 py-3 text-right">
+                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded font-semibold">-8%</span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-block px-2 py-1 bg-green-100 text-green-700 border border-green-300 rounded font-semibold">🟢 HIGH</span>
+              </td>
+              <td class="px-4 py-3 text-slate-700">
+                <div class="font-semibold">Review needed within 48h</div>
+                <div class="text-slate-600 mt-0.5">Output gap 11.6k units → check yield + capacity</div>
+              </td>
+            </tr>
+
+            <!-- Row 2: Commit Fulfillment -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Commit Fulfillment</td>
+              <td class="px-4 py-3 text-right font-bold text-slate-900">95.5%</td>
+              <td class="px-4 py-3 text-right">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded font-semibold">-4.5%</span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-block px-2 py-1 bg-green-100 text-green-700 border border-green-300 rounded font-semibold">🟢 HIGH</span>
+              </td>
+              <td class="px-4 py-3 text-slate-700">
+                <div class="font-semibold">Monitor shipment pacing</div>
+                <div class="text-slate-600 mt-0.5">Shipment lag +1.5d → expedite packing if needed</div>
+              </td>
+            </tr>
+
+            <!-- Row 3: Cost Risk -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-slate-900">Cost Risk</td>
+              <td class="px-4 py-3 text-right font-bold text-slate-900">$45k</td>
+              <td class="px-4 py-3 text-right">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded font-semibold">+12%</span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 border border-yellow-300 rounded font-semibold">🟡 MED</span>
+              </td>
+              <td class="px-4 py-3 text-slate-700">
+                <div class="font-semibold">Track but no immediate action</div>
+                <div class="text-slate-600 mt-0.5">Overtime + rework costs elevated, watch weekly trend</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded text-xs text-blue-900">
+        <strong>How to read:</strong> "System Routing" shows what decision/action the system recommends based on the metric state + confidence level. Red/yellow status triggers routing, not ranking.
+      </div>
+    </div>
+
     <!-- Section A: Product Snapshot (NEW) -->
     <div class="bg-white border rounded-xl p-6 mb-4">
       <div class="text-sm font-semibold mb-2">Product Snapshot — Manufacturing Footprint</div>
@@ -2067,12 +2534,177 @@ function renderHomeV3() {
 
     <!-- Pacing Guardrail -->
     ${pacingGuardrail ? `
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
         <div class="text-xs font-semibold text-amber-900 uppercase mb-2">⚠️ Pacing Guardrail (Secondary)</div>
         <div class="text-sm text-amber-900 mb-2">${pacingGuardrail.message}</div>
         <div class="text-xs text-amber-800"><strong>Rule:</strong> ${pacingGuardrail.rule}</div>
       </div>
     ` : ''}
+
+    <!-- ============================================================ -->
+    <!-- COMPONENT 2: How We Avoid KPI Theater (Concrete Example) -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-blue-200 rounded-xl p-6 mb-4">
+      <div class="text-sm font-bold text-slate-900 mb-2">How We Avoid KPI Theater</div>
+      <div class="text-xs text-slate-600 mb-4">Red/Yellow is not a score — it's a routing signal. Every colored status must have: Owner, SLA, Evidence, Options, and Expected Impact.</div>
+
+      <div class="bg-gradient-to-r from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-4">
+        <div class="text-xs font-semibold text-blue-900 mb-3">Example: Commit Turns Yellow</div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- What Changed -->
+          <div>
+            <div class="text-xs font-bold text-slate-700 mb-2">📊 What Changed</div>
+            <div class="text-xs text-slate-700 space-y-1">
+              <div>• CTB short 3 days (IC-77 component)</div>
+              <div>• Yield drift: 94.2% → 97.5% target (-3.3%)</div>
+              <div>• Test capacity: 87% utilization</div>
+            </div>
+          </div>
+
+          <!-- System Decision -->
+          <div>
+            <div class="text-xs font-bold text-slate-700 mb-2">🎯 System Decision</div>
+            <div class="text-xs text-slate-700 space-y-1">
+              <div>• Route to: <span class="font-semibold">Production Planner</span></div>
+              <div>• SLA: <span class="font-semibold">48h review required</span></div>
+              <div>• Confidence: <span class="inline-block px-2 py-0.5 bg-green-100 text-green-700 border border-green-300 rounded font-semibold">HIGH</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence Linked -->
+        <div class="mb-4">
+          <div class="text-xs font-bold text-slate-700 mb-2">🔗 Evidence Linked</div>
+          <div class="flex flex-wrap gap-2">
+            <button class="text-xs px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 font-semibold">CTB Trend (past 7d)</button>
+            <button class="text-xs px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 font-semibold">Yield by Line</button>
+            <button class="text-xs px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 font-semibold">Downtime Log</button>
+            <button class="text-xs px-3 py-1.5 bg-white border border-slate-300 rounded hover:bg-slate-50 font-semibold">Component Lot #X2401</button>
+          </div>
+        </div>
+
+        <!-- Options with Expected Impact -->
+        <div>
+          <div class="text-xs font-bold text-slate-700 mb-2">⚙️ Options (with Expected Impact)</div>
+          <div class="space-y-2">
+            <div class="flex items-start gap-2 p-2 bg-white border rounded">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold">1</div>
+              <div class="flex-1">
+                <div class="text-xs font-semibold">Rebalance CTB (cross-site transfer)</div>
+                <div class="text-xs text-slate-600 mt-0.5">Impact: +800 units, closes 6.8% of gap</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 p-2 bg-white border rounded">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</div>
+              <div class="flex-1">
+                <div class="text-xs font-semibold">Add overtime (weekend shift for Test)</div>
+                <div class="text-xs text-slate-600 mt-0.5">Impact: +2.8k units, closes 24% of gap, cost +$8k</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 p-2 bg-white border rounded">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-600 text-white flex items-center justify-center text-xs font-bold">3</div>
+              <div class="flex-1">
+                <div class="text-xs font-semibold">Freeze pull (delay lower-priority SKUs)</div>
+                <div class="text-xs text-slate-600 mt-0.5">Impact: +4.2k units W04 recovery, pushes 4.2k to W05 (liability risk)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-green-50 border-l-4 border-green-500 rounded text-xs">
+          <strong>Result:</strong> Expected impact: +4.8k ship recovery in W04 if Option 1+2 approved by Production Director within 24h.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- COMPONENT 3: Metric Standardization Snapshot -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-4">
+      <div class="text-sm font-bold text-slate-900 mb-2">Unified Metric Index: 8 Core Metrics</div>
+      <div class="text-xs text-slate-600 mb-4">We standardized metric definitions across 8 metrics that matter for decision-making. This prevents "my number vs your number" debates and enables automated routing.</div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Metric (Plain Language)</th>
+              <th class="px-3 py-2 text-center font-semibold text-slate-700">Grain</th>
+              <th class="px-3 py-2 text-center font-semibold text-slate-700">Source</th>
+              <th class="px-3 py-2 text-center font-semibold text-slate-700">Refresh</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Confidence Rule</th>
+              <th class="px-3 py-2 text-left font-semibold text-slate-700">Decision Usage</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <!-- Row 1 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">Plan Achievement Rate</td>
+              <td class="px-3 py-2 text-center text-slate-600">Program×Week</td>
+              <td class="px-3 py-2 text-center text-slate-600">Planning+MES</td>
+              <td class="px-3 py-2 text-center text-slate-600">Daily</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <24h & coverage >95%</td>
+              <td class="px-3 py-2 text-slate-600">Routes to planning review when below target</td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">Material Availability</td>
+              <td class="px-3 py-2 text-center text-slate-600">Site×Day</td>
+              <td class="px-3 py-2 text-center text-slate-600">WMS</td>
+              <td class="px-3 py-2 text-center text-slate-600">Daily</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <12h & coverage >98%</td>
+              <td class="px-3 py-2 text-slate-600">Caps daily input in constrained mode</td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">First Pass Yield</td>
+              <td class="px-3 py-2 text-center text-slate-600">Line×Shift×Day</td>
+              <td class="px-3 py-2 text-center text-slate-600">MES</td>
+              <td class="px-3 py-2 text-center text-slate-600">Daily</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <6h & coverage >95%</td>
+              <td class="px-3 py-2 text-slate-600">Explains output gap, triggers quality action</td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">Capacity Utilization</td>
+              <td class="px-3 py-2 text-center text-slate-600">Site×Week</td>
+              <td class="px-3 py-2 text-center text-slate-600">Planning+MES</td>
+              <td class="px-3 py-2 text-center text-slate-600">Daily</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <24h & coverage >90%</td>
+              <td class="px-3 py-2 text-slate-600">Identifies bottleneck lines for rebalancing</td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">Commit Fulfillment Rate</td>
+              <td class="px-3 py-2 text-center text-slate-600">Program×Week</td>
+              <td class="px-3 py-2 text-center text-slate-600">OMS+Shipping</td>
+              <td class="px-3 py-2 text-center text-slate-600">12h</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <24h & reconciled with OMS</td>
+              <td class="px-3 py-2 text-slate-600">Triggers customer escalation if below threshold</td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 font-medium">Cost Risk (Extra Cost %)</td>
+              <td class="px-3 py-2 text-center text-slate-600">Site×Month</td>
+              <td class="px-3 py-2 text-center text-slate-600">Finance+MES</td>
+              <td class="px-3 py-2 text-center text-slate-600">Weekly</td>
+              <td class="px-3 py-2 text-slate-600">Fresh <72h & reconciled with actuals</td>
+              <td class="px-3 py-2 text-slate-600">Routes to finance review when above budget</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-xs text-amber-900">
+        <strong>Why this matters:</strong> Without unified definitions, each team uses their own calculation logic. This creates "my number vs your number" debates that delay decisions. Unified metrics = one source of truth = faster routing.
+      </div>
+    </div>
   `;
 
   $("content").innerHTML = html;
@@ -2095,61 +2727,371 @@ function getWeekMondayCutoff() {
   return monday.toLocaleString('en-US', options);
 }
 
-// 1. Delivery Command Center
+// 1. Delivery Command Center (v3.0 with Decision Inbox)
+// NOTE: This old version is replaced by command_center_new.js
+// Commented out to use the new "Weekly Commit Brief" version
+/*
 function renderDeliveryCommandCenter() {
   const cutoffTime = getWeekMondayCutoff();
 
+  // ============================================================
+  // STEP 1: Generate metrics from Production Plan
+  // ============================================================
+  let metrics = {};
+  let decisionCards = [];
+  let confidenceResults = {};
+
+  if (window.productionPlanState && window.productionPlanState.planResults) {
+    metrics = calculateMetricsFromPlan(
+      window.productionPlanState.planResults.dailyDetails,
+      window.productionPlanState.engine?.state || {}
+    );
+
+    // Calculate confidence for all metrics
+    confidenceResults = calculateBatchConfidence(metrics);
+
+    // Evaluate routing rules to generate decision cards
+    decisionCards = evaluateRoutingRules(metrics, {
+      date: new Date(),
+      isHoliday: false,
+      ramp_day_index: 10 // Example
+    });
+
+    // Store in global state for other components to access
+    window.commandCenterState = {
+      latestMetrics: metrics,
+      latestDecisionCards: decisionCards,
+      latestConfidence: confidenceResults,
+      featureEnabled: true
+    };
+
+    console.log('[Delivery Command Center] Generated:', {
+      metricsCount: Object.keys(metrics).length,
+      decisionCardsCount: decisionCards.length,
+      confidenceResults
+    });
+  } else {
+    console.warn('[Delivery Command Center] No production plan data available - using example data');
+
+    // Provide example metrics for Decision Chain visualization
+    metrics = {
+      mps_attainment: {
+        value: 0.92,
+        threshold: 0.85,
+        gap_qty: 11600,
+        status: 'at_risk',
+        data_snapshot: {
+          age_hours: 2,
+          coverage_pct: 98,
+          reconciliation_status: 'matched'
+        }
+      },
+      ctb: {
+        value: 5.2,
+        threshold: 5.0,
+        status: 'on_track',
+        days_cover: 5.2,
+        shortage_components: [],
+        data_snapshot: {
+          age_hours: 4,
+          coverage_pct: 95,
+          reconciliation_status: 'matched'
+        }
+      },
+      capacity: {
+        value: 0.87,
+        threshold: 0.90,
+        status: 'on_track',
+        utilization: 0.87,
+        data_snapshot: {
+          age_hours: 6,
+          coverage_pct: 100,
+          reconciliation_status: 'matched'
+        }
+      },
+      yield: {
+        value: 0.942,
+        threshold: 0.975,
+        status: 'at_risk',
+        drift_pct: -3.3,
+        scrap_qty: 1200,
+        data_snapshot: {
+          age_hours: 3,
+          coverage_pct: 98,
+          reconciliation_status: 'matched'
+        }
+      },
+      shipment_readiness: {
+        value: 3.2,
+        threshold: 5.0,
+        status: 'at_risk',
+        days_cover: 3.2,
+        at_risk_orders: 15,
+        data_snapshot: {
+          age_hours: 8,
+          coverage_pct: 92,
+          reconciliation_status: 'matched'
+        }
+      },
+      service_level: {
+        value: 0.955,
+        threshold: 1.00,
+        status: 'at_risk',
+        late_orders: 12,
+        data_snapshot: {
+          age_hours: 12,
+          coverage_pct: 90,
+          reconciliation_status: 'partial'
+        }
+      }
+    };
+
+    confidenceResults = calculateBatchConfidence(metrics);
+
+    // Generate decision cards from example metrics
+    decisionCards = evaluateRoutingRules(metrics, {
+      date: new Date(),
+      isHoliday: false,
+      ramp_day_index: 10
+    });
+  }
+
+  // ============================================================
+  // STEP 2: Decision Inbox is now inlined in main layout below
+  // ============================================================
+
+  // ============================================================
+  // STEP 3: Render Decision Chain Widget
+  // ============================================================
+  const focusMetric = metrics['mps_attainment'] || null;
+  const decisionChainHTML = renderDecisionChain(metrics, focusMetric);
+
+  // ============================================================
+  // STEP 4: Render main page
+  // ============================================================
   const html = `
-    <!-- Scenario Focus with Cutoff Time -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg p-4 mb-4">
+    <!-- Header: Simplified -->
+    <div class="bg-white border-2 border-slate-300 rounded-xl p-5 mb-6 shadow-sm">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <div class="text-lg font-bold text-slate-900 mb-1">Scenario Focus: Protect W04 Commit (Delivery Risk + Yield Drift)</div>
-          <div class="text-sm text-slate-700">Material constraint + yield drift are pressuring commit confidence. Prioritize actions that change outcomes within 48 hours.</div>
+          <div class="text-xl font-bold text-slate-900 mb-2">Delivery Command Center — Decision routing for weekly commit</div>
+          <div class="text-sm text-slate-600 leading-relaxed">What decision is needed, by whom, by when, based on what evidence, and what happens if we act?</div>
         </div>
         <div class="text-right">
-          <div class="text-xs text-slate-600 font-semibold">Scope</div>
-          <div class="text-sm font-bold text-blue-700 mb-2">Product A · Total · 2026-W04</div>
-          <div class="text-xs text-slate-500 bg-white rounded px-2 py-1 border">
-            📅 Data Cut-off: <span class="font-semibold text-slate-700">${cutoffTime}</span>
+          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Scope</div>
+          <div class="text-base font-bold text-slate-900 mt-1">Product A · 2026-W04</div>
+          <div class="text-xs text-slate-500 mt-1.5">Cut-off: ${cutoffTime}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PRIMARY: Decision Inbox + At-a-Glance (60% of first screen) -->
+    <!-- ============================================================ -->
+    <div class="grid grid-cols-3 gap-5 mb-6">
+      <!-- LEFT: Decision Inbox (占2列 = 66%) -->
+      <div class="col-span-2">
+        <div class="bg-white border-2 border-blue-200 rounded-xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-lg font-bold text-slate-900">Decisions Due (48h)</div>
+              <div class="text-xs text-slate-600 mt-1">Every decision shows: What / Why now / Impact / Owner+SLA / Actions</div>
+            </div>
+            <div class="text-xs text-slate-500">
+              ${decisionCards.length} total decisions
+            </div>
+          </div>
+
+          ${decisionCards.length > 0 ? `
+            <div class="space-y-5">
+              ${decisionCards.slice(0, 3).map((card, idx) => `
+                <div class="border-2 ${card.priority === 'high' ? 'border-red-300 bg-red-50' : card.priority === 'medium' ? 'border-yellow-300 bg-yellow-50' : 'border-blue-300 bg-blue-50'} rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <!-- Header -->
+                  <div class="flex items-center gap-3 mb-4">
+                    <span class="text-lg font-bold text-slate-400">#${idx + 1}</span>
+                    <span class="text-base font-bold text-slate-900 flex-1">${card.title || 'Decision needed'}</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold ${card.priority === 'high' ? 'bg-red-200 text-red-900' : card.priority === 'medium' ? 'bg-yellow-200 text-yellow-900' : 'bg-blue-200 text-blue-900'}">
+                      ${card.priority.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <!-- Why now + Impact (grid) -->
+                  <div class="grid grid-cols-2 gap-4 mb-4 pb-4 border-b-2 border-slate-200">
+                    <div class="space-y-1.5">
+                      <div class="text-xs font-bold text-slate-700 uppercase tracking-wide">Why now</div>
+                      <div class="text-sm text-slate-800 leading-relaxed">${card.description || 'Trigger detected'}</div>
+                      <div class="text-xs text-slate-600">Confidence: <span class="font-bold ${card.confidence?.level === 'HIGH' ? 'text-green-600' : card.confidence?.level === 'MEDIUM' ? 'text-yellow-600' : 'text-red-600'}">${card.confidence?.level || 'HIGH'}</span></div>
+                    </div>
+                    <div class="space-y-1.5">
+                      <div class="text-xs font-bold text-slate-700 uppercase tracking-wide">Impact</div>
+                      <div class="text-sm text-slate-800 leading-relaxed">${card.impact_statement || 'Units at risk'}</div>
+                      <div class="text-xs text-slate-600">SLA: <span class="font-bold ${card.sla_hours <= 24 ? 'text-red-600' : 'text-slate-600'}">${card.sla_hours}h</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Owner + Actions -->
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="text-sm text-slate-700">
+                      <span class="font-semibold">Owner:</span> <span class="text-slate-900 font-medium">${card.decision_owner || 'Unassigned'}</span>
+                    </div>
+                    <div class="flex gap-2 flex-wrap justify-end">
+                      ${card.suggested_actions?.slice(0, 3).map(action => `
+                        <button onclick="executeAction('${card.card_id}', '${action.action_id}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg border border-slate-300 shadow-sm transition-all">
+                          ${action.label.split(' ').slice(0, 2).join(' ')}
+                        </button>
+                      `).join('') || `
+                        <button class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all">
+                          Open Plan
+                        </button>
+                      `}
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="bg-white border-2 border-green-300 rounded-lg p-8 text-center">
+              <div class="text-4xl mb-3">✅</div>
+              <div class="text-sm font-bold text-green-900 mb-2">No Decisions Due</div>
+              <div class="text-xs text-green-700">All metrics within target. Continue monitoring for changes.</div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- RIGHT: This Week at a Glance (占1列 = 33%) -->
+      <div class="col-span-1">
+        <div class="bg-white border-2 border-slate-200 rounded-xl p-5 shadow-sm">
+          <div class="text-sm font-bold text-slate-900 mb-1">This Week at a Glance</div>
+          <div class="text-xs text-slate-500 mb-4">3 outcome metrics only</div>
+
+          <div class="space-y-4">
+            <!-- Plan Achievement -->
+            <div class="border-b-2 border-slate-100 pb-4">
+              <div class="flex items-start gap-3">
+                <div class="w-3 h-3 rounded-full mt-1 ${metrics.mps_attainment?.status === 'at_risk' ? 'bg-red-500' : 'bg-green-500'} shadow-sm"></div>
+                <div class="flex-1">
+                  <div class="text-xs font-bold text-slate-900 uppercase tracking-wide">Plan Achievement</div>
+                  <div class="text-lg font-bold text-slate-900 mt-1">${metrics.mps_attainment ? (metrics.mps_attainment.value * 100).toFixed(1) : '92.0'}%</div>
+                  <div class="text-xs text-slate-600 mt-1.5">Gap: ${metrics.mps_attainment?.gap_qty?.toLocaleString() || '11,600'} units</div>
+                  <div class="text-xs text-slate-500 mt-2">Confidence: <span class="font-bold ${confidenceResults.mps_attainment?.level === 'HIGH' ? 'text-green-600' : 'text-yellow-600'}">${confidenceResults.mps_attainment?.level || 'HIGH'}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commit Fulfillment -->
+            <div class="border-b-2 border-slate-100 pb-4">
+              <div class="flex items-start gap-3">
+                <div class="w-3 h-3 rounded-full mt-1 ${metrics.service_level?.status === 'at_risk' ? 'bg-yellow-500' : 'bg-green-500'} shadow-sm"></div>
+                <div class="flex-1">
+                  <div class="text-xs font-bold text-slate-900 uppercase tracking-wide">Commit Fulfillment</div>
+                  <div class="text-lg font-bold text-slate-900 mt-1">${metrics.service_level ? (metrics.service_level.value * 100).toFixed(1) : '95.5'}%</div>
+                  <div class="text-xs text-slate-600 mt-1.5">${metrics.service_level?.late_orders || 12} orders at risk</div>
+                  <div class="text-xs text-slate-500 mt-2">Confidence: <span class="font-bold ${confidenceResults.service_level?.level === 'HIGH' ? 'text-green-600' : 'text-yellow-600'}">${confidenceResults.service_level?.level || 'HIGH'}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost Risk -->
+            <div>
+              <div class="flex items-start gap-3">
+                <div class="w-3 h-3 rounded-full mt-1 bg-yellow-500 shadow-sm"></div>
+                <div class="flex-1">
+                  <div class="text-xs font-bold text-slate-900 uppercase tracking-wide">Cost Risk</div>
+                  <div class="text-lg font-bold text-slate-900 mt-1">$45k</div>
+                  <div class="text-xs text-slate-600 mt-1.5">Extra cost: +12%</div>
+                  <div class="text-xs text-slate-500 mt-2">Confidence: <span class="font-bold text-yellow-600">MED</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- SECONDARY: Why This Is At Risk (Decision Chain - simplified) -->
+    <!-- ============================================================ -->
+    ${decisionChainHTML}
+
     <!-- Product Snapshot -->
     <div class="bg-white border rounded-xl p-6 mb-4">
       <div class="text-lg font-bold text-slate-900 mb-3">Product Snapshot — Manufacturing Footprint</div>
-      <div class="text-sm text-slate-600 mb-4">A stable view of where and how this product is built. Use this to sanity-check capacity and pacing decisions.</div>
+      <div class="text-sm text-slate-600 mb-5">A stable view of where and how this product is built. Use this to sanity-check capacity and pacing decisions.</div>
 
-      <div class="grid grid-cols-4 gap-4 mb-4">
-        <div>
-          <div class="text-xs text-slate-600 font-semibold mb-1">FY Volume (EoY)</div>
-          <div class="text-2xl font-bold text-slate-900">2.8M units</div>
+      <!-- Two-column cutoff view -->
+      <div class="grid grid-cols-2 gap-6 mb-5">
+        <!-- This Week Cutoff (W04) -->
+        <div class="border-2 border-blue-200 bg-blue-50 rounded-xl p-4">
+          <div class="text-sm font-bold text-blue-900 mb-3">Cut-off: This Week (W04 — Sat Jan 25, 2026)</div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum Forecast</span>
+              <span class="text-base font-bold text-slate-900">580k units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum Capacity</span>
+              <span class="text-base font-bold text-slate-900">600k units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum CTB</span>
+              <span class="text-base font-bold text-slate-900">575k units</span>
+            </div>
+            <div class="flex justify-between items-center border-t pt-2 mt-2">
+              <span class="text-xs text-slate-700">Cum Ship (+2WD)</span>
+              <span class="text-base font-bold text-blue-700">534k units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Gap vs Forecast</span>
+              <span class="text-base font-bold text-red-700">-46k units</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="text-xs text-slate-600 font-semibold mb-1">EOM (End of Manufacturing)</div>
-          <div class="text-lg text-slate-900">2026-11</div>
-        </div>
-        <div>
-          <div class="text-xs text-slate-600 font-semibold mb-1">Primary Build Sites</div>
-          <div class="text-lg text-slate-900">WF (CN), VN-02 (VN)</div>
-        </div>
-        <div>
-          <div class="text-xs text-slate-600 font-semibold mb-1">Weekly Capacity (Nominal)</div>
-          <div class="text-lg text-slate-900">150k / week</div>
+
+        <!-- Year End Cutoff (2026) -->
+        <div class="border-2 border-slate-200 bg-slate-50 rounded-xl p-4">
+          <div class="text-sm font-bold text-slate-900 mb-3">Cut-off: Year End (Dec 31, 2026)</div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum Forecast</span>
+              <span class="text-base font-bold text-slate-900">2.8M units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum Capacity</span>
+              <span class="text-base font-bold text-slate-900">2.9M units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Cum CTB</span>
+              <span class="text-base font-bold text-slate-900">2.7M units</span>
+            </div>
+            <div class="flex justify-between items-center border-t pt-2 mt-2">
+              <span class="text-xs text-slate-700">Cum Ship (+2WD)</span>
+              <span class="text-base font-bold text-blue-700">2.6M units</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-700">Gap vs Forecast</span>
+              <span class="text-base font-bold text-red-700">-200k units</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="bg-slate-50 border rounded-lg p-4">
-        <div class="text-xs font-semibold text-slate-700 mb-2">Lines & UPH</div>
+      <!-- Build Sites & Capacity -->
+      <div class="bg-slate-50 border rounded-lg p-4 mb-4">
+        <div class="text-xs font-semibold text-slate-700 mb-3">Build Sites & Capacity</div>
         <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>WF (CN): 3 lines · 110–135 UPH</div>
-          <div>VN-02 (VN): 2 lines · 95–120 UPH</div>
+          <div>
+            <div class="font-semibold text-slate-900">WF (CN): 3 lines</div>
+            <div class="text-xs text-slate-600">110–135 UPH · 95–120k/week</div>
+          </div>
+          <div>
+            <div class="font-semibold text-slate-900">VN-02 (VN): 2 lines</div>
+            <div class="text-xs text-slate-600">95–120 UPH · 96–120k/week</div>
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
         <div class="text-xs font-semibold text-amber-900 mb-1">Notable Constraints:</div>
         <div class="text-sm text-amber-800">Test lane shared across SKUs · IC-77 is single-source · Holiday labor availability impacts W05–W07</div>
       </div>
@@ -2157,112 +3099,642 @@ function renderDeliveryCommandCenter() {
       <div class="text-xs text-slate-500 mt-3">Footprint metrics change infrequently; weekly execution signals update daily.</div>
     </div>
 
-    <!-- Completion Index -->
-    <div class="bg-white border rounded-xl p-6 mb-4">
-      <div class="text-lg font-bold text-slate-900 mb-3">Completion Index</div>
-      <div class="text-sm text-slate-600 mb-4">Key metrics showing progress and resource utilization</div>
+    <!-- ============================================================ -->
+    <!-- Evidence Panel (5 key drivers only, compact) -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-base font-bold text-slate-900">Evidence: What's constraining this week</div>
+          <div class="text-xs text-slate-600 mt-1.5">Max 5 drivers · 3 bullets + 1 action per driver</div>
+        </div>
+        <div class="text-sm text-slate-600">Binding constraint: <span class="font-bold text-red-700">Yield</span></div>
+      </div>
 
-      <div class="grid grid-cols-5 gap-3">
-        <!-- Ex-F to Supply Commit -->
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
-          <div class="text-xs font-semibold text-slate-700 mb-2">Ex-F to Supply Commit</div>
-          <div class="text-4xl font-bold text-green-700 mb-1">94%</div>
-          <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">ON TRACK</div>
+      <div class="space-y-4">
+        <!-- Driver 1: CTB (OK) -->
+        <div class="border-2 rounded-xl p-4 bg-green-50 border-green-300 shadow-sm min-h-[140px] flex">
+          <div class="flex items-start gap-4 w-full">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shadow-md">✓</div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900 mb-2.5">📦 Material Availability (CTB)</div>
+              <div class="text-sm text-slate-700 space-y-1.5 mb-3">
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>Coverage: 98% (1.85M units available)</span></div>
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>Confidence: HIGH (updated 4h ago)</span></div>
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>Not constraining this week</span></div>
+              </div>
+              <div class="text-sm text-green-800 font-bold bg-white border-2 border-green-400 rounded-lg px-3 py-2">✓ No action needed</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Capacity Utilization -->
-        <div class="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
-          <div class="text-xs font-semibold text-slate-700 mb-2">Capacity Utilization</div>
-          <div class="text-4xl font-bold text-yellow-700 mb-1">87%</div>
-          <div class="inline-block px-2 py-1 bg-yellow-100 border border-yellow-300 rounded text-xs font-semibold text-yellow-800">MODERATE</div>
+        <!-- Driver 2: Yield (BINDING CONSTRAINT) -->
+        <div class="border-2 rounded-xl p-4 bg-red-50 border-red-400 shadow-md min-h-[140px] flex">
+          <div class="flex items-start gap-4 w-full">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center text-lg font-bold shadow-md">⚠️</div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900 mb-2.5">🎯 First Pass Yield · <span class="text-red-700 uppercase text-xs tracking-wide">BINDING TODAY</span></div>
+              <div class="text-sm text-slate-700 space-y-1.5 mb-3">
+                <div class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span><span>Current: 94.2% vs target 97.5% (-3.3%)</span></div>
+                <div class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span><span>Impact: ~4.8k units scrapped/reworked → causes 11.6k output gap</span></div>
+                <div class="flex items-start gap-2"><span class="text-red-600 font-bold">•</span><span>Top 3 failure codes: AC-401 (45%), DC-203 (30%), FN-105 (25%)</span></div>
+              </div>
+              <div class="text-sm bg-white border-2 border-red-500 rounded-lg px-3 py-2 font-bold text-red-900">⚡ Quarantine Lot #X2401 + fast-track ECN for AC-401 fix by W05</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Labor Fulfillment -->
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-4 text-center">
-          <div class="text-xs font-semibold text-slate-700 mb-2">Labor Fulfillment</div>
-          <div class="text-4xl font-bold text-green-700 mb-1">96%</div>
-          <div class="inline-block px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-800">EXCELLENT</div>
+        <!-- Driver 3: Capacity (Moderate) -->
+        <div class="border-2 rounded-xl p-4 bg-yellow-50 border-yellow-300 shadow-sm min-h-[140px] flex">
+          <div class="flex items-start gap-4 w-full">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center text-sm font-bold shadow-md">!</div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900 mb-2.5">🏭 Test Capacity</div>
+              <div class="text-sm text-slate-700 space-y-1.5 mb-3">
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>Utilization: 87% (constrained)</span></div>
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>Re-test queue: 2.8k units</span></div>
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>Contributing to output gap (not primary driver)</span></div>
+              </div>
+              <div class="text-sm bg-white border-2 border-yellow-400 rounded-lg px-3 py-2 font-bold text-yellow-900">→ Add weekend shift + reallocate 20% capacity</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Cum Output -->
-        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-400 rounded-xl p-4 text-center">
-          <div class="text-xs font-semibold text-slate-700 mb-2">Cum Output</div>
-          <div class="text-3xl font-bold text-blue-700 mb-1">1.76M</div>
-          <div class="inline-block px-2 py-1 bg-blue-100 border border-blue-300 rounded text-xs font-semibold text-blue-800">62.8% OF TARGET</div>
+        <!-- Driver 4: Shipment Readiness (Moderate) -->
+        <div class="border-2 rounded-xl p-4 bg-yellow-50 border-yellow-300 shadow-sm min-h-[140px] flex">
+          <div class="flex items-start gap-4 w-full">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center text-sm font-bold shadow-md">!</div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900 mb-2.5">🚚 Shipment Readiness</div>
+              <div class="text-sm text-slate-700 space-y-1.5 mb-3">
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>Current: 132.6k shipped vs 139k commit (95.5%)</span></div>
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>Packing bottleneck: +1.5d lead-time variance</span></div>
+                <div class="flex items-start gap-2"><span class="text-yellow-600 font-bold">•</span><span>WH space: 94% utilization (nearing capacity)</span></div>
+              </div>
+              <div class="text-sm bg-white border-2 border-yellow-400 rounded-lg px-3 py-2 font-bold text-yellow-900">→ Dual-shift packing + prioritize high-priority SKUs</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Cum Shipment -->
-        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl p-4 text-center">
-          <div class="text-xs font-semibold text-slate-700 mb-2">Cum Shipment</div>
-          <div class="text-3xl font-bold text-purple-700 mb-1">1.68M</div>
-          <div class="inline-block px-2 py-1 bg-purple-100 border border-purple-300 rounded text-xs font-semibold text-purple-800">95.5% SHIPPED</div>
+        <!-- Driver 5: Data Confidence (OK) -->
+        <div class="border-2 rounded-xl p-4 bg-green-50 border-green-300 shadow-sm min-h-[140px] flex">
+          <div class="flex items-start gap-4 w-full">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shadow-md">✓</div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900 mb-2.5">📊 Data Confidence</div>
+              <div class="text-sm text-slate-700 space-y-1.5 mb-3">
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>All metrics: HIGH confidence (updated <8h ago)</span></div>
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>Coverage: >95% across all tables</span></div>
+                <div class="flex items-start gap-2"><span class="text-green-600 font-bold">•</span><span>Not limiting decision quality</span></div>
+              </div>
+              <div class="text-sm text-green-800 font-bold bg-white border-2 border-green-400 rounded-lg px-3 py-2">✓ Data quality supports routing</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  `;
 
-    <!-- Weekly Summary Table -->
-    <div class="bg-white border rounded-xl p-6">
-      <div class="text-lg font-bold text-slate-900 mb-3">Weekly Production Summary</div>
-      <div class="text-sm text-slate-600 mb-4">Highlighting weekly status and cumulative progress</div>
+  $("content").innerHTML = html;
+}
+*/
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-slate-700">Metric</th>
-              <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-blue-50">Weekly</th>
-              <th class="px-4 py-3 text-right font-semibold text-slate-700">Cumulative</th>
-              <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y">
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-slate-900">Input</td>
-              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">145,200</td>
-              <td class="px-4 py-3 text-right text-slate-700">1,824,500</td>
-              <td class="px-4 py-3">
-                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">97% of target</span>
-              </td>
-            </tr>
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-slate-900">Output</td>
-              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">138,400</td>
-              <td class="px-4 py-3 text-right text-slate-700">1,756,800</td>
-              <td class="px-4 py-3">
-                <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">92% of target</span>
-              </td>
-            </tr>
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-slate-900">Forecast</td>
-              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">150,000</td>
-              <td class="px-4 py-3 text-right text-slate-700">1,875,000</td>
-              <td class="px-4 py-3">
-                <span class="inline-block px-2 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded">Baseline plan</span>
-              </td>
-            </tr>
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-slate-900">Material Supply (Cum)</td>
-              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">—</td>
-              <td class="px-4 py-3 text-right text-slate-700">1,845,000</td>
-              <td class="px-4 py-3">
-                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">98% coverage</span>
-              </td>
-            </tr>
-            <tr class="bg-slate-50 hover:bg-slate-100">
-              <td class="px-4 py-3 font-bold text-slate-900">Yield (FPY)</td>
-              <td class="px-4 py-3 text-right bg-blue-100 font-bold text-blue-900">94.2%</td>
-              <td class="px-4 py-3 text-right text-slate-700">96.8%</td>
-              <td class="px-4 py-3">
-                <span class="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">⚠️ Below target (-3.3%)</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+// 2. Production Plan
+function renderProductionPlan() {
+  //Initialize production plan state if not exists
+  if (!window.productionPlanState) {
+    window.productionPlanState = {
+      program: 'product_a',
+      site: 'all',
+      startDate: '2026-01-20',
+      endDate: '2026-12-31',
+      mode: 'unconstrained',
+      planResults: null,
+      engine: null,
+      activeSubpage: 'latest' // 'latest' or 'generate'
+    };
+  }
+
+  const state = window.productionPlanState;
+
+  // Render based on active subpage
+  if (state.activeSubpage === 'generate') {
+    renderProductionPlanGenerate();
+    return;
+  }
+
+  // Default: render Latest Production Plan
+  renderProductionPlanLatest();
+}
+
+// 2.1 Latest Production Plan (read-only view)
+function renderProductionPlanLatest() {
+  const state = window.productionPlanState;
+
+  console.log('[Render] renderProductionPlanLatest called. State:', {
+    mode: state.mode,
+    hasPlanResults: !!state.planResults,
+    planResultsType: state.planResults ? (state.planResults.mode || 'normal') : 'none'
+  });
+
+  //Initialize engine with seed data if not exists
+  if (!state.engine) {
+    state.engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+  }
+
+  // Generate plan(s) if not yet generated or mode changed
+  let needsRegeneration = false;
+
+  if (!state.planResults) {
+    console.log('[Render] No planResults, needs regeneration');
+    needsRegeneration = true;
+  } else if (state.mode === 'combined') {
+    // If current mode is combined but planResults is not combined structure
+    needsRegeneration = !state.planResults.mode || state.planResults.mode !== 'combined';
+    console.log('[Render] Combined mode check:', { needsRegeneration, hasMode: !!state.planResults.mode });
+  } else {
+    // If current mode is not combined but planResults has combined structure
+    needsRegeneration = state.planResults.mode === 'combined';
+    console.log('[Render] Non-combined mode check:', { needsRegeneration, isCombinedStructure: state.planResults.mode === 'combined' });
+  }
+
+  if (needsRegeneration) {
+    console.log('[Render] Regenerating plan for mode:', state.mode);
+    try {
+      if (state.mode === 'combined') {
+        // Generate both unconstrained and constrained plans
+        const unconstrainedPlan = state.engine.generatePlan(state.startDate, state.endDate, 'unconstrained');
+        const constrainedPlan = state.engine.generatePlan(state.startDate, state.endDate, 'constrained');
+
+        // Validate plans
+        if (!unconstrainedPlan || !unconstrainedPlan.programResults || !unconstrainedPlan.weeklyMetrics) {
+          console.error('[Render] Unconstrained plan validation failed:', unconstrainedPlan);
+          throw new Error('Unconstrained plan generation failed');
+        }
+        if (!constrainedPlan || !constrainedPlan.programResults || !constrainedPlan.weeklyMetrics) {
+          console.error('[Render] Constrained plan validation failed:', constrainedPlan);
+          throw new Error('Constrained plan generation failed');
+        }
+
+        state.planResults = {
+          unconstrained: unconstrainedPlan,
+          constrained: constrainedPlan,
+          mode: 'combined'
+        };
+        console.log('[Render] Combined plans generated successfully');
+      } else {
+        const plan = state.engine.generatePlan(state.startDate, state.endDate, state.mode);
+
+        // Validate plan
+        if (!plan || !plan.programResults || !plan.weeklyMetrics) {
+          console.error('[Render] Plan validation failed:', plan);
+          throw new Error('Plan generation failed - missing required data');
+        }
+
+        console.log('[Render] Plan generated:', {
+          programResultsLength: plan.programResults.length,
+          weeklyMetricsLength: plan.weeklyMetrics.length
+        });
+
+        state.planResults = plan;
+      }
+    } catch (error) {
+      console.error('[Render] Error during plan generation:', error);
+      showNotification('❌ Error generating plan: ' + error.message, 'error');
+      // Set empty structure to prevent further errors
+      state.planResults = {
+        programResults: [],
+        weeklyMetrics: []
+      };
+    }
+  }
+
+  const isCombinedMode = state.planResults && state.planResults.mode === 'combined';
+  const results = isCombinedMode ? state.planResults.unconstrained : state.planResults;
+  const resultsConstrained = isCombinedMode ? state.planResults.constrained : null;
+
+  console.log('[Render] Prepared results:', {
+    isCombinedMode,
+    hasResults: !!results,
+    hasProgramResults: !!(results && results.programResults),
+    hasWeeklyMetrics: !!(results && results.weeklyMetrics)
+  });
+
+  const weeklyMetrics = (results && results.weeklyMetrics) ? results.weeklyMetrics : [];
+
+  // Determine current granularity (default: daily)
+  const granularity = state.viewGranularity || 'daily';
+
+  // Get the month to display - use the start date of the plan
+  // Extract YYYY-MM from state.startDate (e.g., "2026-10-01" -> "2026-10")
+  const planStartMonth = state.startDate ? state.startDate.substring(0, 7) : null;
+
+  console.log('[Render] Display month:', planStartMonth, 'from startDate:', state.startDate);
+
+  // Get data based on granularity and filter to plan start month
+  let currentData = [];
+  if (results && results.programResults) {
+    if (granularity === 'weekly') {
+      // For weekly view, filter weeks that fall within the plan start month
+      currentData = planStartMonth
+        ? weeklyMetrics.filter(w => w.week_id && w.week_id.substring(0, 7) === planStartMonth)
+        : weeklyMetrics;
+    } else if (granularity === 'monthly') {
+      // For monthly view, filter months matching the plan start month
+      const monthlyData = aggregateByMonth(results.programResults);
+      currentData = planStartMonth
+        ? monthlyData.filter(m => m.month_id === planStartMonth)
+        : monthlyData;
+    } else {
+      // Daily view - show only plan start month
+      currentData = planStartMonth
+        ? results.programResults.filter(d => d.date && d.date.substring(0, 7) === planStartMonth)
+        : results.programResults;
+    }
+
+    console.log('[Render] Filtered data:', {
+      granularity,
+      totalResults: results.programResults.length,
+      filteredCount: currentData.length
+    });
+  }
+
+  // Calculate summary metrics for two cutoff dates
+  const thisWeekSaturday = '2026-01-25'; // This week Saturday (W04)
+  const yearEnd = '2026-12-31'; // Year end
+
+  const weekSummary = results && results.programResults ?
+    calculateCutoffSummary(results.programResults, thisWeekSaturday) :
+    { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+  const yearSummary = results && results.programResults ?
+    calculateCutoffSummary(results.programResults, yearEnd) :
+    { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+
+  // Analyze primary constraint
+  const constraintAnalysis = results && results.programResults ?
+    analyzePrimaryConstraint(results.programResults) :
+    { primaryConstraint: 'Mixed', ctbLimitedDays: 0, capacityLimitedDays: 0, ctbLimitedUnits: 0, capacityLimitedUnits: 0, ctbLimitedPct: '0', capacityLimitedPct: '0' };
+
+  const html = `
+    <div class="space-y-6">
+      <!-- Subpage Navigation -->
+      <div class="bg-white border rounded-xl p-4">
+        <div class="flex gap-2">
+          <button onclick="switchProductionPlanSubpage('latest')"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">
+            📊 Latest Production Plan
+          </button>
+          <button onclick="switchProductionPlanSubpage('generate')"
+                  class="px-4 py-2 rounded-lg border hover:bg-slate-50 text-slate-700">
+            ⚙️ Generate Report
+          </button>
+        </div>
       </div>
 
-      <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-        <div class="text-xs font-semibold text-blue-900 mb-1">Key Insight</div>
-        <div class="text-sm text-blue-900">Weekly yield drift (-3.3%) at Test station is impacting output. Prioritize re-test lane capacity and containment actions to protect W04 commit.</div>
+      <!-- Context Header (Simplified) -->
+      <div class="bg-white border rounded-xl p-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-4">
+            <div>
+              <div class="text-xs text-slate-600 mb-1">Program</div>
+              <div class="font-semibold text-slate-900">Product A</div>
+            </div>
+            <div class="border-l pl-4">
+              <div class="text-xs text-slate-600 mb-1">Date Range</div>
+              <div class="font-semibold text-slate-900">${state.startDate} to ${state.endDate}</div>
+            </div>
+            <div class="border-l pl-4">
+              <div class="text-xs text-slate-600 mb-1">Sites</div>
+              <div class="font-semibold text-slate-900">${state.site === 'all' ? 'All Sites' : state.site}</div>
+            </div>
+            <div class="border-l pl-4">
+              <div class="text-xs text-slate-600 mb-1">Last Updated</div>
+              <div class="font-semibold text-slate-900">${new Date().toLocaleString()}</div>
+            </div>
+            ${(function() {
+              const porVersion = typeof getCurrentPOR === 'function' ? getCurrentPOR() : null;
+              if (porVersion) {
+                return `
+                  <div class="border-l pl-4">
+                    <div class="text-xs text-slate-600 mb-1">Plan of Record</div>
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs rounded font-bold">★ POR</span>
+                      <span class="font-semibold text-slate-900 text-xs">${porVersion.version}</span>
+                    </div>
+                  </div>
+                `;
+              }
+              return '';
+            })()}
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="viewAllHistoricVersions()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">
+              📚 Historic Versions
+            </button>
+            <button onclick="exportLatestProductionPlan()" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700">
+              📊 Export Excel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- What this page shows -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+        <div class="text-sm font-bold text-slate-900 mb-2">What this page shows:</div>
+        <div class="text-sm text-slate-700 leading-relaxed mb-3">
+          This plan shows two truths at once: what we <strong>could build</strong> (Capacity) and
+          what we <strong>can actually build</strong> (Materials/CTB) — so you can quickly see
+          whether a gap is driven by capacity readiness or material readiness.
+        </div>
+        <div class="text-sm text-slate-700 leading-relaxed">
+          <strong>How to read it:</strong> If Capacity is healthy but Input/Ship is capped, the constraint is likely
+          CTB/materials. If Capacity itself is below demand, the constraint is capacity/line readiness.
+        </div>
+      </div>
+
+      <!-- Summary Strip: Two-Column Cutoff Comparison -->
+      <div class="grid grid-cols-2 gap-6">
+        <!-- This Week Cutoff (W04 Saturday) -->
+        <div class="border-2 border-blue-300 bg-blue-50 rounded-xl p-5 shadow-sm">
+          <div class="text-sm font-bold text-blue-900 mb-4">Cut-off: This Week (Sat, Jan 25, 2026)</div>
+          <div class="space-y-3">
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum Forecast</span>
+              <span class="text-lg font-bold text-slate-900">${(weekSummary.cumForecast / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum Capacity</span>
+              <span class="text-lg font-bold text-slate-900">${(weekSummary.cumCapacity / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum CTB</span>
+              <span class="text-lg font-bold text-slate-900">${(weekSummary.cumCTB / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline border-t-2 border-blue-200 pt-3 mt-3">
+              <span class="text-xs text-slate-700">Cum Ship</span>
+              <span class="text-lg font-bold text-blue-700">${(weekSummary.cumShip / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Gap vs Forecast</span>
+              <span class="text-lg font-bold ${weekSummary.gap >= 0 ? 'text-green-700' : 'text-red-700'}">
+                ${weekSummary.gap >= 0 ? '+' : ''}${(weekSummary.gap / 1000).toFixed(1)}k
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Year End Cutoff (Dec 31, 2026) -->
+        <div class="border-2 border-slate-300 bg-slate-50 rounded-xl p-5 shadow-sm">
+          <div class="text-sm font-bold text-slate-900 mb-4">Cut-off: Year End (Dec 31, 2026)</div>
+          <div class="space-y-3">
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum Forecast</span>
+              <span class="text-lg font-bold text-slate-900">${(yearSummary.cumForecast / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum Capacity</span>
+              <span class="text-lg font-bold text-slate-900">${(yearSummary.cumCapacity / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Cum CTB</span>
+              <span class="text-lg font-bold text-slate-900">${(yearSummary.cumCTB / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline border-t-2 border-slate-200 pt-3 mt-3">
+              <span class="text-xs text-slate-700">Cum Ship</span>
+              <span class="text-lg font-bold text-blue-700">${(yearSummary.cumShip / 1000).toFixed(1)}k</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="text-xs text-slate-700">Gap vs Forecast</span>
+              <span class="text-lg font-bold ${yearSummary.gap >= 0 ? 'text-green-700' : 'text-red-700'}">
+                ${yearSummary.gap >= 0 ? '+' : ''}${(yearSummary.gap / 1000).toFixed(1)}k
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Primary Constraint Summary -->
+      <div class="bg-white border-2 rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div class="text-xs font-bold text-slate-500 mb-1">PRIMARY BINDING CONSTRAINT (THIS PERIOD)</div>
+            <div class="text-lg font-bold ${constraintAnalysis.primaryConstraint === 'CTB' ? 'text-orange-700' : constraintAnalysis.primaryConstraint === 'Capacity' ? 'text-red-700' : 'text-green-700'}">
+              ${constraintAnalysis.primaryConstraint === 'CTB' ? '📦 CTB-limited' : constraintAnalysis.primaryConstraint === 'Capacity' ? '⚙️ Capacity-limited' : '✅ No binding constraint'}
+            </div>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-500 mb-1">GAP (YEAR END: DELIVERABLE VS FORECAST)</div>
+            <div class="text-lg font-bold ${yearSummary.gap >= 0 ? 'text-green-700' : 'text-red-700'}">
+              ${yearSummary.gap >= 0 ? '+' : ''}${(yearSummary.gap / 1000).toFixed(1)}k units
+            </div>
+          </div>
+          <div class="text-sm text-slate-600">
+            ${constraintAnalysis.primaryConstraint === 'CTB' ?
+              `CTB limited ${constraintAnalysis.ctbLimitedPct}% of days (${constraintAnalysis.ctbLimitedUnits.toLocaleString()} units short)` :
+              constraintAnalysis.primaryConstraint === 'Capacity' ?
+              `Capacity limited ${constraintAnalysis.capacityLimitedPct}% of days (${constraintAnalysis.capacityLimitedUnits.toLocaleString()} units short)` :
+              'Both capacity and materials are sufficient'
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Granularity Toggle -->
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-semibold text-slate-700">View:</span>
+        <div class="flex gap-2">
+          <button onclick="switchPlanGranularity('daily')"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'daily' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+            Daily
+          </button>
+          <button onclick="switchPlanGranularity('weekly')"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'weekly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+            Weekly
+          </button>
+          <button onclick="switchPlanGranularity('monthly')"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'monthly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+            Monthly
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Truth Table (4 or 5 Column Groups depending on mode) -->
+      <div class="bg-white border-2 rounded-xl p-6 shadow-sm">
+        <div class="text-sm font-bold text-slate-900 mb-4">
+          Production Plan Truth Table
+          ${isCombinedMode ? '<span class="ml-2 text-xs font-normal text-blue-600">(Combined View: Unconstrained vs Constrained)</span>' : ''}
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs border-collapse">
+            <thead class="bg-slate-100">
+              <!-- Column Group Headers -->
+              <tr class="border-b-2">
+                <th class="px-2 py-2 text-left font-bold border-r-2" rowspan="2">${granularity === 'daily' ? 'Date' : granularity === 'weekly' ? 'Week' : 'Month'}</th>
+                <th class="px-2 py-2 text-center font-bold border-r-2 bg-slate-200" colspan="2">Demand / Supply</th>
+                <th class="px-2 py-2 text-center font-bold border-r-2 bg-blue-50" colspan="2">Capacity Track</th>
+                <th class="px-2 py-2 text-center font-bold border-r-2 bg-green-50" colspan="6">Reality Track${isCombinedMode ? '<br/><span class="text-xs font-normal">(Unconstrained)</span>' : ''}</th>
+                ${isCombinedMode ? `<th class="px-2 py-2 text-center font-bold border-r-2 bg-purple-50" colspan="6">Reality Track<br/><span class="text-xs font-normal">(Constrained)</span></th>` : ''}
+                <th class="px-2 py-2 text-center font-bold bg-orange-50" colspan="2">Gap / Constraint</th>
+              </tr>
+              <!-- Sub-column Headers -->
+              <tr class="border-b-2">
+                <th class="px-2 py-2 text-right font-semibold bg-slate-200">Cum<br/>Forecast</th>
+                <th class="px-2 py-2 text-right font-semibold bg-slate-200 border-r-2">Cum<br/>CTB</th>
+                <th class="px-2 py-2 text-right font-semibold bg-blue-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Capacity</th>
+                <th class="px-2 py-2 text-right font-semibold bg-blue-50 border-r-2">Cum<br/>Capacity</th>
+                <!-- Unconstrained Reality Track -->
+                <th class="px-2 py-2 text-right font-semibold bg-green-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Input</th>
+                <th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Input</th>
+                <th class="px-2 py-2 text-right font-semibold bg-green-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Output</th>
+                <th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Output</th>
+                <th class="px-2 py-2 text-right font-semibold bg-green-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Ship</th>
+                <th class="px-2 py-2 text-right font-semibold bg-green-50 ${isCombinedMode ? '' : 'border-r-2'}">Cum<br/>Ship</th>
+                <!-- Constrained Reality Track (only in Combined mode) -->
+                ${isCombinedMode ? `
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Input</th>
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Input</th>
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Output</th>
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Output</th>
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50">${granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly'}<br/>Ship</th>
+                  <th class="px-2 py-2 text-right font-semibold bg-purple-50 border-r-2">Cum<br/>Ship</th>
+                ` : ''}
+                <th class="px-2 py-2 text-right font-semibold bg-orange-50">Gap<br/>(Cum)</th>
+                <th class="px-2 py-2 text-center font-semibold bg-orange-50">Binding<br/>Driver</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${currentData.map((row, idx) => {
+                const dateLabel = granularity === 'daily' ? row.date :
+                                 granularity === 'weekly' ? row.week_id : row.month_id;
+                const isSunday = granularity === 'daily' && DateUtils.isSunday(row.date);
+
+                // Calculate cumulative values
+                const cumForecast = row.cum_demand || (idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + (r.demand || 0), 0) : row.demand || 0);
+                const cumCTB = idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + ((r.ctb_available || r.capacity_unconstrained) || 0), 0) : (row.ctb_available || row.capacity_unconstrained || 0);
+                const cumCapacity = idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + (r.capacity_unconstrained || 0), 0) : (row.capacity_unconstrained || 0);
+
+                const dailyInput = granularity === 'daily' ? (row.input_final || 0) : (row.input || 0);
+                const cumInput = row.cum_input || (idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.input_final : r.input) || 0), 0) : dailyInput);
+
+                const dailyOutput = granularity === 'daily' ? (row.output_final || 0) : (row.output || 0);
+                const cumOutput = row.cum_output || (idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.output_final : r.output) || 0), 0) : dailyOutput);
+
+                const dailyShip = granularity === 'daily' ? (row.shipment_final || 0) : (row.shipments || 0);
+                const cumShip = row.cum_shipment || (idx > 0 ? currentData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.shipment_final : r.shipments) || 0), 0) : dailyShip);
+
+                const gap = cumShip - cumForecast;
+                const bindingDriver = granularity === 'daily' ? getDailyConstraint(row) : '-';
+
+                // Get constrained data if in combined mode
+                let dailyInputC = 0, cumInputC = 0, dailyOutputC = 0, cumOutputC = 0, dailyShipC = 0, cumShipC = 0;
+                if (isCombinedMode && resultsConstrained) {
+                  const constrainedData = granularity === 'weekly' ?
+                    resultsConstrained.weeklyMetrics.filter(w => w.week_id && w.week_id.substring(0, 7) === currentMonth) :
+                    granularity === 'monthly' ?
+                    aggregateByMonth(resultsConstrained.programResults).filter(m => m.month_id === currentMonth) :
+                    resultsConstrained.programResults.filter(d => d.date && d.date.substring(0, 7) === currentMonth);
+
+                  const rowC = constrainedData[idx];
+                  if (rowC) {
+                    dailyInputC = granularity === 'daily' ? (rowC.input_final || 0) : (rowC.input || 0);
+                    cumInputC = rowC.cum_input || (idx > 0 ? constrainedData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.input_final : r.input) || 0), 0) : dailyInputC);
+
+                    dailyOutputC = granularity === 'daily' ? (rowC.output_final || 0) : (rowC.output || 0);
+                    cumOutputC = rowC.cum_output || (idx > 0 ? constrainedData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.output_final : r.output) || 0), 0) : dailyOutputC);
+
+                    dailyShipC = granularity === 'daily' ? (rowC.shipment_final || 0) : (rowC.shipments || 0);
+                    cumShipC = rowC.cum_shipment || (idx > 0 ? constrainedData.slice(0, idx + 1).reduce((sum, r) => sum + ((granularity === 'daily' ? r.shipment_final : r.shipments) || 0), 0) : dailyShipC);
+                  }
+                }
+
+                const bgColor = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+
+                return `
+                  <tr class="${bgColor} ${isSunday ? 'text-slate-400' : ''} hover:bg-blue-50 border-b">
+                    <td class="px-2 py-2 font-mono text-xs border-r-2">${dateLabel}</td>
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(cumForecast).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono border-r-2">${Math.round(cumCTB).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(row.capacity_unconstrained || 0).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono border-r-2">${Math.round(cumCapacity).toLocaleString()}</td>
+                    <!-- Unconstrained Reality Track -->
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(dailyInput).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(cumInput).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(dailyOutput).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono">${Math.round(cumOutput).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono text-blue-700">${Math.round(dailyShip).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-right font-mono text-blue-700 ${isCombinedMode ? '' : 'border-r-2'}">${Math.round(cumShip).toLocaleString()}</td>
+                    <!-- Constrained Reality Track (only in Combined mode) -->
+                    ${isCombinedMode ? `
+                      <td class="px-2 py-2 text-right font-mono text-purple-700">${Math.round(dailyInputC).toLocaleString()}</td>
+                      <td class="px-2 py-2 text-right font-mono text-purple-700">${Math.round(cumInputC).toLocaleString()}</td>
+                      <td class="px-2 py-2 text-right font-mono text-purple-700">${Math.round(dailyOutputC).toLocaleString()}</td>
+                      <td class="px-2 py-2 text-right font-mono text-purple-700">${Math.round(cumOutputC).toLocaleString()}</td>
+                      <td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold">${Math.round(dailyShipC).toLocaleString()}</td>
+                      <td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold border-r-2">${Math.round(cumShipC).toLocaleString()}</td>
+                    ` : ''}
+                    <td class="px-2 py-2 text-right font-mono ${gap >= 0 ? 'text-green-700' : 'text-red-700'} font-semibold">
+                      ${gap >= 0 ? '+' : ''}${Math.round(gap).toLocaleString()}
+                    </td>
+                    <td class="px-2 py-2 text-center text-xs font-semibold ${bindingDriver === 'CTB' ? 'text-orange-700' : bindingDriver === 'Capacity' ? 'text-red-700' : 'text-slate-500'}">
+                      ${bindingDriver}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fiscal Calendar Reference (Collapsible) -->
+      <div class="bg-white border-2 rounded-xl shadow-sm">
+        <button id="fiscalCalendarToggle" onclick="toggleFiscalCalendar()"
+                class="w-full px-6 py-4 text-left text-sm font-bold text-slate-900 hover:bg-slate-50 flex items-center justify-between">
+          <span>▶ Show Fiscal Calendar (2026)</span>
+          <span class="text-xs text-slate-500">4-4-5 Week Structure</span>
+        </button>
+
+        <div id="fiscalCalendarContent" style="display: none;" class="p-6 border-t">
+          <div class="mb-4">
+            <div class="text-sm font-semibold text-slate-900 mb-2">Fiscal Calendar Rules:</div>
+            <ul class="text-xs text-slate-700 space-y-1 list-disc list-inside">
+              <li>Each <strong>quarter</strong> has exactly <strong>13 weeks</strong></li>
+              <li>Each quarter follows a <strong>5-4-4 pattern</strong>: Month 1 = 5 weeks, Month 2 = 4 weeks, Month 3 = 4 weeks</li>
+              <li>Weeks run from <strong>Sunday to Saturday</strong></li>
+              <li>Week 1 of January 2026 starts on December 28, 2025 and ends on January 3, 2026</li>
+            </ul>
+          </div>
+
+          ${(() => {
+            const fiscalCal = generateFiscalCalendar2026();
+            return fiscalCal.map(quarter => `
+              <div class="mb-6 border-2 rounded-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3">
+                  <div class="text-white font-bold">${quarter.quarter} — ${quarter.months.map(m => m.name.split(' ')[0]).join(', ')}</div>
+                  <div class="text-blue-100 text-xs">13 weeks total (5+4+4 pattern)</div>
+                </div>
+                <div class="grid grid-cols-3 gap-0">
+                  ${quarter.months.map((month, idx) => `
+                    <div class="border-r last:border-r-0 ${idx === 0 ? 'bg-amber-50' : 'bg-slate-50'}">
+                      <div class="px-3 py-2 border-b ${idx === 0 ? 'bg-amber-100' : 'bg-slate-100'}">
+                        <div class="text-xs font-bold text-slate-900">${month.name}</div>
+                        <div class="text-xs text-slate-600">${month.weeks} weeks ${idx === 0 ? '(M1)' : idx === 1 ? '(M2)' : '(M3)'}</div>
+                      </div>
+                      <div class="p-3 space-y-2">
+                        ${month.weekDetails.map(week => `
+                          <div class="text-xs">
+                            <div class="font-mono font-semibold text-blue-700">${week.week}</div>
+                            <div class="text-slate-600">${week.start} to ${week.end}</div>
+                          </div>
+                        `).join('')}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('');
+          })()}
+        </div>
       </div>
     </div>
   `;
@@ -2270,53 +3742,1096 @@ function renderDeliveryCommandCenter() {
   $("content").innerHTML = html;
 }
 
-// 2. Production Plan
-function renderProductionPlan() {
-  const html = `
-    <div class="bg-white border rounded-xl p-6">
-      <div class="text-lg font-bold text-slate-900 mb-3">Production Plan</div>
-      <div class="text-sm text-slate-600 mb-4">Interactive planning tool - update conditions to auto-generate production schedule</div>
+// 2.2 Generate Report (Configure + Generate new plan)
+function renderProductionPlanGenerate() {
+  const state = window.productionPlanState;
 
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-        <div class="text-6xl mb-4">🏗️</div>
-        <div class="text-xl font-bold text-slate-900 mb-2">Production Planning Tool</div>
-        <div class="text-sm text-slate-600 mb-4">Configure parameters and generate optimized production schedules</div>
-        <div class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">Coming Soon</div>
+  // Initialize engine if needed
+  if (!state.engine) {
+    state.engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+  }
+
+  const html = `
+    <div class="space-y-4">
+      <!-- Subpage Navigation -->
+      <div class="bg-white border rounded-xl p-4">
+        <div class="flex gap-2">
+          <button onclick="switchProductionPlanSubpage('latest')"
+                  class="px-4 py-2 rounded-lg border hover:bg-slate-50 text-slate-700">
+            📊 Latest Production Plan
+          </button>
+          <button onclick="switchProductionPlanSubpage('generate')"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">
+            ⚙️ Generate Report
+          </button>
+        </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-3 gap-4">
-        <div class="bg-slate-50 border rounded-lg p-4">
-          <div class="text-xs text-slate-600 font-semibold mb-2">Planning Inputs</div>
-          <ul class="text-xs text-slate-700 space-y-1">
-            <li>• Demand forecast</li>
-            <li>• Capacity constraints</li>
-            <li>• Material availability</li>
-            <li>• Labor schedule</li>
-          </ul>
+      <!-- Forecast Section -->
+      <div class="bg-white border-2 border-purple-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleSection('forecastContent', 'forecastToggle')">
+          <div class="flex items-center gap-3">
+            <span id="forecastToggle" class="text-purple-600 text-lg transition-transform">▼</span>
+            <div>
+              <div class="text-lg font-bold text-purple-900 flex items-center gap-2">
+                <span>📊</span>
+                <span>Demand Forecast</span>
+              </div>
+              <div class="text-sm text-slate-600 mt-1">Upload and manage weekly forecast data</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+            <button onclick="uploadForecast()" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 flex items-center gap-2">
+              <span>📤</span>
+              <span>Upload</span>
+            </button>
+            <button onclick="viewForecastHistory()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm font-semibold hover:bg-purple-50 flex items-center gap-2">
+              <span>📜</span>
+              <span>History</span>
+            </button>
+            <button onclick="compareForecastVersions()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm font-semibold hover:bg-purple-50 flex items-center gap-2">
+              <span>🔄</span>
+              <span>Compare</span>
+            </button>
+          </div>
         </div>
-        <div class="bg-slate-50 border rounded-lg p-4">
-          <div class="text-xs text-slate-600 font-semibold mb-2">Auto-generation</div>
-          <ul class="text-xs text-slate-700 space-y-1">
-            <li>• Weekly build plan</li>
-            <li>• Line allocation</li>
-            <li>• WIP scheduling</li>
-            <li>• Buffer recommendations</li>
-          </ul>
+
+        <div id="forecastContent" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div class="text-sm text-purple-900 mb-3">
+            <span class="font-semibold">Version:</span> <span id="forecastVersion">Not uploaded</span> |
+            <span class="font-semibold">Released:</span> <span id="forecastReleaseDate">-</span>
+          </div>
+          <div class="text-sm font-semibold text-purple-900 mb-2">Recent 4 Weeks Summary:</div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead class="bg-purple-100">
+                <tr>
+                  <th class="px-3 py-2 text-left">Week</th>
+                  <th class="px-3 py-2 text-right">Weekly Forecast</th>
+                  <th class="px-3 py-2 text-right">Cum Forecast</th>
+                </tr>
+              </thead>
+              <tbody id="forecastSummaryTable">
+                <tr><td colspan="3" class="px-3 py-4 text-center text-slate-500">No forecast data uploaded yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-3 text-center">
+            <button onclick="viewAllForecastWeeks()" class="text-sm text-purple-600 hover:text-purple-800 font-semibold">
+              👁️ View All Weekly Details →
+            </button>
+          </div>
         </div>
-        <div class="bg-slate-50 border rounded-lg p-4">
-          <div class="text-xs text-slate-600 font-semibold mb-2">Outputs</div>
-          <ul class="text-xs text-slate-700 space-y-1">
-            <li>• Production schedule</li>
-            <li>• Resource allocation</li>
-            <li>• Risk assessment</li>
-            <li>• Constraint analysis</li>
-          </ul>
+      </div>
+
+      <!-- CTB Section -->
+      <div class="bg-white border-2 border-orange-200 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleSection('ctbContent', 'ctbToggle')">
+          <div class="flex items-center gap-3">
+            <span id="ctbToggle" class="text-orange-600 text-lg transition-transform">▼</span>
+            <div>
+              <div class="text-lg font-bold text-orange-900 flex items-center gap-2">
+                <span>📦</span>
+                <span>CTB (Clear to Build)</span>
+              </div>
+              <div class="text-sm text-slate-600 mt-1">Upload and manage weekly CTB data by site</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+            <button onclick="uploadCTB()" class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 flex items-center gap-2">
+              <span>📤</span>
+              <span>Upload</span>
+            </button>
+            <button onclick="viewCTBHistory()" class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm font-semibold hover:bg-orange-50 flex items-center gap-2">
+              <span>📜</span>
+              <span>History</span>
+            </button>
+            <button onclick="compareCTBVersions()" class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm font-semibold hover:bg-orange-50 flex items-center gap-2">
+              <span>🔄</span>
+              <span>Compare</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="ctbContent" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div class="text-sm text-orange-900 mb-3">
+            <span class="font-semibold">Version:</span> <span id="ctbVersion">Not uploaded</span> |
+            <span class="font-semibold">Updated:</span> <span id="ctbUpdateDate">-</span>
+          </div>
+          <div class="text-sm font-semibold text-orange-900 mb-2">Recent 4 Weeks Summary (by Site):</div>
+          <div id="ctbSummaryBySite" class="space-y-4">
+            <div class="text-center text-slate-500 py-4">No CTB data uploaded yet</div>
+          </div>
+          <div class="mt-3 text-center">
+            <button onclick="viewAllCTBWeeks()" class="text-sm text-orange-600 hover:text-orange-800 font-semibold">
+              👁️ View All Weekly Details →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configure Panel -->
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <div class="text-xl font-bold text-slate-900">Production Plan Configuration</div>
+            <div class="text-sm text-slate-600 mt-1">Add capacity units (Site → Line → Shift) to define what the report will cover</div>
+          </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="space-y-6">
+          <!-- Section 1: Program & Timeline -->
+          <div class="bg-white rounded-lg border border-blue-200 p-5">
+            <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+              <span>📦</span>
+              <span>Program & Timeline</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Program</label>
+                <div class="w-full bg-slate-100 border border-slate-300 rounded px-3 py-2 text-sm text-slate-700">Product A</div>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Vendor</label>
+                <div class="w-full bg-slate-100 border border-slate-300 rounded px-3 py-2 text-sm text-slate-700">Vendor X</div>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Start Date</label>
+                <input type="date" id="configStartDate" value="2026-10-01" class="w-full border rounded px-3 py-2 text-sm">
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">End Date</label>
+                <input type="date" id="configEndDate" value="2026-10-31" class="w-full border rounded px-3 py-2 text-sm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Capacity Configuration (Site → Line → Shift) -->
+          <div class="bg-white rounded-lg border border-blue-200 p-5">
+            <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+              <span>🏭</span>
+              <span>Capacity Configuration (Site → Line → Shift)</span>
+            </div>
+
+            <div id="capacitySitesContainer" class="space-y-6">
+              <!-- Sites with their lines and shifts will be rendered here -->
+            </div>
+
+            <button onclick="addSiteCapacity()"
+                    class="mt-4 w-full border-2 border-dashed border-blue-300 rounded-lg py-3 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-50 font-semibold">
+              + Add Site
+            </button>
+          </div>
+
+          <!-- Section 3: Working Parameters -->
+          <div class="bg-white rounded-lg border border-blue-200 p-5">
+            <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2 cursor-pointer" onclick="toggleSection('workingParamsContent', 'workingParamsToggle')">
+              <span id="workingParamsToggle" class="text-blue-600 transition-transform">▼</span>
+              <span>⏰</span>
+              <span>Working Parameters</span>
+            </div>
+            <div id="workingParamsContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Default Shift Hours</label>
+                <input type="number" id="configShiftHours" value="10" min="1" max="24" class="w-full border rounded px-3 py-2 text-sm">
+                <div class="text-xs text-slate-500 mt-1">Hours per shift (can be overridden per line)</div>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Working Days Pattern</label>
+                <select id="configWorkingDays" class="w-full border rounded px-3 py-2 text-sm">
+                  <option value="MON_SAT" selected>Mon-Sat (6 days)</option>
+                  <option value="MON_FRI">Mon-Fri (5 days)</option>
+                  <option value="MON_SUN">Mon-Sun (7 days)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Lag (Workdays)</label>
+                <input type="number" id="configShipmentLag" value="2" min="0" max="10" class="w-full border rounded px-3 py-2 text-sm">
+                <div class="text-xs text-slate-500 mt-1">Days from output to shipment-ready</div>
+              </div>
+            </div>
+
+              <div class="mt-4 col-span-full">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="configConsiderHolidays" checked class="rounded">
+                  <span class="text-sm font-semibold text-slate-700">Consider holidays when calculating working days</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Output Flow-Time Factors -->
+          <div class="bg-white rounded-lg border border-blue-200 p-5">
+            <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2 cursor-pointer" onclick="toggleSection('flowTimeContent', 'flowTimeToggle')">
+              <span id="flowTimeToggle" class="text-blue-600 transition-transform">▼</span>
+              <span>📈</span>
+              <span>Output Flow-Time Factors</span>
+            </div>
+            <div id="flowTimeContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Day 1 Factor</label>
+                <input type="number" id="configDay1Factor" value="0.5" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <div class="text-xs text-slate-500 mt-1">First day output multiplier</div>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Day 2 Factor</label>
+                <input type="number" id="configDay2Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <div class="text-xs text-slate-500 mt-1">Second day output multiplier</div>
+              </div>
+              <div>
+                <label class="text-xs text-slate-600 font-semibold block mb-1">Day 3+ Factor</label>
+                <input type="number" id="configDay3Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <div class="text-xs text-slate-500 mt-1">Day 3+ output multiplier</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate Button -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t">
+            <button onclick="resetConfigurationToDefault()"
+                    class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+              Reset to Default
+            </button>
+            <button onclick="generatePlanFromConfig()"
+                    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+              🚀 Generate New Production Plan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Info -->
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">💡</div>
+          <div class="flex-1">
+            <div class="font-semibold text-amber-900 mb-1">Configuration Tips</div>
+            <ul class="text-sm text-amber-800 space-y-1">
+              <li>• Use the hierarchical structure: Add <strong>Site</strong> → Add <strong>Line</strong> → Add <strong>Shift</strong></li>
+              <li>• Configure holiday schedules at the <strong>site level</strong> (follow legal holidays or custom)</li>
+              <li>• Select <strong>UPH and Yield curves</strong> for each Line × Shift combination using dropdowns</li>
+              <li>• Different shifts of the same line can have different ramp start dates and curves</li>
+              <li>• Ramp curves are <strong>workday-indexed</strong> - they skip Sundays and holidays</li>
+              <li>• <strong>Unconstrained mode</strong> shows pure capacity, <strong>Constrained mode</strong> applies CTB material limits, <strong>Combined mode</strong> shows both scenarios side-by-side for easy comparison</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   `;
 
   $("content").innerHTML = html;
+
+  // Render initial capacity units from seed data
+  renderCapacityUnitsConfig();
+}
+
+// Switch between subpages
+function switchProductionPlanSubpage(subpage) {
+  window.productionPlanState.activeSubpage = subpage;
+  renderProductionPlan();
+}
+
+// Render capacity configuration with hierarchical structure (Site → Line → Shift)
+function renderCapacityUnitsConfig() {
+  const seedData = PRODUCTION_PLAN_SEED_DATA;
+  const container = document.getElementById('capacitySitesContainer');
+
+  if (!container) return;
+
+  const units = seedData.capacityUnits || [];
+
+  if (units.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-slate-500">
+        <div class="text-4xl mb-2">🏭</div>
+        <div class="text-sm">No sites configured. Click "+ Add Site" to start.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Group units by site
+  const siteGroups = {};
+  units.forEach((unit, idx) => {
+    if (!siteGroups[unit.site_id]) {
+      siteGroups[unit.site_id] = {
+        site_id: unit.site_id,
+        holiday_config: unit.holiday_config || 'legal', // 'legal' or 'custom'
+        lines: {}
+      };
+    }
+
+    // Group by line within site
+    if (!siteGroups[unit.site_id].lines[unit.line_id]) {
+      siteGroups[unit.site_id].lines[unit.line_id] = {
+        line_id: unit.line_id,
+        line_type: unit.line_type,
+        shifts: []
+      };
+    }
+
+    siteGroups[unit.site_id].lines[unit.line_id].shifts.push({
+      ...unit,
+      originalIndex: idx
+    });
+  });
+
+  container.innerHTML = Object.values(siteGroups).map(site => {
+    const linesHtml = Object.values(site.lines).map(line => {
+      const shiftsHtml = line.shifts.map(shift => `
+        <div class="ml-8 border-l-2 border-slate-300 pl-4 py-3 bg-white">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="font-semibold text-slate-900">${shift.shift_type} Shift</div>
+              <div class="text-xs text-slate-500 mt-1">${shift.unit_id}</div>
+            </div>
+            <button onclick="removeCapacityUnit(${shift.originalIndex})" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-xs">
+              🗑️ Remove
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label class="text-xs text-slate-600 block mb-1">Base UPH</label>
+              <input type="number" value="${shift.base_uph}" class="w-full border rounded px-2 py-1 text-sm">
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 block mb-1">Shift Hours</label>
+              <input type="number" value="${shift.shift_hours}" class="w-full border rounded px-2 py-1 text-sm">
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 block mb-1">Ramp Start Date</label>
+              <input type="date" value="${shift.ramp_start_date}" class="w-full border rounded px-2 py-1 text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-600 block mb-1">UPH Ramp Curve</label>
+              <select class="w-full border rounded px-2 py-1 text-sm">
+                <option value="standard_30d" selected>Standard 30-day Ramp</option>
+                <option value="fast_20d">Fast 20-day Ramp</option>
+                <option value="slow_45d">Slow 45-day Ramp</option>
+                <option value="custom">Custom Curve (${shift.uph_ramp_curve?.factors?.length || 0} points)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-600 block mb-1">Yield Curve</label>
+              <select class="w-full border rounded px-2 py-1 text-sm">
+                <option value="standard_30d" selected>Standard 30-day Yield</option>
+                <option value="fast_20d">Fast 20-day Yield</option>
+                <option value="slow_45d">Slow 45-day Yield</option>
+                <option value="custom">Custom Curve (${shift.yield_ramp_curve?.factors?.length || 0} points)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="ml-6 border-l-2 border-blue-300 pl-4 py-2 bg-blue-50/30">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-semibold text-blue-900">📍 Line ${line.line_id} <span class="text-xs font-normal text-slate-600">(${line.line_type})</span></div>
+            <button onclick="addShiftToLine('${site.site_id}', '${line.line_id}')"
+                    class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+              + Add Shift
+            </button>
+          </div>
+          ${shiftsHtml}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="border-2 border-blue-300 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-slate-50">
+        <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleSection('siteContent_${site.site_id}', 'siteToggle_${site.site_id}')">
+          <div class="flex items-center gap-3">
+            <span id="siteToggle_${site.site_id}" class="text-blue-600 text-lg transition-transform">▼</span>
+            <div class="text-lg font-bold text-blue-900">🏭 Site: ${site.site_id}</div>
+          </div>
+          <button onclick="event.stopPropagation(); removeSite('${site.site_id}')" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm font-semibold">
+            🗑️ Remove Site
+          </button>
+        </div>
+
+        <div id="siteContent_${site.site_id}">
+          <div class="mb-3 pb-3 border-b border-blue-200">
+            <label class="text-xs text-slate-600 font-semibold block mb-2">Holiday Configuration</label>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="holiday_${site.site_id}" value="legal" ${site.holiday_config === 'legal' ? 'checked' : ''}
+                       class="rounded-full" onchange="updateSiteHolidayConfig('${site.site_id}', 'legal')">
+                <span class="text-sm">Follow Legal Holidays</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="holiday_${site.site_id}" value="custom" ${site.holiday_config === 'custom' ? 'checked' : ''}
+                       class="rounded-full" onchange="updateSiteHolidayConfig('${site.site_id}', 'custom')">
+                <span class="text-sm">Custom Holiday Schedule</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            ${linesHtml}
+            <button onclick="addLineToSite('${site.site_id}')"
+                    class="w-full border-2 border-dashed border-blue-300 rounded-lg py-2 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-100 font-semibold">
+              + Add Line to ${site.site_id}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Hierarchical capacity configuration management functions
+
+function addSiteCapacity() {
+  const siteId = prompt('Enter Site ID (e.g., WF, VN01, VN02):');
+  if (!siteId) return;
+
+  // Check if site already exists
+  const existingSite = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(u => u.site_id === siteId);
+  if (existingSite) {
+    showNotification('⚠️ Site already exists. Use "Add Line" to add more lines.', 'warning');
+    return;
+  }
+
+  showNotification(`✅ Site ${siteId} ready. Click "Add Line" to configure production lines.`, 'success');
+  renderCapacityUnitsConfig();
+}
+
+function removeSite(siteId) {
+  if (!confirm(`Remove site ${siteId} and all its lines/shifts?`)) return;
+
+  // Remove all units for this site
+  PRODUCTION_PLAN_SEED_DATA.capacityUnits = PRODUCTION_PLAN_SEED_DATA.capacityUnits.filter(
+    unit => unit.site_id !== siteId
+  );
+
+  renderCapacityUnitsConfig();
+  showNotification(`✅ Site ${siteId} removed`, 'success');
+}
+
+function addLineToSite(siteId) {
+  const lineId = prompt(`Enter Line ID for site ${siteId} (e.g., L1, L2, L3):`);
+  if (!lineId) return;
+
+  const lineType = prompt('Enter Line Type (AUTO or MANUAL):')?.toUpperCase();
+  if (!lineType || (lineType !== 'AUTO' && lineType !== 'MANUAL')) {
+    showNotification('⚠️ Invalid line type. Must be AUTO or MANUAL.', 'warning');
+    return;
+  }
+
+  showNotification(`✅ Line ${lineId} ready. Click "Add Shift" to configure shifts.`, 'success');
+  renderCapacityUnitsConfig();
+}
+
+function addShiftToLine(siteId, lineId) {
+  const shiftType = prompt('Enter Shift Type (DAY or NIGHT):')?.toUpperCase();
+  if (!shiftType || (shiftType !== 'DAY' && shiftType !== 'NIGHT')) {
+    showNotification('⚠️ Invalid shift type. Must be DAY or NIGHT.', 'warning');
+    return;
+  }
+
+  // Check if this shift already exists
+  const existingShift = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(
+    u => u.site_id === siteId && u.line_id === lineId && u.shift_type === shiftType
+  );
+  if (existingShift) {
+    showNotification(`⚠️ ${shiftType} shift already exists for ${siteId} Line ${lineId}`, 'warning');
+    return;
+  }
+
+  // Get line type from existing units
+  const existingLine = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(
+    u => u.site_id === siteId && u.line_id === lineId
+  );
+  const lineType = existingLine ? existingLine.line_type : 'AUTO';
+
+  // Create new capacity unit
+  const newUnit = {
+    unit_id: `${siteId}_${lineId}_${shiftType}`,
+    program_id: 'product_a',
+    site_id: siteId,
+    line_id: lineId,
+    line_type: lineType,
+    shift_type: shiftType,
+    base_uph: 100,
+    shift_hours: 10,
+    ramp_start_date: '2026-10-01',
+    holiday_config: 'legal',
+    uph_ramp_curve: {
+      length_workdays: 30,
+      factors: [
+        0.50, 0.55, 0.60, 0.65, 0.70, 0.72, 0.74, 0.76, 0.78, 0.80,
+        0.82, 0.84, 0.86, 0.88, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
+        0.96, 0.97, 0.98, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00, 1.00
+      ]
+    },
+    yield_ramp_curve: {
+      length_workdays: 30,
+      factors: [
+        0.70, 0.72, 0.74, 0.76, 0.78, 0.80, 0.82, 0.84, 0.85, 0.86,
+        0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.95,
+        0.96, 0.96, 0.97, 0.97, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98
+      ]
+    }
+  };
+
+  PRODUCTION_PLAN_SEED_DATA.capacityUnits.push(newUnit);
+  renderCapacityUnitsConfig();
+  showNotification(`✅ ${shiftType} shift added to ${siteId} Line ${lineId}`, 'success');
+}
+
+function removeCapacityUnit(index) {
+  const unit = PRODUCTION_PLAN_SEED_DATA.capacityUnits[index];
+  if (!confirm(`Remove ${unit.shift_type} shift from ${unit.site_id} Line ${unit.line_id}?`)) return;
+
+  PRODUCTION_PLAN_SEED_DATA.capacityUnits.splice(index, 1);
+  renderCapacityUnitsConfig();
+  showNotification('✅ Shift removed', 'success');
+}
+
+function updateSiteHolidayConfig(siteId, configType) {
+  if (configType === 'custom') {
+    // Open custom holiday editor
+    openCustomHolidayEditor(siteId);
+  } else {
+    // Update all units for this site
+    PRODUCTION_PLAN_SEED_DATA.capacityUnits.forEach(unit => {
+      if (unit.site_id === siteId) {
+        unit.holiday_config = configType;
+        delete unit.custom_holidays; // Remove custom holidays when switching to legal
+      }
+    });
+
+    showNotification(`✅ ${siteId} now follows legal holidays`, 'success');
+  }
+}
+
+function openCustomHolidayEditor(siteId) {
+  // Get site's country
+  const siteData = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  const country = siteData?.country || 'CN';
+
+  // Get legal holidays for this country
+  const legalHolidays = PRODUCTION_PLAN_SEED_DATA.countryHolidays[country] || [];
+
+  // Get existing custom holidays for this site
+  const siteUnit = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(u => u.site_id === siteId);
+  const customHolidays = siteUnit?.custom_holidays || JSON.parse(JSON.stringify(legalHolidays)); // Deep copy
+
+  // Open popup window
+  const editorWindow = window.open('', '_blank', 'width=900,height=700');
+  const doc = editorWindow.document;
+
+  doc.write('<!DOCTYPE html><html><head>');
+  doc.write('<title>Custom Holiday Schedule - ' + siteId + '</title>');
+  doc.write('<script src="https://cdn.tailwindcss.com"></script>');
+  doc.write('</head><body class="bg-slate-50 p-6">');
+
+  doc.write('<div class="max-w-4xl mx-auto">');
+  doc.write('<div class="bg-white rounded-lg shadow-lg p-6">');
+  doc.write('<div class="flex items-center justify-between mb-6">');
+  doc.write('<div>');
+  doc.write('<h1 class="text-2xl font-bold text-slate-900">Custom Holiday Schedule</h1>');
+  doc.write('<p class="text-sm text-slate-600 mt-1">Site: <strong>' + siteId + '</strong> (Country: ' + country + ')</p>');
+  doc.write('</div>');
+  doc.write('<button onclick="window.close()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300">✕ Close</button>');
+  doc.write('</div>');
+
+  doc.write('<div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">');
+  doc.write('<div class="text-sm text-blue-900">');
+  doc.write('<strong>💡 Instructions:</strong> Below are the legal holidays for ' + country + '. ');
+  doc.write('You can edit the start date, end date, and add notes for each holiday. ');
+  doc.write('For example, if National Day is legally 7 days (Oct 1-7) but the factory only rests 3 days, ');
+  doc.write('you can change the end date to Oct 3.');
+  doc.write('</div>');
+  doc.write('</div>');
+
+  // Holiday list
+  doc.write('<div id="holidayList" class="space-y-4">');
+
+  customHolidays.forEach(function(holiday, idx) {
+    doc.write('<div class="border border-slate-200 rounded-lg p-4 bg-slate-50">');
+    doc.write('<div class="flex items-center justify-between mb-3">');
+    doc.write('<div class="font-semibold text-slate-900">' + holiday.name + '</div>');
+    doc.write('<button onclick="removeHoliday(' + idx + ')" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-sm">🗑️ Remove</button>');
+    doc.write('</div>');
+
+    doc.write('<div class="grid grid-cols-2 gap-4 mb-2">');
+    doc.write('<div>');
+    doc.write('<label class="text-xs text-slate-600 block mb-1">Start Date</label>');
+    doc.write('<input type="date" id="start_' + idx + '" value="' + holiday.start + '" class="w-full border rounded px-3 py-2 text-sm">');
+    doc.write('</div>');
+    doc.write('<div>');
+    doc.write('<label class="text-xs text-slate-600 block mb-1">End Date</label>');
+    doc.write('<input type="date" id="end_' + idx + '" value="' + holiday.end + '" class="w-full border rounded px-3 py-2 text-sm">');
+    doc.write('</div>');
+    doc.write('</div>');
+
+    doc.write('<div>');
+    doc.write('<label class="text-xs text-slate-600 block mb-1">Notes</label>');
+    doc.write('<input type="text" id="notes_' + idx + '" value="' + (holiday.notes || '') + '" ');
+    doc.write('class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g., Factory working on Oct 4-7">');
+    doc.write('</div>');
+
+    doc.write('</div>');
+  });
+
+  doc.write('</div>');
+
+  // Add new holiday button
+  doc.write('<button onclick="addNewHoliday()" class="mt-4 w-full border-2 border-dashed border-blue-300 rounded-lg py-3 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-50 font-semibold">');
+  doc.write('+ Add Custom Holiday');
+  doc.write('</button>');
+
+  // Save button
+  doc.write('<div class="mt-6 flex items-center justify-end gap-3">');
+  doc.write('<button onclick="window.close()" class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50">');
+  doc.write('Cancel');
+  doc.write('</button>');
+  doc.write('<button onclick="saveCustomHolidays()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">');
+  doc.write('💾 Save Custom Schedule');
+  doc.write('</button>');
+  doc.write('</div>');
+
+  doc.write('</div>');
+  doc.write('</div>');
+
+  // JavaScript for the popup
+  doc.write('<script>');
+  doc.write('var holidays = ' + JSON.stringify(customHolidays) + ';');
+  doc.write('var siteId = "' + siteId + '";');
+
+  doc.write('function removeHoliday(idx) {');
+  doc.write('  if (!confirm("Remove this holiday?")) return;');
+  doc.write('  holidays.splice(idx, 1);');
+  doc.write('  location.reload();');
+  doc.write('}');
+
+  doc.write('function addNewHoliday() {');
+  doc.write('  var name = prompt("Enter holiday name:");');
+  doc.write('  if (!name) return;');
+  doc.write('  var start = prompt("Enter start date (YYYY-MM-DD):");');
+  doc.write('  if (!start) return;');
+  doc.write('  var end = prompt("Enter end date (YYYY-MM-DD):");');
+  doc.write('  if (!end) return;');
+  doc.write('  holidays.push({ name: name, start: start, end: end, notes: "" });');
+  doc.write('  location.reload();');
+  doc.write('}');
+
+  doc.write('function saveCustomHolidays() {');
+  doc.write('  var updatedHolidays = holidays.map(function(h, idx) {');
+  doc.write('    return {');
+  doc.write('      name: h.name,');
+  doc.write('      start: document.getElementById("start_" + idx).value,');
+  doc.write('      end: document.getElementById("end_" + idx).value,');
+  doc.write('      notes: document.getElementById("notes_" + idx).value');
+  doc.write('    };');
+  doc.write('  });');
+  doc.write('  ');
+  doc.write('  if (window.opener && window.opener.saveCustomHolidaysToSite) {');
+  doc.write('    window.opener.saveCustomHolidaysToSite(siteId, updatedHolidays);');
+  doc.write('    alert("✅ Custom holiday schedule saved for " + siteId);');
+  doc.write('    window.close();');
+  doc.write('  }');
+  doc.write('}');
+
+  doc.write('</script>');
+  doc.write('</body></html>');
+  doc.close();
+}
+
+// Function to receive data from popup
+function saveCustomHolidaysToSite(siteId, customHolidays) {
+  // Update all units for this site with custom holidays
+  PRODUCTION_PLAN_SEED_DATA.capacityUnits.forEach(unit => {
+    if (unit.site_id === siteId) {
+      unit.holiday_config = 'custom';
+      unit.custom_holidays = customHolidays;
+    }
+  });
+
+  showNotification(`✅ Custom holiday schedule saved for ${siteId}`, 'success');
+  renderCapacityUnitsConfig();
+}
+
+// Expose to window for popup access
+window.saveCustomHolidaysToSite = saveCustomHolidaysToSite;
+
+function editUphRampCurve(index) {
+  showNotification('⚠️ UPH Ramp Curve editor coming soon!', 'info');
+}
+
+function editYieldRampCurve(index) {
+  showNotification('⚠️ Yield Ramp Curve editor coming soon!', 'info');
+}
+
+function resetConfigurationToDefault() {
+  if (!confirm('Reset all configuration to default values?')) return;
+
+  // Reset form values
+  document.getElementById('configStartDate').value = '2026-10-01';
+  document.getElementById('configEndDate').value = '2026-10-31';
+  document.getElementById('configShiftHours').value = '10';
+  document.getElementById('configWorkingDays').value = 'MON_SAT';
+  document.getElementById('configShipmentLag').value = '2';
+  document.getElementById('configConsiderHolidays').checked = true;
+  document.getElementById('configDay1Factor').value = '0.5';
+  document.getElementById('configDay2Factor').value = '1.0';
+  document.getElementById('configDay3Factor').value = '1.0';
+
+  showNotification('✅ Configuration reset to default', 'success');
+}
+
+// Toggle section collapse/expand
+function toggleSection(contentId, toggleId) {
+  const content = document.getElementById(contentId);
+  const toggle = document.getElementById(toggleId);
+
+  if (!content || !toggle) return;
+
+  if (content.style.display === 'none') {
+    content.style.display = '';
+    toggle.textContent = '▼';
+    toggle.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.display = 'none';
+    toggle.textContent = '▶';
+    toggle.style.transform = 'rotate(-90deg)';
+  }
+}
+
+function generatePlanFromConfig() {
+  // Show planning mode selection modal
+  showPlanningModeModal();
+}
+
+function showPlanningModeModal() {
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+      <div class="text-2xl font-bold text-slate-900 mb-2">Select Planning Mode</div>
+      <div class="text-sm text-slate-600 mb-6">Choose which scenario(s) to include in the production plan report</div>
+
+      <div class="space-y-4">
+        <label class="flex items-start gap-4 p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+          <input type="radio" name="planningMode" value="unconstrained" class="mt-1" checked>
+          <div class="flex-1">
+            <div class="font-semibold text-slate-900">Unconstrained (Capacity Only)</div>
+            <div class="text-sm text-slate-600 mt-1">Shows pure production capacity without CTB material constraints</div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-4 p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-colors">
+          <input type="radio" name="planningMode" value="constrained" class="mt-1">
+          <div class="flex-1">
+            <div class="font-semibold text-slate-900">Constrained (CTB Applied)</div>
+            <div class="text-sm text-slate-600 mt-1">Applies Clear-to-Build material limits to production plan</div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-4 p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors">
+          <input type="radio" name="planningMode" value="combined" class="mt-1">
+          <div class="flex-1">
+            <div class="font-semibold text-slate-900">Both Scenarios (Side-by-Side)</div>
+            <div class="text-sm text-slate-600 mt-1">Displays both unconstrained and constrained plans for easy comparison</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 mt-8">
+        <button onclick="this.closest('.fixed').remove()" class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+          Cancel
+        </button>
+        <button onclick="proceedWithPlanGeneration()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+          🚀 Generate Plan
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function proceedWithPlanGeneration() {
+  // Get selected mode
+  const selectedMode = document.querySelector('input[name="planningMode"]:checked').value;
+
+  // ========================================
+  // DATA VALIDATION BEFORE GENERATION
+  // ========================================
+  const validationErrors = [];
+  const seedData = PRODUCTION_PLAN_SEED_DATA;
+
+  // Check 1: Forecast data (required for all modes)
+  if (!seedData.weeklyDemand || seedData.weeklyDemand.length === 0) {
+    validationErrors.push('❌ <strong>Forecast data is missing</strong><br>Please upload weekly demand forecast data before generating the plan.');
+  }
+
+  // Check 2: CTB data (required for Constrained and Combined modes)
+  if (selectedMode === 'constrained' || selectedMode === 'combined') {
+    if (!seedData.ctbDaily || seedData.ctbDaily.length === 0) {
+      validationErrors.push('❌ <strong>CTB (Clear-to-Build) data is missing</strong><br>Constrained mode requires daily CTB material availability data.');
+    }
+  }
+
+  // Check 3: Capacity configuration (required for all modes)
+  if (!seedData.capacityUnits || seedData.capacityUnits.length === 0) {
+    validationErrors.push('❌ <strong>Capacity configuration is missing</strong><br>Please configure at least one production line with shift settings.');
+  }
+
+  // Check 4: Sites configuration
+  if (!seedData.sites || seedData.sites.length === 0) {
+    validationErrors.push('❌ <strong>Sites configuration is missing</strong><br>Please add at least one production site.');
+  }
+
+  // If there are validation errors, show them and stop
+  if (validationErrors.length > 0) {
+    const errorModal = document.createElement('div');
+    errorModal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center';
+    errorModal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="text-4xl">⚠️</div>
+          <div class="flex-1">
+            <div class="text-2xl font-bold text-red-900 mb-2">Cannot Generate Production Plan</div>
+            <div class="text-sm text-slate-600">The following required data is missing:</div>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+          ${validationErrors.map(err => `<div class="text-sm text-red-900">${err}</div>`).join('<div class="border-t border-red-200 my-2"></div>')}
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div class="font-semibold text-blue-900 mb-2">💡 What you need to do:</div>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Forecast data</strong>: Upload weekly demand forecast (required for all modes)</li>
+            <li>• <strong>CTB data</strong>: Upload daily material availability (required for Constrained/Combined modes)</li>
+            <li>• <strong>Capacity config</strong>: Add production lines and shifts in the configuration section</li>
+            <li>• <strong>Sites</strong>: Configure at least one production site</li>
+          </ul>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button onclick="this.closest('.fixed').remove()"
+                  class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+            OK, I'll Add Missing Data
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(errorModal);
+    return; // Stop execution
+  }
+
+  // Close modal
+  document.querySelector('.fixed.inset-0').remove();
+
+  // Gather configuration
+  const config = {
+    program: 'product_a', // Fixed value
+    startDate: document.getElementById('configStartDate').value,
+    endDate: document.getElementById('configEndDate').value,
+    mode: selectedMode, // From modal selection
+    shiftHours: parseFloat(document.getElementById('configShiftHours').value),
+    workingDays: document.getElementById('configWorkingDays').value,
+    shipmentLag: parseInt(document.getElementById('configShipmentLag').value),
+    considerHolidays: document.getElementById('configConsiderHolidays').checked,
+    outputFactors: {
+      day1: parseFloat(document.getElementById('configDay1Factor').value),
+      day2: parseFloat(document.getElementById('configDay2Factor').value),
+      day3_plus: parseFloat(document.getElementById('configDay3Factor').value)
+    }
+  };
+
+  // Show loading overlay
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.className = 'fixed inset-0 bg-black/40 z-50 flex items-center justify-center';
+  loadingOverlay.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-md">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+      <div class="text-xl font-bold">Generating Production Plan...</div>
+      <div class="text-sm text-slate-600 text-center">
+        Calculating capacity, applying ramp curves, checking constraints...
+      </div>
+    </div>
+  `;
+  document.body.appendChild(loadingOverlay);
+
+  // Simulate processing
+  setTimeout(() => {
+    try {
+      // Update state with new configuration
+      const state = window.productionPlanState;
+      state.program = config.program;
+      state.startDate = config.startDate;
+      state.endDate = config.endDate;
+      state.mode = config.mode;
+
+      console.log('[Generate] Starting plan generation with config:', config);
+
+      // Generate new plan(s) based on mode
+      if (config.mode === 'combined') {
+        // Generate both unconstrained and constrained plans
+        console.log('[Generate] Generating combined mode plans...');
+        const unconstrainedPlan = state.engine.generatePlan(config.startDate, config.endDate, 'unconstrained');
+        const constrainedPlan = state.engine.generatePlan(config.startDate, config.endDate, 'constrained');
+
+        // Validate plans
+        if (!unconstrainedPlan || !unconstrainedPlan.programResults || !unconstrainedPlan.weeklyMetrics) {
+          throw new Error('Unconstrained plan generation failed - missing required data');
+        }
+        if (!constrainedPlan || !constrainedPlan.programResults || !constrainedPlan.weeklyMetrics) {
+          throw new Error('Constrained plan generation failed - missing required data');
+        }
+
+        state.planResults = {
+          unconstrained: unconstrainedPlan,
+          constrained: constrainedPlan,
+          mode: 'combined'
+        };
+        console.log('[Generate] Combined plans generated successfully');
+      } else {
+        console.log('[Generate] Generating single mode plan:', config.mode);
+        const plan = state.engine.generatePlan(config.startDate, config.endDate, config.mode);
+
+        // Validate plan
+        if (!plan || !plan.programResults || !plan.weeklyMetrics) {
+          console.error('[Generate] Plan validation failed. Plan object:', plan);
+          throw new Error('Plan generation failed - missing required data (programResults or weeklyMetrics)');
+        }
+
+        console.log('[Generate] Plan generated:', {
+          mode: config.mode,
+          programResultsLength: plan.programResults.length,
+          weeklyMetricsLength: plan.weeklyMetrics.length
+        });
+
+        state.planResults = plan;
+      }
+
+      // Save plan as versioned plan
+      if (typeof saveProductionPlanVersion === 'function') {
+        saveProductionPlanVersion(state.planResults, config);
+      }
+
+      // Save plan to localStorage for the report window
+      const planId = 'plan_' + Date.now();
+      localStorage.setItem('productionPlan_' + planId, JSON.stringify(state.planResults));
+      localStorage.setItem('productionPlan_latest', JSON.stringify(state.planResults)); // Also save as latest
+
+      // Try to open report in new window
+      const reportWindow = window.open(
+        'production_plan_report.html?planId=' + planId,
+        '_blank',
+        'width=1200,height=800,scrollbars=yes,resizable=yes'
+      );
+
+      // Switch to Latest Plan view (which will show the embedded report)
+      state.activeSubpage = 'latest';
+
+      loadingOverlay.remove();
+      renderProductionPlan();
+
+      if (!reportWindow) {
+        // If popup was blocked, show notification to view in Latest Plan tab
+        showNotification('✅ Plan Generated! View report in "Latest Production Plan" tab below (pop-up was blocked).', 'warning');
+      } else {
+        showNotification('✅ Production Plan Generated Successfully! Report opened in new window.', 'success');
+      }
+    } catch (error) {
+      console.error('[Generate] Error generating plan:', error);
+      console.error('[Generate] Error stack:', error.stack);
+      loadingOverlay.remove();
+      showNotification('❌ Error generating plan: ' + error.message, 'error');
+    }
+  }, 1500);
+}
+
+// Production Plan Helper Functions
+function updateProductionPlanFilters() {
+  const state = window.productionPlanState;
+  state.program = document.getElementById('ppProgram').value;
+  state.site = document.getElementById('ppSite').value;
+  state.startDate = document.getElementById('ppStartDate').value;
+  state.endDate = document.getElementById('ppEndDate').value;
+  state.mode = document.getElementById('ppMode').value;
+
+  // Auto-regenerate
+  regenerateProductionPlan();
+}
+
+function regenerateProductionPlan() {
+  const state = window.productionPlanState;
+
+  // Show loading state in UI
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.className = 'fixed inset-0 bg-black/20 z-50 flex items-center justify-center';
+  loadingOverlay.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl p-6 flex items-center gap-4">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div class="text-lg font-semibold">Generating Production Plan...</div>
+    </div>
+  `;
+  document.body.appendChild(loadingOverlay);
+
+  // Simulate processing time for better UX
+  setTimeout(() => {
+    try {
+      // Regenerate plan with new settings
+      state.planResults = state.engine.generatePlan(state.startDate, state.endDate, state.mode);
+
+      // Remove loading overlay
+      loadingOverlay.remove();
+
+      // Re-render
+      renderProductionPlan();
+
+      // Show success notification
+      showNotification('✅ Production Plan Generated Successfully!', 'success');
+    } catch (error) {
+      console.error('Error generating plan:', error);
+      loadingOverlay.remove();
+      showNotification('❌ Error generating plan: ' + error.message, 'error');
+    }
+  }, 500);
+}
+
+// Helper function to show notifications
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-semibold animate-fade-in ${
+    type === 'success' ? 'bg-green-600' :
+    type === 'error' ? 'bg-red-600' :
+    'bg-blue-600'
+  }`;
+  notification.textContent = message;
+
+  document.body.appendChild(notification);
+
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    notification.classList.add('animate-fade-out');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+function exportProductionPlanToExcel() {
+  showNotification('📊 Excel export feature coming soon!', 'info');
+}
+
+function openProductionPlanConfig() {
+  // This function is deprecated - now using subpage navigation
+  window.productionPlanState.activeSubpage = 'generate';
+  renderProductionPlan();
 }
 
 // 3. Manufacturing Lead-time
@@ -2369,14 +4884,17 @@ function renderManufacturingLeadtime() {
         </div>
       </div>
 
-      <!-- Process Breakdown Table -->
-      <div class="overflow-x-auto">
+      <!-- Process Breakdown Table with Percentiles -->
+      <div class="text-sm font-semibold text-slate-700 mb-3">Weekly Lead-time Performance (Previous Week)</div>
+      <div class="overflow-x-auto mb-6">
         <table class="w-full text-sm">
           <thead class="bg-slate-100">
             <tr>
               <th class="px-4 py-3 text-left font-semibold text-slate-700">Process Stage</th>
               <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard (Days)</th>
-              <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual (Days)</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-green-50">75% Actual</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-yellow-50">90% Actual</th>
+              <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-blue-50">Average</th>
               <th class="px-4 py-3 text-right font-semibold text-slate-700">Variance</th>
               <th class="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
             </tr>
@@ -2385,7 +4903,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">MIH (Material In-House)</td>
               <td class="px-4 py-3 text-right">3.0</td>
-              <td class="px-4 py-3 text-right font-bold">4.2</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">3.8</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">4.5</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">4.2</td>
               <td class="px-4 py-3 text-right text-red-700 font-semibold">+1.2</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
@@ -2394,7 +4914,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">SMT Input</td>
               <td class="px-4 py-3 text-right">2.5</td>
-              <td class="px-4 py-3 text-right font-bold">3.1</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">2.8</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">3.3</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">3.1</td>
               <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.6</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
@@ -2403,7 +4925,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">SMT Output</td>
               <td class="px-4 py-3 text-right">5.0</td>
-              <td class="px-4 py-3 text-right font-bold">5.8</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">5.2</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">6.1</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">5.8</td>
               <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.8</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
@@ -2412,7 +4936,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">FAT Input</td>
               <td class="px-4 py-3 text-right">4.0</td>
-              <td class="px-4 py-3 text-right font-bold">5.2</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">4.8</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">5.6</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">5.2</td>
               <td class="px-4 py-3 text-right text-red-700 font-semibold">+1.2</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">🔴 Critical</span>
@@ -2421,7 +4947,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">Packing</td>
               <td class="px-4 py-3 text-right">6.0</td>
-              <td class="px-4 py-3 text-right font-bold">6.9</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">6.3</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">7.2</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">6.9</td>
               <td class="px-4 py-3 text-right text-red-700 font-semibold">+0.9</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">⚠️ Delayed</span>
@@ -2430,7 +4958,9 @@ function renderManufacturingLeadtime() {
             <tr class="hover:bg-slate-50">
               <td class="px-4 py-3 font-medium">WH (Warehouse)</td>
               <td class="px-4 py-3 text-right">2.5</td>
-              <td class="px-4 py-3 text-right font-bold">2.8</td>
+              <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">2.6</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">3.0</td>
+              <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">2.8</td>
               <td class="px-4 py-3 text-right text-yellow-700 font-semibold">+0.3</td>
               <td class="px-4 py-3">
                 <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">✅ Acceptable</span>
@@ -2439,12 +4969,87 @@ function renderManufacturingLeadtime() {
             <tr class="bg-slate-100 font-bold">
               <td class="px-4 py-3">Total Lead-time</td>
               <td class="px-4 py-3 text-right">23.0</td>
-              <td class="px-4 py-3 text-right text-lg">28.0</td>
+              <td class="px-4 py-3 text-right bg-green-50 text-green-700">25.5</td>
+              <td class="px-4 py-3 text-right bg-yellow-50 text-yellow-700">29.7</td>
+              <td class="px-4 py-3 text-right bg-blue-50 text-blue-700 text-lg">28.0</td>
               <td class="px-4 py-3 text-right text-red-700 text-lg">+5.0</td>
               <td class="px-4 py-3"></td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+        <div class="text-xs font-semibold text-blue-900 mb-1">📊 Percentile Explanation</div>
+        <div class="text-sm text-blue-900">
+          <strong>75% Actual:</strong> 75% of units complete within this time (best case performance).
+          <strong>90% Actual:</strong> 90% of units complete within this time (typical target).
+          <strong>Average:</strong> Mean lead-time across all units.
+        </div>
+      </div>
+
+      <!-- Monthly Tracking Table -->
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-700 mb-3">Monthly Lead-time Tracking (Total End-to-End)</div>
+        <div class="text-xs text-slate-600 mb-3">Plan values are set at beginning of year. Actual values updated at beginning of each month for the previous month.</div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-3 py-2 text-left font-semibold text-slate-700">Metric</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Jan</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Feb</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Mar</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Apr</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">May</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Jun</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Jul</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Aug</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Sep</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Oct</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Nov</th>
+                <th class="px-3 py-2 text-center font-semibold text-slate-700">Dec</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="bg-blue-50 hover:bg-blue-100">
+                <td class="px-3 py-3 font-semibold text-slate-900">Plan (Days)</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+                <td class="px-3 py-3 text-center text-blue-700 font-semibold">23.0</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-3 py-3 font-semibold text-slate-900">Actual (Days)</td>
+                <td class="px-3 py-3 text-center bg-green-50 font-bold text-green-700">22.8</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+                <td class="px-3 py-3 text-center text-slate-400">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 text-xs text-slate-600 bg-slate-50 border rounded p-3">
+          <strong>Note:</strong> January actual (22.8 days) was updated on Feb 1st. Current week is W04 of January, so Feb-Dec actuals will be populated at the beginning of each subsequent month. Plan remains constant at 23.0 days throughout the year as the baseline target.
+        </div>
       </div>
 
       <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
@@ -2458,7 +5063,7 @@ function renderManufacturingLeadtime() {
   $("content").innerHTML = html;
 }
 
-// 4. BTO/CTO Lead-time  
+// 4. BTO/CTO Lead-time
 function renderBTOCTOLeadtime() {
   const html = `
     <div class="space-y-4">
@@ -2473,18 +5078,22 @@ function renderBTOCTOLeadtime() {
             <div class="text-4xl font-bold text-blue-700">18 days</div>
           </div>
           <div class="bg-red-50 border-2 border-red-400 rounded-xl p-4 text-center">
-            <div class="text-xs font-semibold text-slate-700 mb-2">Actual BTO Lead-time</div>
+            <div class="text-xs font-semibold text-slate-700 mb-2">Actual BTO Lead-time (Average)</div>
             <div class="text-4xl font-bold text-red-700">23 days</div>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- BTO Stage Breakdown with Percentiles -->
+        <div class="text-sm font-semibold text-slate-700 mb-3">Weekly BTO Performance (Previous Week)</div>
+        <div class="overflow-x-auto mb-6">
           <table class="w-full text-sm">
             <thead class="bg-slate-100">
               <tr>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">BTO Stage</th>
                 <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard</th>
-                <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-green-50">75% Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-yellow-50">90% Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-blue-50">Average</th>
                 <th class="px-4 py-3 text-right font-semibold text-slate-700">Gap</th>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">Improvement Actions</th>
               </tr>
@@ -2493,40 +5102,128 @@ function renderBTOCTOLeadtime() {
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Order Processing</td>
                 <td class="px-4 py-3 text-right">1 day</td>
-                <td class="px-4 py-3 text-right font-bold">1.5 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">1.2</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">1.7</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">1.5</td>
                 <td class="px-4 py-3 text-right text-red-700">+0.5</td>
                 <td class="px-4 py-3 text-xs">Automate order validation</td>
               </tr>
               <tr class="hover:bg-slate-50 bg-red-50">
                 <td class="px-4 py-3 font-medium">Material Kitting</td>
                 <td class="px-4 py-3 text-right">2 days</td>
-                <td class="px-4 py-3 text-right font-bold">4 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">3.5</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">4.8</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">4.0</td>
                 <td class="px-4 py-3 text-right text-red-700 font-bold">+2.0</td>
                 <td class="px-4 py-3 text-xs font-semibold text-red-700">🔴 Pre-stage critical parts, optimize warehouse layout</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Assembly</td>
                 <td class="px-4 py-3 text-right">8 days</td>
-                <td class="px-4 py-3 text-right font-bold">10 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">9.2</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">10.5</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">10.0</td>
                 <td class="px-4 py-3 text-right text-red-700">+2.0</td>
                 <td class="px-4 py-3 text-xs">Reduce changeover time, add flex capacity</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Testing & QC</td>
                 <td class="px-4 py-3 text-right">4 days</td>
-                <td class="px-4 py-3 text-right font-bold">4.5 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">4.2</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">4.8</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">4.5</td>
                 <td class="px-4 py-3 text-right text-yellow-700">+0.5</td>
                 <td class="px-4 py-3 text-xs">Parallel testing for high-volume SKUs</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Packing & Shipping</td>
                 <td class="px-4 py-3 text-right">3 days</td>
-                <td class="px-4 py-3 text-right font-bold">3 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">2.8</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">3.2</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">3.0</td>
                 <td class="px-4 py-3 text-right text-green-700">0.0</td>
                 <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
               </tr>
+              <tr class="bg-slate-100 font-bold">
+                <td class="px-4 py-3">Total BTO Lead-time</td>
+                <td class="px-4 py-3 text-right">18</td>
+                <td class="px-4 py-3 text-right bg-green-50 text-green-700">20.9</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 text-yellow-700">25.0</td>
+                <td class="px-4 py-3 text-right bg-blue-50 text-blue-700 text-lg">23.0</td>
+                <td class="px-4 py-3 text-right text-red-700 text-lg">+5.0</td>
+                <td class="px-4 py-3"></td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <div class="text-xs font-semibold text-blue-900 mb-1">📊 Percentile Explanation</div>
+          <div class="text-sm text-blue-900">
+            <strong>75% Actual:</strong> 75% of orders complete within this time.
+            <strong>90% Actual:</strong> 90% of orders complete within this time.
+            <strong>Average:</strong> Mean lead-time across all orders.
+          </div>
+        </div>
+
+        <!-- BTO Monthly Tracking -->
+        <div class="mt-6">
+          <div class="text-sm font-semibold text-slate-700 mb-3">BTO Monthly Lead-time Tracking</div>
+          <div class="text-xs text-slate-600 mb-3">Plan values are set at beginning of year. Actual values updated at beginning of each month for the previous month.</div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-100">
+                <tr>
+                  <th class="px-3 py-2 text-left font-semibold text-slate-700">Metric</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jan</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Feb</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Mar</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Apr</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">May</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jun</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jul</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Aug</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Sep</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Oct</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Nov</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Dec</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-blue-50 hover:bg-blue-100">
+                  <td class="px-3 py-3 font-semibold text-slate-900">Plan (Days)</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">18.0</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-3 font-semibold text-slate-900">Actual (Days)</td>
+                  <td class="px-3 py-3 text-center bg-red-50 font-bold text-red-700">23.2</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -2541,18 +5238,22 @@ function renderBTOCTOLeadtime() {
             <div class="text-4xl font-bold text-blue-700">12 days</div>
           </div>
           <div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 text-center">
-            <div class="text-xs font-semibold text-slate-700 mb-2">Actual CTO Lead-time</div>
+            <div class="text-xs font-semibold text-slate-700 mb-2">Actual CTO Lead-time (Average)</div>
             <div class="text-4xl font-bold text-yellow-700">14 days</div>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- CTO Stage Breakdown with Percentiles -->
+        <div class="text-sm font-semibold text-slate-700 mb-3">Weekly CTO Performance (Previous Week)</div>
+        <div class="overflow-x-auto mb-6">
           <table class="w-full text-sm">
             <thead class="bg-slate-100">
               <tr>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">CTO Stage</th>
                 <th class="px-4 py-3 text-right font-semibold text-slate-700">Standard</th>
-                <th class="px-4 py-3 text-right font-semibold text-slate-700">Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-green-50">75% Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-yellow-50">90% Actual</th>
+                <th class="px-4 py-3 text-right font-semibold text-slate-700 bg-blue-50">Average</th>
                 <th class="px-4 py-3 text-right font-semibold text-slate-700">Gap</th>
                 <th class="px-4 py-3 text-left font-semibold text-slate-700">Improvement Actions</th>
               </tr>
@@ -2561,40 +5262,128 @@ function renderBTOCTOLeadtime() {
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Configuration Design</td>
                 <td class="px-4 py-3 text-right">1 day</td>
-                <td class="px-4 py-3 text-right font-bold">1 day</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">0.9</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">1.1</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">1.0</td>
                 <td class="px-4 py-3 text-right text-green-700">0.0</td>
                 <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
               </tr>
               <tr class="hover:bg-slate-50 bg-yellow-50">
                 <td class="px-4 py-3 font-medium">Part Sourcing</td>
                 <td class="px-4 py-3 text-right">3 days</td>
-                <td class="px-4 py-3 text-right font-bold">4 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">3.5</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">4.5</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">4.0</td>
                 <td class="px-4 py-3 text-right text-yellow-700 font-bold">+1.0</td>
                 <td class="px-4 py-3 text-xs font-semibold text-yellow-700">⚠️ Buffer stock for common configs</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Custom Assembly</td>
                 <td class="px-4 py-3 text-right">5 days</td>
-                <td class="px-4 py-3 text-right font-bold">6 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">5.5</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">6.5</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">6.0</td>
                 <td class="px-4 py-3 text-right text-yellow-700">+1.0</td>
                 <td class="px-4 py-3 text-xs">Dedicated CTO line, reduce setup time</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Final Test</td>
                 <td class="px-4 py-3 text-right">2 days</td>
-                <td class="px-4 py-3 text-right font-bold">2 days</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">1.9</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">2.2</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">2.0</td>
                 <td class="px-4 py-3 text-right text-green-700">0.0</td>
                 <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
               </tr>
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Fulfillment</td>
                 <td class="px-4 py-3 text-right">1 day</td>
-                <td class="px-4 py-3 text-right font-bold">1 day</td>
+                <td class="px-4 py-3 text-right bg-green-50 font-semibold text-green-700">0.9</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 font-semibold text-yellow-700">1.1</td>
+                <td class="px-4 py-3 text-right bg-blue-50 font-bold text-blue-700">1.0</td>
                 <td class="px-4 py-3 text-right text-green-700">0.0</td>
                 <td class="px-4 py-3 text-xs text-green-700">✅ Meeting standard</td>
               </tr>
+              <tr class="bg-slate-100 font-bold">
+                <td class="px-4 py-3">Total CTO Lead-time</td>
+                <td class="px-4 py-3 text-right">12</td>
+                <td class="px-4 py-3 text-right bg-green-50 text-green-700">12.7</td>
+                <td class="px-4 py-3 text-right bg-yellow-50 text-yellow-700">15.4</td>
+                <td class="px-4 py-3 text-right bg-blue-50 text-blue-700 text-lg">14.0</td>
+                <td class="px-4 py-3 text-right text-yellow-700 text-lg">+2.0</td>
+                <td class="px-4 py-3"></td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <div class="text-xs font-semibold text-blue-900 mb-1">📊 Percentile Explanation</div>
+          <div class="text-sm text-blue-900">
+            <strong>75% Actual:</strong> 75% of orders complete within this time.
+            <strong>90% Actual:</strong> 90% of orders complete within this time.
+            <strong>Average:</strong> Mean lead-time across all orders.
+          </div>
+        </div>
+
+        <!-- CTO Monthly Tracking -->
+        <div class="mt-6">
+          <div class="text-sm font-semibold text-slate-700 mb-3">CTO Monthly Lead-time Tracking</div>
+          <div class="text-xs text-slate-600 mb-3">Plan values are set at beginning of year. Actual values updated at beginning of each month for the previous month.</div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-100">
+                <tr>
+                  <th class="px-3 py-2 text-left font-semibold text-slate-700">Metric</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jan</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Feb</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Mar</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Apr</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">May</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jun</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Jul</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Aug</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Sep</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Oct</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Nov</th>
+                  <th class="px-3 py-2 text-center font-semibold text-slate-700">Dec</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-blue-50 hover:bg-blue-100">
+                  <td class="px-3 py-3 font-semibold text-slate-900">Plan (Days)</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                  <td class="px-3 py-3 text-center text-blue-700 font-semibold">12.0</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-3 font-semibold text-slate-900">Actual (Days)</td>
+                  <td class="px-3 py-3 text-center bg-yellow-50 font-bold text-yellow-700">13.8</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                  <td class="px-3 py-3 text-center text-slate-400">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -3342,4 +6131,396 @@ function renderCampusReadiness() {
   `;
 
   $("content").innerHTML = html;
+}
+
+// ========================================
+// NAVIGATION HELPER (v3.0)
+// ========================================
+
+/**
+ * Navigate to a specific view
+ * @param {string} view - View name
+ */
+function navigateTo(view) {
+  STATE.activeView = view;
+  render();
+}
+
+// Export navigateTo globally
+if (typeof window !== 'undefined') {
+  window.navigateTo = navigateTo;
+}
+
+// ========================================
+// PRODUCTION PLAN HELPERS (v2.0)
+// ========================================
+
+/**
+ * Aggregate daily data by month
+ */
+function aggregateByMonth(dailyData) {
+  const monthlyMap = {};
+
+  dailyData.forEach(day => {
+    const month = day.date.substring(0, 7); // 'YYYY-MM'
+
+    if (!monthlyMap[month]) {
+      monthlyMap[month] = {
+        month_id: month,
+        forecast: 0,
+        ctb: 0,
+        capacity: 0,
+        input: 0,
+        output: 0,
+        shipments: 0,
+        days: []
+      };
+    }
+
+    monthlyMap[month].forecast += day.demand || 0;
+    monthlyMap[month].ctb += day.ctb_available || day.capacity_unconstrained || 0;
+    monthlyMap[month].capacity += day.capacity_unconstrained || 0;
+    monthlyMap[month].input += day.input_final || 0;
+    monthlyMap[month].output += day.output_final || 0;
+    monthlyMap[month].shipments += day.shipment_final || 0;
+    monthlyMap[month].days.push(day);
+  });
+
+  return Object.values(monthlyMap).map(month => ({
+    ...month,
+    gap: month.shipments - month.forecast,
+    cum_forecast: month.forecast,
+    cum_ctb: month.ctb,
+    cum_capacity: month.capacity,
+    cum_input: month.input,
+    cum_output: month.output,
+    cum_shipment: month.shipments
+  }));
+}
+
+/**
+ * Calculate summary metrics for the plan
+ */
+function calculatePlanSummary(dailyData) {
+  if (!dailyData || dailyData.length === 0) {
+    return {
+      cumForecast: 0,
+      cumCTB: 0,
+      cumCapacity: 0,
+      cumShip: 0,
+      gap: 0
+    };
+  }
+
+  const lastDay = dailyData[dailyData.length - 1];
+
+  // Calculate cumulative CTB (sum of all daily CTB available)
+  const cumCTB = dailyData.reduce((sum, d) => sum + (d.ctb_available || d.capacity_unconstrained || 0), 0);
+
+  // Calculate cumulative Capacity (sum of all daily capacity)
+  const cumCapacity = dailyData.reduce((sum, d) => sum + (d.capacity_unconstrained || 0), 0);
+
+  return {
+    cumForecast: lastDay?.cum_demand || 0,
+    cumCTB: cumCTB,
+    cumCapacity: cumCapacity,
+    cumShip: lastDay?.cum_shipment || 0,
+    gap: (lastDay?.cum_shipment || 0) - (lastDay?.cum_demand || 0)
+  };
+}
+
+/**
+ * Calculate summary up to a specific cutoff date
+ */
+function calculateCutoffSummary(dailyData, cutoffDate) {
+  if (!dailyData || dailyData.length === 0) {
+    return {
+      cumForecast: 0,
+      cumCTB: 0,
+      cumCapacity: 0,
+      cumShip: 0,
+      gap: 0
+    };
+  }
+
+  // Filter data up to cutoff date
+  const cutoffData = dailyData.filter(d => d.date <= cutoffDate);
+
+  if (cutoffData.length === 0) {
+    return {
+      cumForecast: 0,
+      cumCTB: 0,
+      cumCapacity: 0,
+      cumShip: 0,
+      gap: 0
+    };
+  }
+
+  const lastDay = cutoffData[cutoffData.length - 1];
+
+  // Calculate cumulative CTB and Capacity
+  const cumCTB = cutoffData.reduce((sum, d) => sum + (d.ctb_available || d.capacity_unconstrained || 0), 0);
+  const cumCapacity = cutoffData.reduce((sum, d) => sum + (d.capacity_unconstrained || 0), 0);
+
+  return {
+    cumForecast: lastDay?.cum_demand || 0,
+    cumCTB: cumCTB,
+    cumCapacity: cumCapacity,
+    cumShip: lastDay?.cum_shipment || 0,
+    gap: (lastDay?.cum_shipment || 0) - (lastDay?.cum_demand || 0)
+  };
+}
+
+/**
+ * Analyze primary binding constraint
+ */
+function analyzePrimaryConstraint(dailyData) {
+  let ctbLimitedDays = 0;
+  let capacityLimitedDays = 0;
+  let ctbLimitedUnits = 0;
+  let capacityLimitedUnits = 0;
+
+  dailyData.forEach(day => {
+    const ctb = day.ctb_available || day.capacity_unconstrained || 0;
+    const capacity = day.capacity_unconstrained || 0;
+    const input = day.input_final || 0;
+
+    // Check if CTB is the binding constraint
+    if (ctb < capacity && Math.abs(input - ctb) < Math.abs(input - capacity)) {
+      ctbLimitedDays++;
+      ctbLimitedUnits += (capacity - ctb);
+    }
+    // Check if Capacity is the binding constraint
+    else if (capacity < ctb) {
+      capacityLimitedDays++;
+      capacityLimitedUnits += (ctb - capacity);
+    }
+  });
+
+  const totalDays = dailyData.length;
+  const primaryConstraint = ctbLimitedDays > capacityLimitedDays ? 'CTB' :
+                            capacityLimitedDays > ctbLimitedDays ? 'Capacity' : 'Mixed';
+
+  return {
+    primaryConstraint,
+    ctbLimitedDays,
+    capacityLimitedDays,
+    ctbLimitedUnits: Math.round(ctbLimitedUnits),
+    capacityLimitedUnits: Math.round(capacityLimitedUnits),
+    ctbLimitedPct: ((ctbLimitedDays / totalDays) * 100).toFixed(1),
+    capacityLimitedPct: ((capacityLimitedDays / totalDays) * 100).toFixed(1)
+  };
+}
+
+/**
+ * Determine daily binding constraint
+ */
+function getDailyConstraint(day) {
+  const ctb = day.ctb_available || day.capacity_unconstrained || 0;
+  const capacity = day.capacity_unconstrained || 0;
+
+  if (ctb === 0 && capacity === 0) return 'None';
+  if (Math.abs(ctb - capacity) < 10) return 'None'; // Within tolerance
+
+  if (ctb < capacity) return 'CTB';
+  if (capacity < ctb) return 'Capacity';
+  return 'None';
+}
+
+/**
+ * Switch production plan granularity
+ */
+function switchPlanGranularity(granularity) {
+  window.productionPlanState.viewGranularity = granularity;
+  renderProductionPlanLatest();
+}
+
+/**
+ * Generate fiscal calendar data for 2026
+ * Each quarter has 13 weeks: M1=5 weeks, M2=4 weeks, M3=4 weeks
+ */
+function generateFiscalCalendar2026() {
+  const fiscalYear = [];
+
+  // Q1: Jan-Mar (13 weeks: 5+4+4)
+  fiscalYear.push({
+    quarter: 'Q1',
+    months: [
+      {
+        month: '2026-01',
+        name: 'January 2026',
+        weeks: 5,
+        weekDetails: [
+          { week: '2026-W01', start: '2025-12-28', end: '2026-01-03' },
+          { week: '2026-W02', start: '2026-01-04', end: '2026-01-10' },
+          { week: '2026-W03', start: '2026-01-11', end: '2026-01-17' },
+          { week: '2026-W04', start: '2026-01-18', end: '2026-01-24' },
+          { week: '2026-W05', start: '2026-01-25', end: '2026-01-31' }
+        ]
+      },
+      {
+        month: '2026-02',
+        name: 'February 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W06', start: '2026-02-01', end: '2026-02-07' },
+          { week: '2026-W07', start: '2026-02-08', end: '2026-02-14' },
+          { week: '2026-W08', start: '2026-02-15', end: '2026-02-21' },
+          { week: '2026-W09', start: '2026-02-22', end: '2026-02-28' }
+        ]
+      },
+      {
+        month: '2026-03',
+        name: 'March 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W10', start: '2026-03-01', end: '2026-03-07' },
+          { week: '2026-W11', start: '2026-03-08', end: '2026-03-14' },
+          { week: '2026-W12', start: '2026-03-15', end: '2026-03-21' },
+          { week: '2026-W13', start: '2026-03-22', end: '2026-03-28' }
+        ]
+      }
+    ]
+  });
+
+  // Q2: Apr-Jun (13 weeks: 5+4+4)
+  fiscalYear.push({
+    quarter: 'Q2',
+    months: [
+      {
+        month: '2026-04',
+        name: 'April 2026',
+        weeks: 5,
+        weekDetails: [
+          { week: '2026-W14', start: '2026-03-29', end: '2026-04-04' },
+          { week: '2026-W15', start: '2026-04-05', end: '2026-04-11' },
+          { week: '2026-W16', start: '2026-04-12', end: '2026-04-18' },
+          { week: '2026-W17', start: '2026-04-19', end: '2026-04-25' },
+          { week: '2026-W18', start: '2026-04-26', end: '2026-05-02' }
+        ]
+      },
+      {
+        month: '2026-05',
+        name: 'May 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W19', start: '2026-05-03', end: '2026-05-09' },
+          { week: '2026-W20', start: '2026-05-10', end: '2026-05-16' },
+          { week: '2026-W21', start: '2026-05-17', end: '2026-05-23' },
+          { week: '2026-W22', start: '2026-05-24', end: '2026-05-30' }
+        ]
+      },
+      {
+        month: '2026-06',
+        name: 'June 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W23', start: '2026-05-31', end: '2026-06-06' },
+          { week: '2026-W24', start: '2026-06-07', end: '2026-06-13' },
+          { week: '2026-W25', start: '2026-06-14', end: '2026-06-20' },
+          { week: '2026-W26', start: '2026-06-21', end: '2026-06-27' }
+        ]
+      }
+    ]
+  });
+
+  // Q3: Jul-Sep (13 weeks: 5+4+4)
+  fiscalYear.push({
+    quarter: 'Q3',
+    months: [
+      {
+        month: '2026-07',
+        name: 'July 2026',
+        weeks: 5,
+        weekDetails: [
+          { week: '2026-W27', start: '2026-06-28', end: '2026-07-04' },
+          { week: '2026-W28', start: '2026-07-05', end: '2026-07-11' },
+          { week: '2026-W29', start: '2026-07-12', end: '2026-07-18' },
+          { week: '2026-W30', start: '2026-07-19', end: '2026-07-25' },
+          { week: '2026-W31', start: '2026-07-26', end: '2026-08-01' }
+        ]
+      },
+      {
+        month: '2026-08',
+        name: 'August 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W32', start: '2026-08-02', end: '2026-08-08' },
+          { week: '2026-W33', start: '2026-08-09', end: '2026-08-15' },
+          { week: '2026-W34', start: '2026-08-16', end: '2026-08-22' },
+          { week: '2026-W35', start: '2026-08-23', end: '2026-08-29' }
+        ]
+      },
+      {
+        month: '2026-09',
+        name: 'September 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W36', start: '2026-08-30', end: '2026-09-05' },
+          { week: '2026-W37', start: '2026-09-06', end: '2026-09-12' },
+          { week: '2026-W38', start: '2026-09-13', end: '2026-09-19' },
+          { week: '2026-W39', start: '2026-09-20', end: '2026-09-26' }
+        ]
+      }
+    ]
+  });
+
+  // Q4: Oct-Dec (13 weeks: 5+4+4)
+  fiscalYear.push({
+    quarter: 'Q4',
+    months: [
+      {
+        month: '2026-10',
+        name: 'October 2026',
+        weeks: 5,
+        weekDetails: [
+          { week: '2026-W40', start: '2026-09-27', end: '2026-10-03' },
+          { week: '2026-W41', start: '2026-10-04', end: '2026-10-10' },
+          { week: '2026-W42', start: '2026-10-11', end: '2026-10-17' },
+          { week: '2026-W43', start: '2026-10-18', end: '2026-10-24' },
+          { week: '2026-W44', start: '2026-10-25', end: '2026-10-31' }
+        ]
+      },
+      {
+        month: '2026-11',
+        name: 'November 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W45', start: '2026-11-01', end: '2026-11-07' },
+          { week: '2026-W46', start: '2026-11-08', end: '2026-11-14' },
+          { week: '2026-W47', start: '2026-11-15', end: '2026-11-21' },
+          { week: '2026-W48', start: '2026-11-22', end: '2026-11-28' }
+        ]
+      },
+      {
+        month: '2026-12',
+        name: 'December 2026',
+        weeks: 4,
+        weekDetails: [
+          { week: '2026-W49', start: '2026-11-29', end: '2026-12-05' },
+          { week: '2026-W50', start: '2026-12-06', end: '2026-12-12' },
+          { week: '2026-W51', start: '2026-12-13', end: '2026-12-19' },
+          { week: '2026-W52', start: '2026-12-20', end: '2026-12-26' }
+        ]
+      }
+    ]
+  });
+
+  return fiscalYear;
+}
+
+/**
+ * Toggle fiscal calendar visibility
+ */
+function toggleFiscalCalendar() {
+  const calendar = document.getElementById('fiscalCalendarContent');
+  const button = document.getElementById('fiscalCalendarToggle');
+
+  if (calendar.style.display === 'none') {
+    calendar.style.display = 'block';
+    button.textContent = '▼ Hide Fiscal Calendar (2026)';
+  } else {
+    calendar.style.display = 'none';
+    button.textContent = '▶ Show Fiscal Calendar (2026)';
+  }
 }
