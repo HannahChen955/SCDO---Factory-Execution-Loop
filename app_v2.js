@@ -6559,6 +6559,12 @@ function renderDataFoundation() {
               Data Source
             </button>
             <button
+              onclick="STATE.dataFoundationSubpage = 'whitePage'; render();"
+              class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'whitePage' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
+            >
+              White Page
+            </button>
+            <button
               onclick="STATE.dataFoundationSubpage = 'productionPlanLogic'; render();"
               class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'productionPlanLogic' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
             >
@@ -6583,6 +6589,9 @@ function renderDataFoundation() {
         break;
       case 'dataSource':
         renderDataSource();
+        break;
+      case 'whitePage':
+        renderWhitePage();
         break;
       case 'productionPlanLogic':
         renderProductionPlanLogic();
@@ -6709,7 +6718,8 @@ function renderDataSource() {
     {
       category: "Ex-f: Plan/Actual",
       source: "Contract Manufacturer",
-      method: "Email (WMS/ERP)",
+      currentMethod: "Email + Excel File",
+      advancedMethod: "WMS/ERP API",
       destination: "Internal Team",
       team: "Planning",
       bgColor: "bg-purple-50"
@@ -6717,7 +6727,8 @@ function renderDataSource() {
     {
       category: "CTB File",
       source: "Contract Manufacturer",
-      method: "ERP/MRP",
+      currentMethod: "Email + Excel File",
+      advancedMethod: "ERP/MRP API",
       destination: "Internal Team",
       team: "MPM",
       bgColor: "bg-purple-50"
@@ -6725,7 +6736,8 @@ function renderDataSource() {
     {
       category: "Production Plan",
       source: "Contract Manufacturer",
-      method: "MES",
+      currentMethod: "Email + Excel File",
+      advancedMethod: "MES API",
       destination: "Internal Team",
       team: "MO",
       bgColor: "bg-yellow-50"
@@ -6745,7 +6757,8 @@ function renderDataSource() {
             <tr class="bg-slate-100">
               <th class="text-left font-bold p-3 border border-slate-300">Data Category</th>
               <th class="text-left font-bold p-3 border border-slate-300">Source</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Integration Method</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Current Method<br/>(Manual)</th>
+              <th class="text-left font-bold p-3 border border-slate-300">Advanced Method<br/>(Future)</th>
               <th class="text-left font-bold p-3 border border-slate-300">Destination</th>
               <th class="text-left font-bold p-3 border border-slate-300">Internal Team</th>
             </tr>
@@ -6755,7 +6768,8 @@ function renderDataSource() {
               <tr class="${ds.bgColor} border border-slate-300">
                 <td class="p-3 font-medium border border-slate-300">${ds.category}</td>
                 <td class="p-3 border border-slate-300">${ds.source}</td>
-                <td class="p-3 border border-slate-300">${ds.method}</td>
+                <td class="p-3 border border-slate-300">${ds.currentMethod}</td>
+                <td class="p-3 border border-slate-300">${ds.advancedMethod}</td>
                 <td class="p-3 border border-slate-300">${ds.destination}</td>
                 <td class="p-3 font-semibold border border-slate-300">${ds.team}</td>
               </tr>
@@ -6767,10 +6781,31 @@ function renderDataSource() {
       <div class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
         <h3 class="font-semibold text-amber-900 mb-2">⚠️ Integration Status</h3>
         <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
-          <li><strong>Ex-f Plan/Actual:</strong> Email-based (WMS/ERP) - Manual process</li>
-          <li><strong>CTB File:</strong> ERP/MRP integration - Automated</li>
-          <li><strong>Production Plan:</strong> MES integration - Automated</li>
+          <li><strong>Current State:</strong> All data sources use Email + Excel File (Manual process)</li>
+          <li><strong>Future State:</strong> API-based integration for automated data flow (WMS/ERP, ERP/MRP, MES)</li>
         </ul>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render White Page
+ */
+function renderWhitePage() {
+  const content = $("dataFoundationContent");
+
+  content.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-slate-900">White Page</h2>
+        <p class="text-sm text-slate-600">Content coming soon</p>
+      </div>
+
+      <div class="bg-white rounded-lg border border-slate-200 p-12 text-center">
+        <div class="text-6xl mb-4">📄</div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">White Page</h3>
+        <p class="text-slate-600">This page is under construction. Content will be added soon.</p>
       </div>
     </div>
   `;
