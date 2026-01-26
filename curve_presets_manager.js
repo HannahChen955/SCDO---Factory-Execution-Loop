@@ -55,7 +55,7 @@ function generateLinearRamp(length, startValue, endValue) {
 
 // Open Curve Presets Manager
 function openCurvePresetsManager() {
-  const win = window.open('', 'CurvePresetsManager', 'width=1200,height=800,scrollbars=yes');
+  const win = window.open('', 'CurvePresetsManager', 'width=1400,height=900,scrollbars=yes');
 
   if (!win) {
     alert('⚠️ Pop-up blocked! Please allow pop-ups for this site.');
@@ -72,11 +72,30 @@ function openCurvePresetsManager() {
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
-    .curve-input { width: 70px; }
+    .day-input {
+      width: 80px;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .day-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      ring: 2px;
+      ring-color: #3b82f6;
+    }
+    .day-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body class="bg-slate-50 p-6">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between">
@@ -103,36 +122,29 @@ function openCurvePresetsManager() {
 
       <!-- UPH Curves Content -->
       <div id="content-uph" class="space-y-6">
-        ${renderCurvePresetSection('uph', 'standard_30d')}
-        ${renderCurvePresetSection('uph', 'fast_20d')}
-        ${renderCurvePresetSection('uph', 'slow_45d')}
+        <!-- Will be populated by renderAllPresets() -->
       </div>
 
       <!-- Yield Curves Content -->
       <div id="content-yield" class="space-y-6 hidden">
-        ${renderCurvePresetSection('yield', 'standard_30d')}
-        ${renderCurvePresetSection('yield', 'fast_20d')}
-        ${renderCurvePresetSection('yield', 'slow_45d')}
+        <!-- Will be populated by renderAllPresets() -->
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Global Action Buttons -->
       <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-end gap-3">
         <button onclick="resetAllCurvesToDefault()" class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
           Reset All to Default
-        </button>
-        <button onclick="saveAllCurvePresets()" class="px-8 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
-          💾 Save All Presets
         </button>
       </div>
     </div>
   </div>
 
   <script>
-    // Load curve presets from parent window
-    let curvePresets = ${JSON.stringify(window.curvePresets)};
+    // Load curve presets from parent window (deep copy)
+    let curvePresets = JSON.parse(JSON.stringify(${JSON.stringify(window.curvePresets)}));
+    let hasUnsavedChanges = false;
 
     function switchCurveTab(type) {
-      // Update tabs
       document.getElementById('tab-uph').className = type === 'uph'
         ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600'
         : 'px-4 py-2 font-semibold text-slate-600 hover:text-slate-900';
@@ -140,7 +152,6 @@ function openCurvePresetsManager() {
         ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600'
         : 'px-4 py-2 font-semibold text-slate-600 hover:text-slate-900';
 
-      // Update content
       document.getElementById('content-uph').classList.toggle('hidden', type !== 'uph');
       document.getElementById('content-yield').classList.toggle('hidden', type !== 'yield');
     }
@@ -152,59 +163,183 @@ function openCurvePresetsManager() {
       toggle.textContent = content.classList.contains('hidden') ? '▶' : '▼';
     }
 
-    function updateCurveValue(type, preset, index, value) {
-      const numValue = parseFloat(value);
-      if (isNaN(numValue) || numValue < 0 || numValue > 1) {
-        alert('Invalid value! Must be between 0.00 and 1.00');
+    function updateCurveValue(type, presetKey, index) {
+      const inputId = \`input_\${type}_\${presetKey}_\${index}\`;
+      const value = parseFloat(document.getElementById(inputId).value);
+
+      if (isNaN(value) || value < 0 || value > 1) {
+        alert('⚠️ Invalid value! Must be between 0.00 and 1.00');
+        document.getElementById(inputId).value = curvePresets[type][presetKey].factors[index].toFixed(2);
         return;
       }
-      curvePresets[type][preset].factors[index] = numValue;
-      updateCurveChart(type, preset);
+
+      curvePresets[type][presetKey].factors[index] = value;
+      hasUnsavedChanges = true;
+      updateSaveButtonState(type, presetKey);
     }
 
-    function updateCurveChart(type, preset) {
-      const curve = curvePresets[type][preset];
-      const chartId = \`chart_\${type}_\${preset}\`;
-      const chart = document.getElementById(chartId);
-
-      if (!chart) return;
-
-      // Simple ASCII-style chart
-      const width = 600;
-      const height = 100;
-      const points = curve.factors.map((f, i) => {
-        const x = (i / (curve.length - 1)) * width;
-        const y = height - (f * height);
-        return \`\${x},\${y}\`;
-      }).join(' ');
-
-      chart.innerHTML = \`
-        <svg width="\${width}" height="\${height}" class="border border-slate-200 rounded bg-white">
-          <polyline points="\${points}" fill="none" stroke="#3b82f6" stroke-width="2"/>
-          <line x1="0" y1="\${height}" x2="\${width}" y2="\${height}" stroke="#cbd5e1" stroke-width="1"/>
-          <text x="5" y="15" font-size="12" fill="#64748b">1.0</text>
-          <text x="5" y="\${height - 5}" font-size="12" fill="#64748b">0.0</text>
-        </svg>
-      \`;
+    function addDay(type, presetKey) {
+      const curve = curvePresets[type][presetKey];
+      const lastValue = curve.factors[curve.factors.length - 1];
+      curve.factors.push(lastValue); // Add a day with the same value as last day
+      curve.length = curve.factors.length;
+      hasUnsavedChanges = true;
+      renderPreset(type, presetKey);
     }
 
-    function saveAllCurvePresets() {
+    function removeDay(type, presetKey) {
+      const curve = curvePresets[type][presetKey];
+      if (curve.factors.length <= 1) {
+        alert('⚠️ Cannot remove! At least 1 day is required.');
+        return;
+      }
+      curve.factors.pop(); // Remove last day
+      curve.length = curve.factors.length;
+      hasUnsavedChanges = true;
+      renderPreset(type, presetKey);
+    }
+
+    function saveCurvePreset(type, presetKey) {
       try {
         // Save to parent window
-        window.opener.curvePresets = curvePresets;
+        if (window.opener && window.opener.curvePresets) {
+          window.opener.curvePresets[type][presetKey] = JSON.parse(JSON.stringify(curvePresets[type][presetKey]));
+        }
 
         // Save to localStorage
-        localStorage.setItem('curvePresets', JSON.stringify(curvePresets));
+        const allPresets = JSON.parse(localStorage.getItem('curvePresets') || '{}');
+        if (!allPresets[type]) allPresets[type] = {};
+        allPresets[type][presetKey] = curvePresets[type][presetKey];
+        localStorage.setItem('curvePresets', JSON.stringify(allPresets));
 
-        alert('✅ All curve presets saved successfully!');
+        hasUnsavedChanges = false;
+        updateSaveButtonState(type, presetKey);
+
+        // Show success message
+        const btn = document.getElementById(\`save_\${type}_\${presetKey}\`);
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Saved!';
+        btn.className = btn.className.replace('bg-green-600', 'bg-green-700');
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.className = btn.className.replace('bg-green-700', 'bg-green-600');
+        }, 1500);
+
       } catch (error) {
-        console.error('Error saving curve presets:', error);
-        alert('❌ Failed to save curve presets: ' + error.message);
+        console.error('Error saving curve preset:', error);
+        alert('❌ Failed to save: ' + error.message);
       }
+    }
+
+    function updateSaveButtonState(type, presetKey) {
+      const btn = document.getElementById(\`save_\${type}_\${presetKey}\`);
+      if (btn) {
+        if (hasUnsavedChanges) {
+          btn.className = 'px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow-sm';
+          btn.disabled = false;
+        } else {
+          btn.className = 'px-6 py-2 bg-slate-300 text-slate-500 rounded-lg font-semibold cursor-not-allowed';
+          btn.disabled = true;
+        }
+      }
+    }
+
+    function renderPreset(type, presetKey) {
+      const preset = curvePresets[type][presetKey];
+      const containerId = \`preset_\${type}_\${presetKey}\`;
+      const container = document.getElementById(containerId);
+
+      if (!container) return;
+
+      // Generate inputs for all days
+      const dayInputs = preset.factors.map((factor, index) => {
+        return \`
+          <div class="flex flex-col">
+            <div class="day-label">Day \${index + 1}</div>
+            <input type="number"
+                   id="input_\${type}_\${presetKey}_\${index}"
+                   step="0.01"
+                   min="0"
+                   max="1"
+                   value="\${factor.toFixed(2)}"
+                   onchange="updateCurveValue('\${type}', '\${presetKey}', \${index})"
+                   class="day-input">
+          </div>
+        \`;
+      }).join('');
+
+      container.innerHTML = \`
+        <div class="border-2 border-slate-200 rounded-lg p-5 bg-gradient-to-r from-slate-50 to-white">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleCurveSection('section_\${type}_\${presetKey}')">
+            <div class="flex items-center gap-3">
+              <span id="section_\${type}_\${presetKey}_toggle" class="text-slate-600 text-lg">▼</span>
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">\${preset.name}</h3>
+                <p class="text-sm text-slate-600">\${preset.length} workdays | Start: \${preset.factors[0].toFixed(2)} → End: \${preset.factors[preset.length - 1].toFixed(2)}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+              <button onclick="removeDay('\${type}', '\${presetKey}')"
+                      class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-semibold">
+                ➖ Remove Day
+              </button>
+              <button onclick="addDay('\${type}', '\${presetKey}')"
+                      class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-semibold">
+                ➕ Add Day
+              </button>
+            </div>
+          </div>
+
+          <!-- Curve Values Grid -->
+          <div id="section_\${type}_\${presetKey}" class="space-y-4">
+            <div class="grid grid-cols-8 gap-3">
+              \${dayInputs}
+            </div>
+
+            <!-- Save Button -->
+            <div class="pt-4 border-t border-slate-200 flex justify-end">
+              <button id="save_\${type}_\${presetKey}"
+                      onclick="saveCurvePreset('\${type}', '\${presetKey}')"
+                      class="px-6 py-2 bg-slate-300 text-slate-500 rounded-lg font-semibold cursor-not-allowed"
+                      disabled>
+                💾 Save \${preset.name}
+              </button>
+            </div>
+          </div>
+        </div>
+      \`;
+
+      // Set initial save button state
+      hasUnsavedChanges = false;
+      updateSaveButtonState(type, presetKey);
+    }
+
+    function renderAllPresets() {
+      // Render UPH curves
+      document.getElementById('content-uph').innerHTML = \`
+        <div id="preset_uph_standard_30d"></div>
+        <div id="preset_uph_fast_20d"></div>
+        <div id="preset_uph_slow_45d"></div>
+      \`;
+
+      // Render Yield curves
+      document.getElementById('content-yield').innerHTML = \`
+        <div id="preset_yield_standard_30d"></div>
+        <div id="preset_yield_fast_20d"></div>
+        <div id="preset_yield_slow_45d"></div>
+      \`;
+
+      // Render each preset
+      ['uph', 'yield'].forEach(type => {
+        ['standard_30d', 'fast_20d', 'slow_45d'].forEach(presetKey => {
+          renderPreset(type, presetKey);
+        });
+      });
     }
 
     function resetAllCurvesToDefault() {
-      if (!confirm('Are you sure you want to reset all curves to default values?')) {
+      if (!confirm('⚠️ Are you sure you want to reset ALL curves to default values? This will discard all unsaved changes.')) {
         return;
       }
 
@@ -246,8 +381,8 @@ function openCurvePresetsManager() {
         }
       };
 
-      // Reload the page
-      location.reload();
+      hasUnsavedChanges = false;
+      renderAllPresets();
     }
 
     function generateLinearRamp(length, startValue, endValue) {
@@ -259,98 +394,13 @@ function openCurvePresetsManager() {
       return factors;
     }
 
-    // Initialize charts
-    ['uph', 'yield'].forEach(type => {
-      ['standard_30d', 'fast_20d', 'slow_45d'].forEach(preset => {
-        updateCurveChart(type, preset);
-      });
-    });
+    // Initialize
+    renderAllPresets();
   </script>
 </body>
 </html>
   `);
   doc.close();
-}
-
-// Helper function to render curve preset section
-function renderCurvePresetSection(type, presetKey) {
-  const preset = window.curvePresets[type][presetKey];
-  const sectionId = `section_${type}_${presetKey}`;
-
-  // Generate input fields for curve factors (show first 10, last 5, and middle sample)
-  const factorInputs = [];
-  const length = preset.length;
-
-  // Show first 10 days
-  for (let i = 0; i < Math.min(10, length); i++) {
-    factorInputs.push(`
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-slate-600 w-16">Day ${i + 1}:</span>
-        <input type="number" step="0.01" min="0" max="1" value="${preset.factors[i].toFixed(2)}"
-               onchange="updateCurveValue('${type}', '${presetKey}', ${i}, this.value)"
-               class="curve-input border rounded px-2 py-1 text-sm">
-      </div>
-    `);
-  }
-
-  // Add ellipsis if more than 15 days
-  if (length > 15) {
-    factorInputs.push(`<div class="text-center text-slate-400">...</div>`);
-
-    // Show last 5 days
-    for (let i = length - 5; i < length; i++) {
-      factorInputs.push(`
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 w-16">Day ${i + 1}:</span>
-          <input type="number" step="0.01" min="0" max="1" value="${preset.factors[i].toFixed(2)}"
-                 onchange="updateCurveValue('${type}', '${presetKey}', ${i}, this.value)"
-                 class="curve-input border rounded px-2 py-1 text-sm">
-        </div>
-      `);
-    }
-  } else if (length > 10) {
-    // Show remaining days
-    for (let i = 10; i < length; i++) {
-      factorInputs.push(`
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 w-16">Day ${i + 1}:</span>
-          <input type="number" step="0.01" min="0" max="1" value="${preset.factors[i].toFixed(2)}"
-                 onchange="updateCurveValue('${type}', '${presetKey}', ${i}, this.value)"
-                 class="curve-input border rounded px-2 py-1 text-sm">
-        </div>
-      `);
-    }
-  }
-
-  return `
-    <div class="border-2 border-slate-200 rounded-lg p-5 bg-gradient-to-r from-slate-50 to-white">
-      <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleCurveSection('${sectionId}')">
-        <div class="flex items-center gap-3">
-          <span id="${sectionId}_toggle" class="text-slate-600 text-lg">▼</span>
-          <div>
-            <h3 class="text-lg font-bold text-slate-900">${preset.name}</h3>
-            <p class="text-sm text-slate-600">${preset.length} workdays | Start: ${preset.factors[0].toFixed(2)} → End: ${preset.factors[preset.length - 1].toFixed(2)}</p>
-          </div>
-        </div>
-        <button onclick="event.stopPropagation(); editAllValues('${type}', '${presetKey}')"
-                class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-semibold">
-          ✏️ Edit All Values
-        </button>
-      </div>
-
-      <div id="${sectionId}">
-        <!-- Preview Chart -->
-        <div class="mb-4">
-          <div id="chart_${type}_${presetKey}" class="w-full"></div>
-        </div>
-
-        <!-- Curve Values (Sample) -->
-        <div class="grid grid-cols-5 gap-3">
-          ${factorInputs.join('')}
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 // Load saved curve presets from localStorage on page load
