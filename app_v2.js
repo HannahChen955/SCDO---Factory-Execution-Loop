@@ -288,8 +288,8 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "dataFoundation") {
-    // Hide filters on global pages (Overview, Portfolio, Data Foundation)
+  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
+    // Hide filters on global pages (Overview, Portfolio, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -351,6 +351,9 @@ function render() {
       break;
     case "dataFoundation":
       renderDataFoundation();
+      break;
+    case "whitePaper":
+      renderWhitePaper();
       break;
     default:
       renderOverview();
@@ -6559,12 +6562,6 @@ function renderDataFoundation() {
               Data Source
             </button>
             <button
-              onclick="STATE.dataFoundationSubpage = 'whitePage'; render();"
-              class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'whitePage' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
-            >
-              White Page
-            </button>
-            <button
               onclick="STATE.dataFoundationSubpage = 'productionPlanLogic'; render();"
               class="px-4 py-3 text-sm font-medium transition-colors ${STATE.dataFoundationSubpage === 'productionPlanLogic' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-600 hover:text-slate-900'}"
             >
@@ -6589,9 +6586,6 @@ function renderDataFoundation() {
         break;
       case 'dataSource':
         renderDataSource();
-        break;
-      case 'whitePage':
-        renderWhitePage();
         break;
       case 'productionPlanLogic':
         renderProductionPlanLogic();
@@ -6790,22 +6784,26 @@ function renderDataSource() {
 }
 
 /**
- * Render White Page
+ * Render White Paper (Global Page)
  */
-function renderWhitePage() {
-  const content = $("dataFoundationContent");
+function renderWhitePaper() {
+  const content = $("content");
 
   content.innerHTML = `
-    <div class="space-y-4">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-slate-900">White Page</h2>
-        <p class="text-sm text-slate-600">Content coming soon</p>
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-slate-900">White Paper</h1>
+        <p class="text-sm text-slate-600 mt-1">Strategic documentation and analysis</p>
       </div>
 
-      <div class="bg-white rounded-lg border border-slate-200 p-12 text-center">
-        <div class="text-6xl mb-4">📄</div>
-        <h3 class="text-xl font-semibold text-slate-900 mb-2">White Page</h3>
-        <p class="text-slate-600">This page is under construction. Content will be added soon.</p>
+      <!-- Content -->
+      <div class="bg-white rounded-xl shadow-sm p-12">
+        <div class="text-center">
+          <div class="text-6xl mb-4">📄</div>
+          <h3 class="text-xl font-semibold text-slate-900 mb-2">White Paper</h3>
+          <p class="text-slate-600">This page is under construction. Content will be added soon.</p>
+        </div>
       </div>
     </div>
   `;
