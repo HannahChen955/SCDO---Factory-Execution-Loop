@@ -20,21 +20,88 @@ const PRODUCTION_PLAN_SEED_DATA = {
     { site_id: 'VN02', site_name: 'VN-02', country: 'VN' }
   ],
 
-  // Country holidays (法定节假日 - statutory holiday periods)
+  // Country holidays (法定节假日 - statutory holiday periods for 2026)
   countryHolidays: {
     CN: [
+      {
+        name: '元旦 (New Year)',
+        start: '2026-01-01',
+        end: '2026-01-03',
+        notes: '3-day statutory holiday'
+      },
+      {
+        name: '春节 (Spring Festival)',
+        start: '2026-02-15',
+        end: '2026-02-23',
+        notes: '9-day holiday (includes makeup work days on Feb 14, 21)'
+      },
+      {
+        name: '清明节 (Qingming Festival)',
+        start: '2026-04-04',
+        end: '2026-04-06',
+        notes: '3-day statutory holiday'
+      },
+      {
+        name: '劳动节 (Labor Day)',
+        start: '2026-05-01',
+        end: '2026-05-05',
+        notes: '5-day statutory holiday'
+      },
+      {
+        name: '端午节 (Dragon Boat Festival)',
+        start: '2026-06-19',
+        end: '2026-06-21',
+        notes: '3-day statutory holiday'
+      },
+      {
+        name: '中秋节 (Mid-Autumn Festival)',
+        start: '2026-09-25',
+        end: '2026-09-27',
+        notes: '3-day statutory holiday'
+      },
       {
         name: '国庆节 (National Day)',
         start: '2026-10-01',
         end: '2026-10-07',
-        notes: '7-day statutory holiday period'
+        notes: '7-day statutory holiday (includes makeup work days on Sep 27, Oct 10)'
       }
     ],
     VN: [
       {
-        name: 'National Day (VN)',
+        name: 'Tết Dương lịch (New Year)',
+        start: '2026-01-01',
+        end: '2026-01-01',
+        notes: '1-day holiday'
+      },
+      {
+        name: 'Tết Nguyên Đán (Lunar New Year)',
+        start: '2026-02-17',
+        end: '2026-02-21',
+        notes: '5-day Lunar New Year holiday'
+      },
+      {
+        name: 'Giỗ Tổ Hùng Vương (Hung Kings\' Festival)',
+        start: '2026-04-18',
+        end: '2026-04-18',
+        notes: '1-day holiday'
+      },
+      {
+        name: 'Ngày Thống nhất (Reunification Day)',
+        start: '2026-04-30',
+        end: '2026-04-30',
+        notes: '1-day holiday'
+      },
+      {
+        name: 'Ngày Quốc tế Lao động (International Labor Day)',
+        start: '2026-05-01',
+        end: '2026-05-01',
+        notes: '1-day holiday'
+      },
+      {
+        name: 'Quốc khánh (National Day)',
         start: '2026-09-02',
-        end: '2026-09-02'
+        end: '2026-09-02',
+        notes: '1-day holiday'
       }
     ]
   },
