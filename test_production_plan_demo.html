@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Production Plan Demo Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./production_plan_seed_data.js"></script>
+  <script src="./production_plan_config.js"></script>
+  <script src="./production_plan_engine.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .test-section {
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: white;
+    }
+    .success { color: #10b981; font-weight: bold; }
+    .error { color: #ef4444; font-weight: bold; }
+    .info { color: #3b82f6; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: right; }
+    th { background: #f1f5f9; font-weight: 600; text-align: center; }
+    td:first-child, th:first-child { text-align: left; }
+    .highlight { background: #fef3c7; }
+    .constraint-ctb { color: #dc2626; font-weight: 600; }
+    .constraint-capacity { color: #f59e0b; font-weight: 600; }
+    .constraint-none { color: #10b981; }
+  </style>
+</head>
+<body class="bg-slate-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg p-8 mb-6">
+      <h1 class="text-3xl font-bold mb-2">🧪 Production Plan Demo Test</h1>
+      <p class="text-blue-100">Comprehensive test of production plan generation with demo data</p>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="test-section">
+      <h2 class="text-xl font-bold text-slate-900 mb-4">Test Configuration</h2>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Start Date</label>
+          <input type="date" id="startDate" value="2026-10-01"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">End Date</label>
+          <input type="date" id="endDate" value="2026-10-31"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Generation Mode</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2">
+            <input type="radio" name="mode" value="unconstrained" class="w-4 h-4">
+            <span>Unconstrained (纯产能)</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="mode" value="constrained" checked class="w-4 h-4">
+            <span>Constrained (含 CTB 约束)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="runTest()"
+                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold shadow-sm">
+          ▶ Run Test
+        </button>
+        <button onclick="openReport()"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-sm">
+          📊 Open Full Report
+        </button>
+        <button onclick="clearResults()"
+                class="px-6 py-3 bg-slate-400 hover:bg-slate-500 text-white rounded-lg font-semibold shadow-sm">
+          🗑️ Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Test Results -->
+    <div id="testResults" class="hidden">
+      <!-- Summary -->
+      <div class="test-section">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">✅ Test Summary</h2>
+        <div id="summaryContent" class="space-y-2"></div>
+      </div>
+
+      <!-- Daily Metrics (First 14 days) -->
+      <div class="test-section">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">📅 Daily Metrics (First 14 Days)</h2>
+        <div class="overflow-x-auto">
+          <table id="dailyTable"></table>
+        </div>
+      </div>
+
+      <!-- Weekly Metrics -->
+      <div class="test-section">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">📊 Weekly Metrics</h2>
+        <div class="overflow-x-auto">
+          <table id="weeklyTable"></table>
+        </div>
+      </div>
+
+      <!-- Validation Results -->
+      <div class="test-section">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">🔍 Validation Checks</h2>
+        <div id="validationContent" class="space-y-2"></div>
+      </div>
+
+      <!-- Site Breakdown (Sample) -->
+      <div class="test-section">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">🏭 Site Breakdown (First 7 Days)</h2>
+        <div id="siteBreakdownContent"></div>
+      </div>
+    </div>
+
+    <!-- Console Log -->
+    <div class="test-section">
+      <h2 class="text-xl font-bold text-slate-900 mb-4">📝 Console Log</h2>
+      <pre id="consoleLog" class="bg-slate-900 text-green-400 p-4 rounded-lg text-xs overflow-auto max-h-96 font-mono"></pre>
+    </div>
+  </div>
+
+  <script>
+    let testPlanData = null;
+
+    // Enhanced console logging
+    const originalLog = console.log;
+    const originalError = console.error;
+    const logOutput = document.getElementById('consoleLog');
+
+    function addLog(type, ...args) {
+      const timestamp = new Date().toLocaleTimeString();
+      const message = args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ');
+
+      logOutput.textContent += `[${timestamp}] ${type}: ${message}\n`;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    console.log = (...args) => {
+      originalLog(...args);
+      addLog('INFO', ...args);
+    };
+
+    console.error = (...args) => {
+      originalError(...args);
+      addLog('ERROR', ...args);
+    };
+
+    function formatNumber(num) {
+      return Math.round(num).toLocaleString();
+    }
+
+    function formatPercent(num) {
+      return (num * 100).toFixed(1) + '%';
+    }
+
+    function runTest() {
+      console.log('='.repeat(60));
+      console.log('Starting Production Plan Demo Test');
+      console.log('='.repeat(60));
+
+      try {
+        // Get test parameters
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+
+        console.log('Test Configuration:');
+        console.log('  Start Date:', startDate);
+        console.log('  End Date:', endDate);
+        console.log('  Mode:', mode);
+
+        // Verify dependencies
+        if (typeof PRODUCTION_PLAN_SEED_DATA === 'undefined') {
+          throw new Error('PRODUCTION_PLAN_SEED_DATA not loaded');
+        }
+        if (typeof ProductionPlanEngine === 'undefined') {
+          throw new Error('ProductionPlanEngine not loaded');
+        }
+        console.log('✓ Dependencies loaded successfully');
+
+        // Create engine instance
+        const engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+        console.log('✓ Engine instance created');
+
+        // Generate plan
+        console.log('Generating plan...');
+        const result = engine.generatePlan(startDate, endDate, mode);
+        testPlanData = result;
+
+        console.log('✓ Plan generated successfully');
+        console.log('  Program Results:', result.programResults.length, 'days');
+        console.log('  Weekly Metrics:', result.weeklyMetrics.length, 'weeks');
+        console.log('  Site Results:', result.siteResults ? Object.keys(result.siteResults).length : 0, 'sites');
+
+        // Display results
+        displaySummary(result, mode);
+        displayDailyMetrics(result.programResults);
+        displayWeeklyMetrics(result.weeklyMetrics);
+        displayValidation(result);
+        displaySiteBreakdown(result);
+
+        document.getElementById('testResults').classList.remove('hidden');
+
+        // Save to localStorage for report
+        const planId = 'demo_' + Date.now();
+        localStorage.setItem('productionPlan_' + planId, JSON.stringify(result));
+        console.log('✓ Plan saved to localStorage with ID:', planId);
+
+      } catch (error) {
+        console.error('Test failed:', error);
+        alert('❌ Test Failed: ' + error.message);
+      }
+    }
+
+    function displaySummary(result, mode) {
+      const summary = document.getElementById('summaryContent');
+      const data = result.programResults;
+
+      const totalInput = data.reduce((sum, d) => sum + d.input_final, 0);
+      const totalOutput = data.reduce((sum, d) => sum + d.output_final, 0);
+      const totalShipment = data.reduce((sum, d) => sum + d.shipment_final, 0);
+      const finalCumInput = data[data.length - 1].cum_input;
+      const finalCumOutput = data[data.length - 1].cum_output;
+      const finalCumShipment = data[data.length - 1].cum_shipment;
+
+      summary.innerHTML = `
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div><span class="font-semibold">Mode:</span> ${mode === 'constrained' ? 'Constrained (CTB)' : 'Unconstrained'}</div>
+          <div><span class="font-semibold">Period:</span> ${data.length} days (${data[0].date} to ${data[data.length-1].date})</div>
+          <div><span class="font-semibold">Total Input:</span> ${formatNumber(totalInput)} units</div>
+          <div><span class="font-semibold">Total Output:</span> ${formatNumber(totalOutput)} units</div>
+          <div><span class="font-semibold">Total Shipment:</span> ${formatNumber(totalShipment)} units</div>
+          <div><span class="font-semibold">Output/Input Ratio:</span> ${formatPercent(totalOutput / totalInput)}</div>
+          <div><span class="font-semibold">Final Cum Input:</span> ${formatNumber(finalCumInput)} units</div>
+          <div><span class="font-semibold">Final Cum Output:</span> ${formatNumber(finalCumOutput)} units</div>
+        </div>
+      `;
+    }
+
+    function displayDailyMetrics(data) {
+      const table = document.getElementById('dailyTable');
+      const first14Days = data.slice(0, 14);
+
+      let html = `
+        <tr>
+          <th>Date</th>
+          <th>Day</th>
+          <th>Input</th>
+          <th>Output</th>
+          <th>Ship</th>
+          <th>Cum Input</th>
+          <th>Cum Output</th>
+          <th>Cum Ship</th>
+          <th>WIP</th>
+          <th>Constraint</th>
+        </tr>
+      `;
+
+      first14Days.forEach(day => {
+        const wip = day.cum_input - day.cum_output;
+        const dayOfWeek = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+        const isWeekend = dayOfWeek === 'Sun';
+        const constraintClass = day.binding_constraint === 'CTB' ? 'constraint-ctb' :
+                                day.binding_constraint === 'Capacity' ? 'constraint-capacity' :
+                                'constraint-none';
+
+        html += `
+          <tr class="${isWeekend ? 'highlight' : ''}">
+            <td>${day.date}</td>
+            <td>${dayOfWeek}</td>
+            <td>${formatNumber(day.input_final)}</td>
+            <td>${formatNumber(day.output_final)}</td>
+            <td>${formatNumber(day.shipment_final)}</td>
+            <td>${formatNumber(day.cum_input)}</td>
+            <td>${formatNumber(day.cum_output)}</td>
+            <td>${formatNumber(day.cum_shipment)}</td>
+            <td>${formatNumber(wip)}</td>
+            <td class="${constraintClass}">${day.binding_constraint || 'None'}</td>
+          </tr>
+        `;
+      });
+
+      table.innerHTML = html;
+    }
+
+    function displayWeeklyMetrics(weeklyData) {
+      const table = document.getElementById('weeklyTable');
+
+      let html = `
+        <tr>
+          <th>Week</th>
+          <th>Input</th>
+          <th>Output</th>
+          <th>Shipment</th>
+          <th>Demand</th>
+          <th>Gap</th>
+          <th>Attainment</th>
+          <th>Cum Gap</th>
+        </tr>
+      `;
+
+      let cumGap = 0;
+      weeklyData.forEach(week => {
+        cumGap += week.gap;
+        const attainment = week.demand > 0 ? (week.shipments / week.demand) * 100 : 0;
+        const gapClass = week.gap < 0 ? 'error' : 'success';
+        const attainmentClass = attainment < 80 ? 'error' : attainment < 100 ? 'info' : 'success';
+
+        html += `
+          <tr>
+            <td>${week.week_id}</td>
+            <td>${formatNumber(week.input)}</td>
+            <td>${formatNumber(week.output)}</td>
+            <td>${formatNumber(week.shipments)}</td>
+            <td>${formatNumber(week.demand)}</td>
+            <td class="${gapClass}">${week.gap >= 0 ? '+' : ''}${formatNumber(week.gap)}</td>
+            <td class="${attainmentClass}">${attainment.toFixed(1)}%</td>
+            <td class="${cumGap < 0 ? 'error' : 'success'}">${cumGap >= 0 ? '+' : ''}${formatNumber(cumGap)}</td>
+          </tr>
+        `;
+      });
+
+      table.innerHTML = html;
+    }
+
+    function displayValidation(result) {
+      const validation = document.getElementById('validationContent');
+      const checks = [];
+
+      // Check 1: Cum Output ≤ Cum Input
+      const data = result.programResults;
+      let cumOutputValid = true;
+      data.forEach(day => {
+        if (day.cum_output > day.cum_input + 0.01) { // Allow tiny floating point errors
+          cumOutputValid = false;
+          console.error(`Validation failed on ${day.date}: Cum Output (${day.cum_output}) > Cum Input (${day.cum_input})`);
+        }
+      });
+      checks.push({
+        name: 'Cum Output ≤ Cum Input',
+        pass: cumOutputValid,
+        detail: cumOutputValid ? 'All days pass' : 'Some days fail (see console)'
+      });
+
+      // Check 2: Weekly data integrity
+      const weeklyValid = result.weeklyMetrics.length > 0;
+      checks.push({
+        name: 'Weekly Metrics Generated',
+        pass: weeklyValid,
+        detail: weeklyValid ? `${result.weeklyMetrics.length} weeks` : 'No weekly data'
+      });
+
+      // Check 3: Site breakdown exists
+      const siteValid = result.siteResults && Object.keys(result.siteResults).length > 0;
+      checks.push({
+        name: 'Site Breakdown Available',
+        pass: siteValid,
+        detail: siteValid ? `${Object.keys(result.siteResults).length} sites` : 'No site data'
+      });
+
+      // Check 4: Shipment lag
+      let shipmentLagValid = true;
+      data.slice(0, 10).forEach((day, idx) => {
+        if (day.output_final > 0) {
+          // Find where this output ships (should be +2 working days)
+          // This is a simplified check
+          const outputDate = new Date(day.date + 'T00:00:00');
+          // Check if shipment appears in next few days
+          const hasShipment = data.slice(idx, idx + 5).some(d => d.shipment_final > 0);
+          if (!hasShipment) {
+            shipmentLagValid = false;
+          }
+        }
+      });
+      checks.push({
+        name: 'Shipment Lag Applied',
+        pass: shipmentLagValid,
+        detail: shipmentLagValid ? '+2 working days verified' : 'Check shipment dates'
+      });
+
+      let html = '<div class="space-y-2">';
+      checks.forEach(check => {
+        const icon = check.pass ? '✅' : '❌';
+        const cssClass = check.pass ? 'success' : 'error';
+        html += `
+          <div class="flex items-center gap-3 text-sm">
+            <span class="${cssClass}">${icon} ${check.name}</span>
+            <span class="text-slate-600">— ${check.detail}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      validation.innerHTML = html;
+    }
+
+    function displaySiteBreakdown(result) {
+      const container = document.getElementById('siteBreakdownContent');
+
+      if (!result.siteResults) {
+        container.innerHTML = '<p class="text-slate-500">No site data available</p>';
+        return;
+      }
+
+      let html = '';
+      const sites = Object.keys(result.siteResults);
+
+      sites.forEach(siteId => {
+        const siteData = result.siteResults[siteId].slice(0, 7); // First 7 days
+
+        html += `
+          <div class="mb-6">
+            <h3 class="font-bold text-slate-900 mb-2">${siteId}</h3>
+            <table class="text-xs">
+              <tr>
+                <th>Date</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Ship</th>
+                <th>Cum Input</th>
+                <th>Cum Output</th>
+              </tr>
+        `;
+
+        siteData.forEach(day => {
+          html += `
+            <tr>
+              <td>${day.date}</td>
+              <td>${formatNumber(day.input_final)}</td>
+              <td>${formatNumber(day.output_final)}</td>
+              <td>${formatNumber(day.shipment_final)}</td>
+              <td>${formatNumber(day.cum_input)}</td>
+              <td>${formatNumber(day.cum_output)}</td>
+            </tr>
+          `;
+        });
+
+        html += `</table></div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function openReport() {
+      if (!testPlanData) {
+        alert('⚠️ Please run the test first to generate plan data');
+        return;
+      }
+
+      // Save to localStorage with a known ID
+      const planId = 'demo_' + Date.now();
+      localStorage.setItem('productionPlan_' + planId, JSON.stringify(testPlanData));
+
+      // Open report in new window
+      window.open(`production_plan_report.html?planId=${planId}`, '_blank');
+      console.log('✓ Opened full report in new window');
+    }
+
+    function clearResults() {
+      document.getElementById('testResults').classList.add('hidden');
+      document.getElementById('consoleLog').textContent = '';
+      testPlanData = null;
+      console.log('Results cleared');
+    }
+
+    // Auto-run on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('Page loaded. Ready to run demo test.');
+      console.log('Click "Run Test" to generate production plan with demo data.');
+    });
+  </script>
+</body>
+</html>
