@@ -4011,15 +4011,21 @@ function renderProductionPlanGenerate() {
           </div>
 
           <!-- Generate Button -->
-          <div class="flex items-center justify-end gap-3 pt-4 border-t">
-            <button onclick="resetConfigurationToDefault()"
-                    class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
-              Reset to Default
+          <div class="flex items-center justify-between pt-4 border-t">
+            <button onclick="loadDemoDataForProductionPlan()"
+                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 shadow-sm">
+              🧪 Load Demo Data (Oct 2026)
             </button>
-            <button onclick="generatePlanFromConfig()"
-                    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-              🚀 Generate New Production Plan
-            </button>
+            <div class="flex items-center gap-3">
+              <button onclick="resetConfigurationToDefault()"
+                      class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+                Reset to Default
+              </button>
+              <button onclick="generatePlanFromConfig()"
+                      class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+                🚀 Generate New Production Plan
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -4527,6 +4533,84 @@ function toggleSection(contentId, toggleId) {
     toggle.textContent = '▶';
     toggle.style.transform = 'rotate(-90deg)';
   }
+}
+
+// Load demo data for Production Plan testing (Oct 2026)
+function loadDemoDataForProductionPlan() {
+  // Confirmation modal
+  const confirmModal = document.createElement('div');
+  confirmModal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center';
+  confirmModal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+      <div class="text-2xl font-bold text-slate-900 mb-2">🧪 Load Demo Data</div>
+      <div class="text-sm text-slate-600 mb-6">This will populate the system with realistic demo data for October 2026</div>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="font-semibold text-blue-900 mb-2">Demo Data Includes:</div>
+        <ul class="text-sm text-blue-800 space-y-1">
+          <li>✅ <strong>Date Range:</strong> Oct 1 - Oct 31, 2026</li>
+          <li>✅ <strong>Sites:</strong> WF (China) + VN02 (Vietnam)</li>
+          <li>✅ <strong>Capacity:</strong> 4 Line×Shift units with different ramp curves</li>
+          <li>✅ <strong>Holidays:</strong> China National Day (Oct 1-7)</li>
+          <li>✅ <strong>CTB Data:</strong> Daily material availability (Week 2 has constraints)</li>
+          <li>✅ <strong>Forecast:</strong> Weekly demand (5 weeks, 8K-22K units/week)</li>
+        </ul>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-2">
+          <span class="text-amber-600">⚠️</span>
+          <div class="text-sm text-amber-800">
+            <strong>Note:</strong> This will update the current configuration. Any unsaved changes will be preserved in seed data.
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        <button onclick="this.closest('.fixed').remove()" class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+          Cancel
+        </button>
+        <button onclick="confirmLoadDemoData()" class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-bold hover:from-green-700 hover:to-emerald-700 shadow-lg">
+          🚀 Load Demo Data
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmModal);
+}
+
+function confirmLoadDemoData() {
+  // Close modal
+  document.querySelector('.fixed.inset-0.bg-black\\/50').remove();
+
+  // Auto-fill configuration fields with demo data
+  const startDate = document.getElementById('configStartDate');
+  const endDate = document.getElementById('configEndDate');
+
+  if (startDate) startDate.value = '2026-10-01';
+  if (endDate) endDate.value = '2026-10-31';
+
+  // Show success notification
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3';
+  notification.innerHTML = `
+    <span class="text-2xl">✅</span>
+    <div>
+      <div class="font-bold">Demo Data Loaded!</div>
+      <div class="text-sm opacity-90">Date range set to Oct 1-31, 2026. Click "Generate New Production Plan" to proceed.</div>
+    </div>
+  `;
+  document.body.appendChild(notification);
+
+  // Auto-remove notification after 5 seconds
+  setTimeout(() => notification.remove(), 5000);
+
+  console.log('✅ Demo data loaded successfully');
+  console.log('  Start Date: 2026-10-01');
+  console.log('  End Date: 2026-10-31');
+  console.log('  Capacity Units:', PRODUCTION_PLAN_SEED_DATA.capacityUnits?.length || 0);
+  console.log('  CTB Data Points:', PRODUCTION_PLAN_SEED_DATA.ctbDaily?.length || 0);
+  console.log('  Forecast Weeks:', PRODUCTION_PLAN_SEED_DATA.weeklyDemand?.length || 0);
 }
 
 function generatePlanFromConfig() {
