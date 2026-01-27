@@ -6670,27 +6670,295 @@ function toggleFiscalCalendar() {
 
 /**
  * Render MO KPIs page
- * Manufacturing Operations Key Performance Indicators
+ * Manufacturing Operations Key Performance Indicators - Executive Dashboard
  */
 function renderMOKpis() {
   const content = $("content");
 
+  // Mock data for demonstration (replace with real data later)
+  const kpiData = {
+    production: {
+      current: 45800,
+      target: 50000,
+      weeklyTrend: [42000, 43500, 44200, 45800],
+      status: 'YELLOW',
+      variance: -8.4
+    },
+    shipment: {
+      current: 44200,
+      target: 48000,
+      weeklyTrend: [41000, 42800, 43500, 44200],
+      status: 'YELLOW',
+      variance: -7.9
+    },
+    labor: {
+      current: 2450,
+      target: 2600,
+      weeklyTrend: [2380, 2420, 2440, 2450],
+      status: 'YELLOW',
+      variance: -5.8,
+      fulfillmentRate: 94.2
+    },
+    fvCost: {
+      current: 285.5,
+      target: 275.0,
+      weeklyTrend: [288.2, 286.8, 286.0, 285.5],
+      status: 'RED',
+      variance: 3.8
+    },
+    campus: {
+      readiness: 96.5,
+      target: 98.0,
+      issues: 3,
+      status: 'YELLOW',
+      variance: -1.5
+    }
+  };
+
+  const getStatusColor = (status) => {
+    return status === 'GREEN' ? 'bg-green-50 border-green-200 text-green-900' :
+           status === 'YELLOW' ? 'bg-yellow-50 border-yellow-200 text-yellow-900' :
+           'bg-red-50 border-red-200 text-red-900';
+  };
+
+  const getStatusBadge = (status) => {
+    return status === 'GREEN' ? 'bg-green-100 text-green-800' :
+           status === 'YELLOW' ? 'bg-yellow-100 text-yellow-800' :
+           'bg-red-100 text-red-800';
+  };
+
+  const formatNumber = (num) => num.toLocaleString('en-US');
+  const formatPercent = (num) => `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
+
   content.innerHTML = `
     <div class="space-y-6">
       <!-- Header -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h1 class="text-2xl font-bold text-slate-900">MO KPIs</h1>
-        <p class="text-sm text-slate-600 mt-1">Manufacturing Operations Key Performance Indicators</p>
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl shadow-lg p-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">Manufacturing Operations Dashboard</h1>
+            <p class="text-blue-100 text-sm">Executive KPI Overview — Real-time operational metrics</p>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-blue-100">Last Updated</div>
+            <div class="text-lg font-semibold">2026-01-27 14:30</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Coming Soon Placeholder -->
-      <div class="bg-white rounded-xl shadow-sm p-12 text-center">
-        <div class="text-6xl mb-4">📊</div>
-        <h2 class="text-2xl font-bold text-slate-900 mb-2">MO KPIs Dashboard</h2>
-        <p class="text-slate-600 mb-6">Manufacturing Operations Key Performance Indicators coming soon...</p>
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
-          <span>🚧</span>
-          <span>Under Construction</span>
+      <!-- KPI Cards Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Production KPI -->
+        <div class="bg-white rounded-xl shadow-sm border-2 ${getStatusColor(kpiData.production.status)} p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-slate-600 mb-1">📦 PRODUCTION</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.production.target)} units/week</div>
+            </div>
+            <span class="px-3 py-1 ${getStatusBadge(kpiData.production.status)} rounded-full text-xs font-bold">
+              ${kpiData.production.status}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold ${kpiData.production.variance < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatPercent(kpiData.production.variance)}
+            </span>
+            <span class="text-xs text-slate-500">vs Target</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200">
+            <div class="text-xs text-slate-600 font-semibold mb-2">4-Week Trend</div>
+            <div class="flex items-end gap-1 h-12">
+              ${kpiData.production.weeklyTrend.map((val, i) => {
+                const height = (val / kpiData.production.target) * 100;
+                return `<div class="flex-1 bg-blue-500 rounded-t" style="height: ${height}%" title="Week ${i+1}: ${formatNumber(val)}"></div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipment KPI -->
+        <div class="bg-white rounded-xl shadow-sm border-2 ${getStatusColor(kpiData.shipment.status)} p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-slate-600 mb-1">🚚 SHIPMENT</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.shipment.target)} units/week</div>
+            </div>
+            <span class="px-3 py-1 ${getStatusBadge(kpiData.shipment.status)} rounded-full text-xs font-bold">
+              ${kpiData.shipment.status}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold ${kpiData.shipment.variance < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatPercent(kpiData.shipment.variance)}
+            </span>
+            <span class="text-xs text-slate-500">vs Target</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200">
+            <div class="text-xs text-slate-600 font-semibold mb-2">4-Week Trend</div>
+            <div class="flex items-end gap-1 h-12">
+              ${kpiData.shipment.weeklyTrend.map((val, i) => {
+                const height = (val / kpiData.shipment.target) * 100;
+                return `<div class="flex-1 bg-green-500 rounded-t" style="height: ${height}%" title="Week ${i+1}: ${formatNumber(val)}"></div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Labor KPI -->
+        <div class="bg-white rounded-xl shadow-sm border-2 ${getStatusColor(kpiData.labor.status)} p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-slate-600 mb-1">👷 LABOR</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.labor.target)} headcount</div>
+            </div>
+            <span class="px-3 py-1 ${getStatusBadge(kpiData.labor.status)} rounded-full text-xs font-bold">
+              ${kpiData.labor.status}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold ${kpiData.labor.variance < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatPercent(kpiData.labor.variance)}
+            </span>
+            <span class="text-xs text-slate-500">vs Target</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-600 font-semibold">Fulfillment Rate</span>
+              <span class="text-sm font-bold text-slate-900">${kpiData.labor.fulfillmentRate}%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2">
+              <div class="bg-blue-600 h-2 rounded-full" style="width: ${kpiData.labor.fulfillmentRate}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FV Cost KPI -->
+        <div class="bg-white rounded-xl shadow-sm border-2 ${getStatusColor(kpiData.fvCost.status)} p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-slate-600 mb-1">💰 FV COST</div>
+              <div class="text-3xl font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: $${kpiData.fvCost.target.toFixed(1)} per unit</div>
+            </div>
+            <span class="px-3 py-1 ${getStatusBadge(kpiData.fvCost.status)} rounded-full text-xs font-bold">
+              ${kpiData.fvCost.status}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold ${kpiData.fvCost.variance > 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatPercent(kpiData.fvCost.variance)}
+            </span>
+            <span class="text-xs text-slate-500">vs Target</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200">
+            <div class="text-xs text-slate-600 font-semibold mb-2">4-Week Trend</div>
+            <div class="flex items-end gap-1 h-12">
+              ${kpiData.fvCost.weeklyTrend.map((val, i) => {
+                const height = Math.min((val / 300) * 100, 100);
+                const isAboveTarget = val > kpiData.fvCost.target;
+                return `<div class="flex-1 ${isAboveTarget ? 'bg-red-500' : 'bg-green-500'} rounded-t" style="height: ${height}%" title="Week ${i+1}: $${val.toFixed(1)}"></div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Campus Readiness KPI -->
+        <div class="bg-white rounded-xl shadow-sm border-2 ${getStatusColor(kpiData.campus.status)} p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-sm font-semibold text-slate-600 mb-1">🏭 CAMPUS</div>
+              <div class="text-3xl font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${kpiData.campus.target.toFixed(1)}% readiness</div>
+            </div>
+            <span class="px-3 py-1 ${getStatusBadge(kpiData.campus.status)} rounded-full text-xs font-bold">
+              ${kpiData.campus.status}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm font-semibold ${kpiData.campus.variance < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatPercent(kpiData.campus.variance)}
+            </span>
+            <span class="text-xs text-slate-500">vs Target</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-600 font-semibold">Open Issues</span>
+              <span class="text-sm font-bold ${kpiData.campus.issues > 5 ? 'text-red-600' : 'text-yellow-600'}">${kpiData.campus.issues}</span>
+            </div>
+            <div class="text-xs text-slate-500">Infrastructure, Safety, Utilities</div>
+          </div>
+        </div>
+
+        <!-- Summary Card (spanning full width) -->
+        <div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl shadow-sm border border-slate-200 p-6 lg:col-span-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-slate-900">📊 Weekly Summary</h3>
+            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all">
+              📄 Export Report
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="bg-white rounded-lg p-4 border border-slate-200">
+              <div class="text-xs text-slate-600 mb-1">Production Output</div>
+              <div class="text-xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
+              <div class="text-xs ${kpiData.production.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.production.variance)} vs Target</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-slate-200">
+              <div class="text-xs text-slate-600 mb-1">Units Shipped</div>
+              <div class="text-xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
+              <div class="text-xs ${kpiData.shipment.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.shipment.variance)} vs Target</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-slate-200">
+              <div class="text-xs text-slate-600 mb-1">Labor Headcount</div>
+              <div class="text-xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
+              <div class="text-xs text-blue-600">${kpiData.labor.fulfillmentRate}% fulfilled</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-slate-200">
+              <div class="text-xs text-slate-600 mb-1">FV Cost per Unit</div>
+              <div class="text-xl font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
+              <div class="text-xs ${kpiData.fvCost.variance > 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.variance)} vs Target</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-slate-200">
+              <div class="text-xs text-slate-600 mb-1">Campus Readiness</div>
+              <div class="text-xl font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
+              <div class="text-xs text-yellow-600">${kpiData.campus.issues} open issues</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Items -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">⚠️ Action Items</h3>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <span class="text-2xl">🔴</span>
+            <div class="flex-1">
+              <div class="font-semibold text-red-900">FV Cost above target by 3.8%</div>
+              <div class="text-sm text-red-700">Review material costs and yield performance</div>
+            </div>
+            <span class="text-xs text-red-600 font-semibold">HIGH</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <span class="text-2xl">🟡</span>
+            <div class="flex-1">
+              <div class="font-semibold text-yellow-900">Production output 8.4% below target</div>
+              <div class="text-sm text-yellow-700">Capacity constraints and ramp-up delays</div>
+            </div>
+            <span class="text-xs text-yellow-600 font-semibold">MEDIUM</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <span class="text-2xl">🟡</span>
+            <div class="flex-1">
+              <div class="font-semibold text-yellow-900">Labor fulfillment at 94.2%</div>
+              <div class="text-sm text-yellow-700">150 headcount gap vs target</div>
+            </div>
+            <span class="text-xs text-yellow-600 font-semibold">MEDIUM</span>
+          </div>
         </div>
       </div>
     </div>
