@@ -277,17 +277,6 @@ function render() {
     }
   });
 
-  // Update Program button text with current selection
-  const programNavText = $("programNavText");
-  if (programNavText) {
-    const { product, factorySite } = STATE.filters;
-    if (product && factorySite) {
-      programNavText.textContent = `${product} / ${factorySite}`;
-    } else {
-      programNavText.textContent = `Product A / WF`;
-    }
-  }
-
   // Show/hide filters bar based on view
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
