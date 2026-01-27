@@ -6669,483 +6669,485 @@ function toggleFiscalCalendar() {
 // ========================================
 
 /**
- * Render MO KPIs page
- * Manufacturing Operations Executive Brief - Decision-oriented dashboard
- */
-/**
- * Render MO KPIs page V2
- * Manufacturing Operations Executive Brief - Decision-oriented dashboard
- *
- * This is the new improved version following ChatGPT's recommendations:
- * - Remove "KPI打分墙" feeling
- * - Add Executive Summary section
- * - Transform Action Items into Decision List
- * - Add collapsible drill-down sections
- * - Use "OK/WATCH/ACTION_NEEDED" instead of GREEN/YELLOW/RED
+ * Render MO KPIs page V4
+ * Tech-style Executive Dashboard with modern visuals
  */
 function renderMOKpis() {
   const content = $("content");
 
-  // Mock data for demonstration (replace with real data later)
+  // Mock data with enhanced metrics
   const kpiData = {
     production: {
       current: 45800,
       target: 50000,
       weeklyTrend: [42000, 43500, 44200, 45800],
-      status: 'WATCH',
       variance: -8.4,
       delta: -4200,
-      driver: "Yield –3.3pp (WF) | CTB short 3 days (VN02)",
+      wow: 2.4,
+      mom: 8.1,
+      trend: 'up',
+      driver: "Yield –3.3pp (WF)",
       owner: "Operations",
-      details: {
-        wf: { current: 28500, target: 32000, yield: 0.912 },
-        vn02: { current: 17300, target: 18000, yield: 0.955 }
-      }
+      wf: { current: 28500, target: 32000, yield: 91.2 },
+      vn02: { current: 17300, target: 18000, yield: 95.5 }
     },
     shipment: {
       current: 44200,
       target: 48000,
       weeklyTrend: [41000, 42800, 43500, 44200],
-      status: 'WATCH',
       variance: -7.9,
       delta: -3800,
-      driver: "Ready-to-ship backlog +12% | WH packing bottleneck",
+      wow: 1.6,
+      mom: 7.8,
+      trend: 'stable',
+      driver: "Backlog +12%",
       owner: "Logistics",
-      details: {
-        backlog: 8200,
-        avgLeadTime: 2.8,
-        onTimeRate: 0.892
-      }
+      wf: { current: 27200, shipped: 26800 },
+      vn02: { current: 17000, shipped: 16900 }
     },
     labor: {
       current: 2450,
       target: 2600,
       weeklyTrend: [2380, 2420, 2440, 2450],
-      status: 'WATCH',
       variance: -5.8,
       delta: -150,
+      wow: 0.4,
+      mom: 2.9,
+      trend: 'up',
       fulfillmentRate: 94.2,
-      driver: "Fill rate 94.2% | Overtime +18% WoW | Absence 4.2%",
+      driver: "Fill 94.2%, OT +18%",
       owner: "HR / Operations",
-      details: {
-        directLabor: 1850,
-        indirectLabor: 600,
-        overtime: 450,
-        absenceRate: 0.042
-      }
+      wf: { current: 1620, target: 1700, fill: 95.3 },
+      vn02: { current: 830, target: 900, fill: 92.2 }
     },
     fvCost: {
       current: 285.5,
       target: 275.0,
       weeklyTrend: [288.2, 286.8, 286.0, 285.5],
-      status: 'ACTION_NEEDED',
       variance: 3.8,
       delta: 10.5,
-      driver: "Material premium freight +$8/u | Rework cost +$4/u",
-      owner: "Finance / Operations",
-      details: {
-        material: 195.2,
-        labor: 48.5,
-        overhead: 32.8,
-        rework: 9.0
-      }
+      wow: -0.2,
+      mom: -0.9,
+      trend: 'down',
+      driver: "Freight +$8, Rework +$4",
+      owner: "Finance",
+      breakdown: { material: 195.2, labor: 48.5, overhead: 32.8, rework: 9.0 }
     },
     campus: {
       readiness: 96.5,
       target: 98.0,
-      issues: 3,
-      status: 'WATCH',
+      weeklyTrend: [95.8, 96.0, 96.2, 96.5],
       variance: -1.5,
-      driver: "3 open issues: Utility backup (critical) | HVAC (med) | Parking (low)",
+      delta: -1.5,
+      wow: 0.3,
+      mom: 0.7,
+      trend: 'stable',
+      issues: 3,
+      driver: "3 issues: Utility (critical)",
       owner: "Facilities",
-      details: {
-        infrastructure: { status: 'OK', issues: 0 },
-        safety: { status: 'OK', issues: 0 },
-        utilities: { status: 'WATCH', issues: 3 }
-      }
+      wf: { readiness: 97.2, issues: 1 },
+      vn02: { readiness: 95.8, issues: 2 }
     }
   };
 
-  const getStatusPill = (status) => {
-    if (status === 'OK') return 'bg-green-100 text-green-700 border border-green-300';
-    if (status === 'WATCH') return 'bg-amber-100 text-amber-700 border border-amber-300';
-    return 'bg-rose-100 text-rose-700 border border-rose-300';
-  };
-
-  const getStatusText = (status) => {
-    if (status === 'OK') return 'OK';
-    if (status === 'WATCH') return 'Watch';
-    return 'Action needed';
-  };
+  // Calculate Overall Health Score
+  const healthScore = Math.round(
+    (kpiData.production.current / kpiData.production.target * 100 * 0.25) +
+    (kpiData.shipment.current / kpiData.shipment.target * 100 * 0.25) +
+    (kpiData.labor.fulfillmentRate * 0.20) +
+    ((100 - Math.abs(kpiData.fvCost.variance)) * 0.15) +
+    (kpiData.campus.readiness * 0.15)
+  );
 
   const formatNumber = (num) => num.toLocaleString('en-US');
-  const formatPercent = (num) => `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
-  const formatDelta = (num) => `${num >= 0 ? '+' : ''}${formatNumber(num)}`;
+  const formatPercent = (num) => (num >= 0 ? '+' : '') + num.toFixed(1) + '%';
+  
+  // Generate area chart for trend
+  const generateAreaChart = (data, color = '#60a5fa') => {
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max - min || 1;
+    const width = 120;
+    const height = 40;
 
-  // Calculate overall status
-  const hasActionNeeded = Object.values(kpiData).some(kpi => kpi.status === 'ACTION_NEEDED');
-  const commitOutlook = hasActionNeeded ? 'At risk' : 'On track';
-  const primaryDrivers = [
-    kpiData.fvCost.status === 'ACTION_NEEDED' ? 'FV cost spike' : null,
-    kpiData.production.variance < -5 ? 'Production yield drift' : null,
-    kpiData.shipment.variance < -5 ? 'Shipment backlog' : null
-  ].filter(Boolean).slice(0, 2).join(', ') || 'No major concerns';
+    const points = data.map((val, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((val - min) / range) * height;
+      return x + ',' + y;
+    }).join(' ');
+
+    const areaPoints = '0,' + height + ' ' + points + ' ' + width + ',' + height;
+
+    return `<svg width="${width}" height="${height}" class="inline-block">
+      <defs>
+        <linearGradient id="gradient-${color.replace('#','')}" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:${color};stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:${color};stop-opacity:0.05" />
+        </linearGradient>
+      </defs>
+      <polygon points="${areaPoints}" fill="url(#gradient-${color.replace('#','')})" />
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2"/>
+    </svg>`;
+  };
+
+  // Generate circular progress
+  const generateCircularProgress = (percent, color = '#60a5fa') => {
+    const radius = 35;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percent / 100) * circumference;
+    
+    return `<svg width="90" height="90" class="transform -rotate-90">
+      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="6"/>
+      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="${color}" stroke-width="6" 
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" 
+              stroke-linecap="round" class="transition-all duration-500"/>
+    </svg>`;
+  };
 
   content.innerHTML = `
     <div class="space-y-6">
-      <!-- Executive Summary -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-6">Executive Summary</h2>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Left: One-sentence conclusion + Key metrics -->
-          <div class="space-y-4">
-            <div>
-              <div class="text-sm text-slate-600 mb-1">Commit Outlook</div>
-              <div class="text-2xl font-bold ${hasActionNeeded ? 'text-rose-600' : 'text-green-600'}">${commitOutlook}</div>
-            </div>
-            <div>
-              <div class="text-sm text-slate-600 mb-1">Primary Drivers</div>
-              <div class="text-base text-slate-900">${primaryDrivers}</div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-sm text-slate-600 mb-1">Decisions due in 48h</div>
-                <div class="text-xl font-bold text-slate-900">2</div>
-              </div>
-              <div>
-                <div class="text-sm text-slate-600 mb-1">Data Confidence</div>
-                <div class="text-xl font-bold text-green-600">High</div>
-              </div>
-            </div>
-            <div class="text-xs text-slate-500 pt-2 border-t">
-              Cut-off: 2026-01-27 14:30 | Refreshes every 4h
-            </div>
-          </div>
-
-          <!-- Right: This Week Focus (Top 3 decisions) -->
+      <!-- Header with gradient -->
+      <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
+        <div class="flex items-center justify-between mb-6">
           <div>
-            <div class="text-sm font-semibold text-slate-900 mb-3">This Week Focus — Top 3</div>
-            <div class="space-y-2">
-              <div class="bg-rose-50 border border-rose-200 rounded-lg p-3">
-                <div class="flex items-start justify-between mb-1">
-                  <div class="text-sm font-semibold text-rose-900">FV cost mitigation plan</div>
-                  <span class="text-xs px-2 py-0.5 bg-rose-200 text-rose-800 rounded">48h</span>
-                </div>
-                <div class="text-xs text-rose-700 mb-2">Impact: +$XXk/week exposure | Owner: Finance</div>
-                <div class="flex gap-2">
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-rose-100 border border-rose-300 rounded" onclick="alert('Open FV Cost Details')">View details</button>
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-rose-100 border border-rose-300 rounded" onclick="alert('Request validation')">Request validation</button>
+            <h1 class="text-3xl font-bold mb-2">Manufacturing Operations KPIs</h1>
+            <p class="text-blue-200 text-sm">Real-time operational metrics and insights</p>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-blue-200 mb-1">Overall Health</div>
+            <div class="text-5xl font-bold">${healthScore}</div>
+            <div class="text-xs text-blue-300 mt-1">${healthScore >= 80 ? 'GOOD' : healthScore >= 60 ? 'FAIR' : 'AT RISK'}</div>
+          </div>
+        </div>
+        
+        <!-- Quick Stats Row -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-blue-200 text-xs mb-1">Production</div>
+            <div class="text-2xl font-bold">${formatNumber(kpiData.production.current)}</div>
+            <div class="text-xs text-blue-300 mt-1">${kpiData.production.variance.toFixed(1)}% vs target</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-blue-200 text-xs mb-1">Shipment</div>
+            <div class="text-2xl font-bold">${formatNumber(kpiData.shipment.current)}</div>
+            <div class="text-xs text-blue-300 mt-1">${kpiData.shipment.variance.toFixed(1)}% vs target</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-blue-200 text-xs mb-1">Labor Fill</div>
+            <div class="text-2xl font-bold">${kpiData.labor.fulfillmentRate}%</div>
+            <div class="text-xs text-blue-300 mt-1">${formatNumber(kpiData.labor.current)} headcount</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-blue-200 text-xs mb-1">Campus</div>
+            <div class="text-2xl font-bold">${kpiData.campus.readiness}%</div>
+            <div class="text-xs text-blue-300 mt-1">${kpiData.campus.issues} open issues</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main KPI Cards with Tech Style -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Production Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-slate-500 text-sm mb-1">📦 Production</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.production.target)}</div>
+            </div>
+            <div class="relative">
+              ${generateCircularProgress(91.6, '#3b82f6')}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-slate-900">92%</div>
                 </div>
               </div>
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <div class="flex items-start justify-between mb-1">
-                  <div class="text-sm font-semibold text-amber-900">Production capacity review</div>
-                  <span class="text-xs px-2 py-0.5 bg-amber-200 text-amber-800 rounded">24h</span>
-                </div>
-                <div class="text-xs text-amber-700 mb-2">Impact: –4.2k units vs plan | Owner: Operations</div>
-                <div class="flex gap-2">
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Check yield')">Check yield</button>
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Check capacity')">Check capacity</button>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            ${generateAreaChart(kpiData.production.weeklyTrend, '#3b82f6')}
+          </div>
+          
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-slate-500">WoW</span>
+            <span class="font-semibold text-green-600">${formatPercent(kpiData.production.wow)}</span>
+          </div>
+          
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
+            <div class="text-sm font-medium text-slate-900">${kpiData.production.driver}</div>
+          </div>
+        </div>
+
+        <!-- Shipment Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-slate-500 text-sm mb-1">🚚 Shipment</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.shipment.target)}</div>
+            </div>
+            <div class="relative">
+              ${generateCircularProgress(92.1, '#10b981')}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-slate-900">92%</div>
                 </div>
               </div>
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <div class="flex items-start justify-between mb-1">
-                  <div class="text-sm font-semibold text-amber-900">Labor hiring acceleration</div>
-                  <span class="text-xs px-2 py-0.5 bg-amber-200 text-amber-800 rounded">72h</span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            ${generateAreaChart(kpiData.shipment.weeklyTrend, '#10b981')}
+          </div>
+          
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-slate-500">WoW</span>
+            <span class="font-semibold text-green-600">${formatPercent(kpiData.shipment.wow)}</span>
+          </div>
+          
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
+            <div class="text-sm font-medium text-slate-900">${kpiData.shipment.driver}</div>
+          </div>
+        </div>
+
+        <!-- Labor Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-slate-500 text-sm mb-1">👥 Labor</div>
+              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.labor.target)}</div>
+            </div>
+            <div class="relative">
+              ${generateCircularProgress(94.2, '#8b5cf6')}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-slate-900">94%</div>
                 </div>
-                <div class="text-xs text-amber-700 mb-2">Impact: –150 HC gap, risk to W05 ramp | Owner: HR</div>
-                <div class="flex gap-2">
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Hiring plan')">Hiring plan</button>
-                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Shift re-balance')">Shift re-balance</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            ${generateAreaChart(kpiData.labor.weeklyTrend, '#8b5cf6')}
+          </div>
+          
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-slate-500">WoW</span>
+            <span class="font-semibold text-green-600">${formatPercent(kpiData.labor.wow)}</span>
+          </div>
+          
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
+            <div class="text-sm font-medium text-slate-900">${kpiData.labor.driver}</div>
+          </div>
+        </div>
+
+        <!-- FV Cost Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-slate-500 text-sm mb-1">💰 FV Cost</div>
+              <div class="text-3xl font-bold text-slate-900">$${kpiData.fvCost.current}</div>
+              <div class="text-xs text-slate-500 mt-1">Target: $${kpiData.fvCost.target}</div>
+            </div>
+            <div class="relative">
+              ${generateCircularProgress(96.2, '#f59e0b')}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-slate-900">96%</div>
                 </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            ${generateAreaChart(kpiData.fvCost.weeklyTrend, '#f59e0b')}
+          </div>
+          
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-slate-500">WoW</span>
+            <span class="font-semibold ${kpiData.fvCost.wow >= 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.wow)}</span>
+          </div>
+          
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
+            <div class="text-sm font-medium text-slate-900">${kpiData.fvCost.driver}</div>
+          </div>
+        </div>
+
+        <!-- Campus Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-slate-500 text-sm mb-1">🏭 Campus</div>
+              <div class="text-3xl font-bold text-slate-900">${kpiData.campus.readiness}%</div>
+              <div class="text-xs text-slate-500 mt-1">Target: ${kpiData.campus.target}%</div>
+            </div>
+            <div class="relative">
+              ${generateCircularProgress(96.5, '#06b6d4')}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <div class="text-lg font-bold text-slate-900">97%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            ${generateAreaChart(kpiData.campus.weeklyTrend, '#06b6d4')}
+          </div>
+          
+          <div class="flex items-center justify-between text-xs mb-3">
+            <span class="text-slate-500">WoW</span>
+            <span class="font-semibold text-green-600">${formatPercent(kpiData.campus.wow)}</span>
+          </div>
+          
+          <div class="pt-3 border-t border-slate-100">
+            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
+            <div class="text-sm font-medium text-slate-900">${kpiData.campus.driver}</div>
+          </div>
+        </div>
+
+        <!-- Additional KPI Placeholder -->
+        <div class="bg-gradient-to-br from-slate-100 to-slate-50 rounded-2xl shadow-lg border border-slate-200 p-6 flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-4xl mb-3">📊</div>
+            <div class="text-sm font-semibold text-slate-600">More KPIs</div>
+            <div class="text-xs text-slate-400 mt-1">Coming soon</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Site Comparison with Modern Style -->
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">🏭 Site Performance Comparison</h3>
+        
+        <div class="grid grid-cols-2 gap-6">
+          <!-- WF Site -->
+          <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-xl font-bold text-slate-900">WF Site</div>
+              <div class="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Primary</div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-slate-600">Output</span>
+                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.wf.current)}</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: ${(kpiData.production.wf.current / kpiData.production.wf.target * 100)}%"></div>
+              </div>
+              
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-sm text-slate-600">Yield</span>
+                <span class="text-lg font-bold text-slate-900">${kpiData.production.wf.yield}%</span>
+              </div>
+              
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-sm text-slate-600">Labor Fill</span>
+                <span class="text-lg font-bold text-slate-900">${kpiData.labor.wf.fill}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- VN02 Site -->
+          <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-5 border border-green-100">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-xl font-bold text-slate-900">VN02 Site</div>
+              <div class="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">Secondary</div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-slate-600">Output</span>
+                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.vn02.current)}</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-green-600 h-2 rounded-full" style="width: ${(kpiData.production.vn02.current / kpiData.production.vn02.target * 100)}%"></div>
+              </div>
+              
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-sm text-slate-600">Yield</span>
+                <span class="text-lg font-bold text-slate-900">${kpiData.production.vn02.yield}%</span>
+              </div>
+              
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-sm text-slate-600">Labor Fill</span>
+                <span class="text-lg font-bold text-slate-900">${kpiData.labor.vn02.fill}%</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- KPI Signals (white background, small pill status) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- Production -->
-        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="text-xs font-semibold text-slate-600 mb-1">📦 Production</div>
-              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
-              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.production.target)}</div>
-            </div>
-            <span class="px-2 py-1 ${getStatusPill(kpiData.production.status)} rounded text-xs font-medium">
-              ${getStatusText(kpiData.production.status)}
-            </span>
-          </div>
-          <div class="text-sm text-slate-700 mb-2">
-            <span class="font-semibold ${kpiData.production.delta < 0 ? 'text-red-600' : 'text-green-600'}">
-              ${formatDelta(kpiData.production.delta)}
-            </span>
-            <span class="text-slate-500"> (${formatPercent(kpiData.production.variance)})</span>
-          </div>
-          <div class="text-xs text-slate-600 mb-2">
-            <span class="font-medium">Driver:</span> ${kpiData.production.driver}
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <span class="text-xs text-slate-500">Owner: ${kpiData.production.owner}</span>
-            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('production')">
-              View details →
-            </button>
-          </div>
-        </div>
-
-        <!-- Shipment -->
-        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="text-xs font-semibold text-slate-600 mb-1">🚚 Shipment</div>
-              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
-              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.shipment.target)}</div>
-            </div>
-            <span class="px-2 py-1 ${getStatusPill(kpiData.shipment.status)} rounded text-xs font-medium">
-              ${getStatusText(kpiData.shipment.status)}
-            </span>
-          </div>
-          <div class="text-sm text-slate-700 mb-2">
-            <span class="font-semibold ${kpiData.shipment.delta < 0 ? 'text-red-600' : 'text-green-600'}">
-              ${formatDelta(kpiData.shipment.delta)}
-            </span>
-            <span class="text-slate-500"> (${formatPercent(kpiData.shipment.variance)})</span>
-          </div>
-          <div class="text-xs text-slate-600 mb-2">
-            <span class="font-medium">Driver:</span> ${kpiData.shipment.driver}
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <span class="text-xs text-slate-500">Owner: ${kpiData.shipment.owner}</span>
-            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('shipment')">
-              View details →
-            </button>
-          </div>
-        </div>
-
-        <!-- Labor -->
-        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="text-xs font-semibold text-slate-600 mb-1">👷 Labor</div>
-              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
-              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.labor.target)}</div>
-            </div>
-            <span class="px-2 py-1 ${getStatusPill(kpiData.labor.status)} rounded text-xs font-medium">
-              ${getStatusText(kpiData.labor.status)}
-            </span>
-          </div>
-          <div class="text-sm text-slate-700 mb-2">
-            <span class="font-semibold ${kpiData.labor.delta < 0 ? 'text-red-600' : 'text-green-600'}">
-              ${formatDelta(kpiData.labor.delta)}
-            </span>
-            <span class="text-slate-500"> (${formatPercent(kpiData.labor.variance)})</span>
-          </div>
-          <div class="text-xs text-slate-600 mb-2">
-            <span class="font-medium">Driver:</span> ${kpiData.labor.driver}
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <span class="text-xs text-slate-500">Owner: ${kpiData.labor.owner}</span>
-            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('labor')">
-              View details →
-            </button>
-          </div>
-        </div>
-
-        <!-- FV Cost -->
-        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="text-xs font-semibold text-slate-600 mb-1">💰 FV Cost</div>
-              <div class="text-2xl font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
-              <div class="text-xs text-slate-500">Target: $${kpiData.fvCost.target.toFixed(1)}</div>
-            </div>
-            <span class="px-2 py-1 ${getStatusPill(kpiData.fvCost.status)} rounded text-xs font-medium">
-              ${getStatusText(kpiData.fvCost.status)}
-            </span>
-          </div>
-          <div class="text-sm text-slate-700 mb-2">
-            <span class="font-semibold ${kpiData.fvCost.delta > 0 ? 'text-red-600' : 'text-green-600'}">
-              ${formatDelta(kpiData.fvCost.delta)}
-            </span>
-            <span class="text-slate-500"> (${formatPercent(kpiData.fvCost.variance)})</span>
-          </div>
-          <div class="text-xs text-slate-600 mb-2">
-            <span class="font-medium">Driver:</span> ${kpiData.fvCost.driver}
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <span class="text-xs text-slate-500">Owner: ${kpiData.fvCost.owner}</span>
-            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('fvCost')">
-              View details →
-            </button>
-          </div>
-        </div>
-
-        <!-- Campus -->
-        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="text-xs font-semibold text-slate-600 mb-1">🏭 Campus</div>
-              <div class="text-2xl font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
-              <div class="text-xs text-slate-500">Target: ${kpiData.campus.target.toFixed(1)}%</div>
-            </div>
-            <span class="px-2 py-1 ${getStatusPill(kpiData.campus.status)} rounded text-xs font-medium">
-              ${getStatusText(kpiData.campus.status)}
-            </span>
-          </div>
-          <div class="text-sm text-slate-700 mb-2">
-            <span class="font-semibold text-slate-900">${kpiData.campus.issues} open issues</span>
-          </div>
-          <div class="text-xs text-slate-600 mb-2">
-            <span class="font-medium">Driver:</span> ${kpiData.campus.driver}
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <span class="text-xs text-slate-500">Owner: ${kpiData.campus.owner}</span>
-            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('campus')">
-              View details →
-            </button>
-          </div>
-        </div>
-
-        <!-- Outcome Strip (full width, 6th card) -->
-        <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-300 p-5 lg:col-span-3">
-          <div class="text-xs font-semibold text-slate-600 mb-3">Week Outcome Summary</div>
-          <div class="grid grid-cols-5 gap-4">
-            <div class="text-center">
-              <div class="text-sm text-slate-600 mb-1">Production</div>
-              <div class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
-              <div class="text-xs ${kpiData.production.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.production.variance)}</div>
-            </div>
-            <div class="text-center border-l border-slate-300 pl-4">
-              <div class="text-sm text-slate-600 mb-1">Shipment</div>
-              <div class="text-lg font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
-              <div class="text-xs ${kpiData.shipment.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.shipment.variance)}</div>
-            </div>
-            <div class="text-center border-l border-slate-300 pl-4">
-              <div class="text-sm text-slate-600 mb-1">Labor</div>
-              <div class="text-lg font-bold text-slate-900">${kpiData.labor.fulfillmentRate}%</div>
-              <div class="text-xs text-slate-600">fulfilled</div>
-            </div>
-            <div class="text-center border-l border-slate-300 pl-4">
-              <div class="text-sm text-slate-600 mb-1">FV Cost</div>
-              <div class="text-lg font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
-              <div class="text-xs ${kpiData.fvCost.variance > 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.variance)}</div>
-            </div>
-            <div class="text-center border-l border-slate-300 pl-4">
-              <div class="text-sm text-slate-600 mb-1">Campus</div>
-              <div class="text-lg font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
-              <div class="text-xs text-amber-600">${kpiData.campus.issues} issues</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Decision List (instead of Action Items) -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">Decision List</h3>
+      <!-- Priority Decisions -->
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">⚠️ Priority Actions</h3>
+        
         <div class="space-y-3">
-          <div class="bg-white border-2 border-rose-200 rounded-lg p-4">
+          <div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4">
             <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <div class="font-semibold text-slate-900 mb-1">FV cost above target (+3.8%)</div>
-                <div class="text-sm text-slate-600 mb-2">
-                  <span class="font-medium">Impact:</span> +$XXk weekly exposure |
-                  <span class="font-medium">Owner:</span> Finance / Operations |
-                  <span class="font-medium">SLA:</span> 48h
-                </div>
-                <div class="text-xs text-slate-600">Material premium freight +$8/u | Rework cost +$4/u</div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>
+                <span class="font-semibold text-slate-900">FV cost above target (+3.8%)</span>
               </div>
-              <span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">HIGH</span>
+              <span class="text-xs text-slate-500">48h</span>
             </div>
-            <div class="flex gap-2 pt-2 border-t border-slate-200">
-              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Open FV Details</button>
-              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Request validation</button>
+            <div class="text-sm text-slate-600 mb-3">Impact: +$XXk weekly exposure | Owner: Finance | Confidence: ●●●●○</div>
+            <div class="text-xs text-slate-500">Material premium freight +$8k | Rework cost +$4k</div>
+            <div class="mt-3 flex gap-2">
+              <button class="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700">Open Analysis</button>
+              <button class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50">Request Plan</button>
             </div>
           </div>
 
-          <div class="bg-white border-2 border-amber-200 rounded-lg p-4">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <div class="font-semibold text-slate-900 mb-1">Production output below target (–8.4%)</div>
-                <div class="text-sm text-slate-600 mb-2">
-                  <span class="font-medium">Impact:</span> –4.2k units vs plan |
-                  <span class="font-medium">Owner:</span> Operations |
-                  <span class="font-medium">SLA:</span> 24h
-                </div>
-                <div class="text-xs text-slate-600">Yield –3.3pp (WF) | CTB short 3 days (VN02)</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
+                <span class="text-sm font-semibold text-slate-900">Production gap (-8.4%)</span>
               </div>
-              <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">MEDIUM</span>
+              <div class="text-xs text-slate-600 mb-2">–3.2k units vs plan | Operations | 24h</div>
+              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
             </div>
-            <div class="flex gap-2 pt-2 border-t border-slate-200">
-              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Check yield</button>
-              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Check capacity</button>
+
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
+                <span class="text-sm font-semibold text-slate-900">Labor fulfillment (94.2%)</span>
+              </div>
+              <div class="text-xs text-slate-600 mb-2">–150 HC gap | HR / Operations | 72h</div>
+              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
             </div>
           </div>
-
-          <div class="bg-white border-2 border-amber-200 rounded-lg p-4">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <div class="font-semibold text-slate-900 mb-1">Labor fulfillment at 94.2%</div>
-                <div class="text-sm text-slate-600 mb-2">
-                  <span class="font-medium">Impact:</span> –150 HC gap, risk to W05 ramp |
-                  <span class="font-medium">Owner:</span> HR / Operations |
-                  <span class="font-medium">SLA:</span> 72h
-                </div>
-                <div class="text-xs text-slate-600">Fill rate 94.2% | Overtime +18% WoW | Absence 4.2%</div>
-              </div>
-              <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">MEDIUM</span>
-            </div>
-            <div class="flex gap-2 pt-2 border-t border-slate-200">
-              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Hiring plan</button>
-              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Shift re-balance</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Drill-down sections (collapsed by default) -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">Details by Domain</h3>
-        <div class="space-y-3">
-          ${['production', 'shipment', 'labor', 'fvCost', 'campus'].map(domain => `
-            <div class="border border-slate-200 rounded-lg">
-              <button onclick="toggleDetailSection('${domain}')" class="w-full flex items-center justify-between p-4 hover:bg-slate-50">
-                <span class="font-semibold text-slate-900">${domain === 'fvCost' ? 'FV Cost' : domain.charAt(0).toUpperCase() + domain.slice(1)} Details</span>
-                <span id="${domain}-toggle" class="text-slate-400">▼</span>
-              </button>
-              <div id="${domain}-details" class="hidden p-4 border-t border-slate-200 bg-slate-50">
-                <div class="text-sm text-slate-600">Detailed breakdown coming soon...</div>
-              </div>
-            </div>
-          `).join('')}
         </div>
       </div>
     </div>
   `;
 }
 
-// Helper function to toggle detail sections
-function toggleDetailSection(sectionId) {
-  const details = document.getElementById(`${sectionId}-details`);
-  const toggle = document.getElementById(`${sectionId}-toggle`);
-
-  if (details && toggle) {
-    if (details.classList.contains('hidden')) {
-      details.classList.remove('hidden');
-      toggle.textContent = '▲';
+// Helper function for tab switching
+function switchMOKpiTab(tabName) {
+  ['production', 'shipment', 'labor', 'fvCost', 'campus'].forEach(tab => {
+    const btn = document.getElementById(`tab-${tab}`);
+    const content = document.getElementById(`tab-content-${tab}`);
+    
+    if (tab === tabName) {
+      btn.className = 'px-4 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600';
+      content.classList.remove('hidden');
     } else {
-      details.classList.add('hidden');
-      toggle.textContent = '▼';
+      btn.className = 'px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900';
+      content.classList.add('hidden');
     }
-  }
+  });
 }
-/**
- * Render Data Foundation page with three subpages:
- * 1. Aligned Index - Metrics dictionary
- * 2. Data Source - Data sources and integration
- * 3. Production Plan Logic - Detailed calculation logic
- */
+
+
 function renderDataFoundation() {
   console.log('[DataFoundation] renderDataFoundation called, subpage:', STATE.dataFoundationSubpage);
   const content = $("content");
