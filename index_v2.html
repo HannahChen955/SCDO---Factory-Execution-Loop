@@ -49,7 +49,11 @@
         </button>
         <span class="text-slate-300">|</span>
         <button onclick="STATE.activeView = 'home'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="program">
-          <span>Program: <span id="programNavText" class="font-semibold">Product A / WF</span></span>
+          <span id="programNavText" class="font-semibold">MO Operations Dashboard</span>
+        </button>
+        <span class="text-slate-300">|</span>
+        <button onclick="STATE.activeView = 'moKpis'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="moKpis">
+          MO KPIs
         </button>
         <span class="text-slate-300">|</span>
         <button onclick="STATE.activeView = 'dataFoundation'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="dataFoundation">
@@ -417,6 +421,6 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="./decision_chain_widget.js"></script>
   <!-- Production Plan Demo Presets -->
   <script src="./production_plan_demo_presets.js"></script>
-  <script src="./app_v2.js?v=20260127-029"></script>
+  <script src="./app_v2.js?v=20260127-030"></script>
 </body>
 </html>

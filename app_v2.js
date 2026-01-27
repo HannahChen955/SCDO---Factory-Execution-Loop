@@ -292,8 +292,8 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
-    // Hide filters on global pages (Overview, Portfolio, Data Foundation, White Paper)
+  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
+    // Hide filters on global pages (Overview, Portfolio, MO KPIs, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -352,6 +352,9 @@ function render() {
       break;
     case "reports":
       renderReports();
+      break;
+    case "moKpis":
+      renderMOKpis();
       break;
     case "dataFoundation":
       renderDataFoundation();
@@ -6675,6 +6678,35 @@ function toggleFiscalCalendar() {
 // ========================================
 // DATA FOUNDATION
 // ========================================
+
+/**
+ * Render MO KPIs page
+ * Manufacturing Operations Key Performance Indicators
+ */
+function renderMOKpis() {
+  const content = $("content");
+
+  content.innerHTML = `
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <h1 class="text-2xl font-bold text-slate-900">MO KPIs</h1>
+        <p class="text-sm text-slate-600 mt-1">Manufacturing Operations Key Performance Indicators</p>
+      </div>
+
+      <!-- Coming Soon Placeholder -->
+      <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+        <div class="text-6xl mb-4">📊</div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">MO KPIs Dashboard</h2>
+        <p class="text-slate-600 mb-6">Manufacturing Operations Key Performance Indicators coming soon...</p>
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm">
+          <span>🚧</span>
+          <span>Under Construction</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
 /**
  * Render Data Foundation page with three subpages:
