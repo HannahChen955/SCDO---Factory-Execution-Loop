@@ -576,35 +576,464 @@
         "commitHealthLabel": "On track with pacing constraints",
         "atRiskUnits": 0,
         "confidence": 85,
-        "recoveryActions": [],
+        "recoveryActions": [
+          {
+            "priority": 1,
+            "action": "Freeze new releases for 7 days",
+            "owner": "Planning",
+            "sla": "Immediate",
+            "status": "IN_PROGRESS"
+          },
+          {
+            "priority": 2,
+            "action": "Re-balance W05 build (-10%)",
+            "owner": "Factory Ops",
+            "sla": "48h",
+            "status": "PENDING"
+          }
+        ],
         "nextCheckpoint": "Monitor demand signals for W05 pacing decision"
       },
-      "topDeliveryRisks": [],
+      "topDeliveryRisks": [
+        {
+          "id": "RISK-B1-001",
+          "sku": "SKU-B1",
+          "factory": "VN-02",
+          "week": "2026-W05",
+          "type": "EXCESS",
+          "score": 72,
+          "confidence": 81,
+          "driver": "Demand forecast down-rev -15% + channel sell-through below baseline",
+          "impact": "Overbuild liability risk if production continues at current pace",
+          "action": "Freeze new releases + reduce W05 build plan -10%",
+          "route": "HUMAN_REVIEW",
+          "routeReason": "Pacing change required",
+          "owner": "Planning + Factory Ops",
+          "sla": "48h"
+        },
+        {
+          "id": "RISK-B1-002",
+          "sku": "SKU-B2",
+          "factory": "VN-02",
+          "week": "2026-W05",
+          "type": "EXCESS",
+          "score": 65,
+          "confidence": 75,
+          "driver": "FG inventory above target +22%",
+          "impact": "Liability accumulation if demand doesn't recover",
+          "action": "Hold supplier releases where cancellable",
+          "route": "AUTO_ACTION",
+          "routeReason": "Within policy",
+          "owner": "Sourcing",
+          "sla": "24h"
+        }
+      ],
+      "todaysLoop": {
+        "caseId": "SKU-B1 / VN-02 / 2026-W05",
+        "deliveryImpact": "Overbuild liability risk",
+        "lateScore": 28,
+        "excessScore": 72,
+        "confidence": 81,
+        "signals": [
+          "Demand forecast down-rev -15%",
+          "Channel sell-through below baseline (-12% vs plan)",
+          "FG inventory above target +22%"
+        ],
+        "factoryReality": [
+          "FG building: 18.2k units (+22% vs target)",
+          "WIP pipeline: 12.5k units (2 weeks coverage)",
+          "Material commitments locked for next 14 days"
+        ],
+        "decision": "Pacing adjustment",
+        "actions": [
+          "Freeze new releases (Planning, immediate)",
+          "Re-balance W05 build -10% (Factory Ops, 48h)",
+          "Hold supplier releases where cancellable (Sourcing, 24h)"
+        ],
+        "evidencePack": "Ready — open briefing",
+        "feedback": "Pending (next cut: 48h)"
+      },
       "pacingGuardrail": {
         "message": "Demand softness detected. Freeze new releases to avoid liability.",
         "rule": "No new release for next 7 days; re-balance W05 build (-10%).",
         "status": "ACTIVE"
+      },
+      "kpis": {
+        "executionHealth": 78,
+        "executionHealthStatus": "GREEN",
+        "executionHealthDrivers": "Stable yield and capacity",
+        "inventoryPressure": 68,
+        "inventoryPressureStatus": "YELLOW",
+        "inventoryPressureDrivers": "FG above target; demand softness"
+      },
+      "signals": {
+        "dataQuality": [
+          { "source": "Planning", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Factory MES", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Materials / Supplier ETA", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Inventory (FG/WIP/Transit)", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Demand / Sell-through", "freshness": "YELLOW", "coverage": "YELLOW", "trust": "YELLOW" }
+        ],
+        "eventStream": [
+          {
+            "time": "10:15",
+            "type": "DEMAND",
+            "severity": "HIGH",
+            "message": "Forecast down-rev -15% for W05-W08 (channel softness)"
+          },
+          {
+            "time": "09:45",
+            "type": "DEMAND",
+            "severity": "MED",
+            "message": "Sell-through below baseline -12% vs plan"
+          },
+          {
+            "time": "09:20",
+            "type": "INVENTORY",
+            "severity": "MED",
+            "message": "FG inventory above target +22%"
+          },
+          {
+            "time": "08:30",
+            "type": "PLAN",
+            "severity": "LOW",
+            "message": "Release freeze activated for 7 days"
+          }
+        ]
+      },
+      "riskRadar": {
+        "lateRisks": [],
+        "excessRisks": [
+          {
+            "id": "RISK-B1-001",
+            "object": "SKU-B1 / VN-02 / 2026-W05",
+            "score": 72,
+            "confidence": 81,
+            "drivers": [
+              "Demand forecast down-rev -15%",
+              "Channel sell-through below baseline",
+              "FG inventory above target"
+            ],
+            "impact": "Overbuild liability if current pace continues",
+            "recommendedAction": "Freeze releases + reduce W05 build -10%",
+            "route": "HUMAN_REVIEW"
+          }
+        ]
       }
     },
     "C": {
       "deliveryCommit": {
         "week": "2026-W05",
         "product": "Product C",
-        "factorySite": "Total",
+        "factorySite": "WF",
         "commitHealth": "YELLOW",
-        "commitHealthLabel": "Regional imbalance requires routing",
+        "commitHealthLabel": "Capacity constraint recoverable with overtime",
         "atRiskUnits": 5200,
         "confidence": 72,
         "recoveryActions": [
           {
             "priority": 1,
-            "action": "Re-route allocation from excess region to shortage region",
-            "owner": "Planning + Logistics",
-            "sla": "48h",
+            "action": "Lock line changeover plan",
+            "owner": "Factory Ops",
+            "sla": "24h",
             "status": "IN_PROGRESS"
+          },
+          {
+            "priority": 2,
+            "action": "Targeted overtime for critical SKUs",
+            "owner": "Factory Ops",
+            "sla": "48h",
+            "status": "PENDING"
           }
         ],
-        "nextCheckpoint": "Re-check allocation after transit confirmation"
+        "nextCheckpoint": "Re-check capacity after changeover plan locked"
+      },
+      "topDeliveryRisks": [
+        {
+          "id": "RISK-C1-001",
+          "sku": "SKU-C1",
+          "factory": "WF",
+          "week": "2026-W05",
+          "type": "LATE",
+          "score": 68,
+          "confidence": 72,
+          "driver": "Line changeover window limited + capacity constraint",
+          "impact": "Potential 2-day delay if changeover not optimized",
+          "action": "Lock changeover plan + targeted overtime",
+          "route": "AUTO_ACTION",
+          "routeReason": "Within policy",
+          "owner": "Factory Ops",
+          "sla": "24h"
+        },
+        {
+          "id": "RISK-C1-002",
+          "sku": "SKU-C2",
+          "factory": "SZ-01",
+          "week": "2026-W05",
+          "type": "LATE",
+          "score": 58,
+          "confidence": 65,
+          "driver": "Shared equipment constraint across product lines",
+          "impact": "Minor delay risk, monitoring",
+          "action": "Re-sequence build to optimize equipment usage",
+          "route": "MONITOR",
+          "routeReason": "Low risk score",
+          "owner": "Factory Ops",
+          "sla": "72h"
+        }
+      ],
+      "todaysLoop": {
+        "caseId": "SKU-C1 / WF / 2026-W05",
+        "deliveryImpact": "Potential 2-day delay if changeover not optimized",
+        "lateScore": 68,
+        "excessScore": 25,
+        "confidence": 72,
+        "signals": [
+          "Line changeover window limited (3-day constraint)",
+          "Capacity utilization at 95% (high)",
+          "SKU mix complexity increasing"
+        ],
+        "factoryReality": [
+          "Line 2 at 95% capacity utilization",
+          "Changeover window: 72 hours (tight)",
+          "Staffing levels nominal"
+        ],
+        "decision": "Auto-action with monitoring",
+        "actions": [
+          "Lock changeover plan (Factory Ops, 24h)",
+          "Targeted overtime for critical SKUs (Factory Ops, 48h)",
+          "Re-sequence build to optimize equipment (Factory Ops, 72h)"
+        ],
+        "evidencePack": "Ready — open briefing",
+        "feedback": "Pending (next cut: 24h)"
+      },
+      "pacingGuardrail": {
+        "message": "Capacity constraint detected. No additional pull until changeover optimized.",
+        "rule": "Hold incremental releases until Line 2 capacity confirmed GREEN.",
+        "status": "ACTIVE"
+      },
+      "kpis": {
+        "executionHealth": 70,
+        "executionHealthStatus": "YELLOW",
+        "executionHealthDrivers": "Capacity constraint; changeover complexity",
+        "inventoryPressure": 58,
+        "inventoryPressureStatus": "GREEN",
+        "inventoryPressureDrivers": "Inventory levels normal"
+      },
+      "signals": {
+        "dataQuality": [
+          { "source": "Planning", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Factory MES", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Materials / Supplier ETA", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Inventory (FG/WIP/Transit)", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Demand / Sell-through", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" }
+        ],
+        "eventStream": [
+          {
+            "time": "09:30",
+            "type": "CAPACITY",
+            "severity": "MED",
+            "message": "Line 2 capacity utilization at 95% (high)"
+          },
+          {
+            "time": "09:15",
+            "type": "PLAN",
+            "severity": "MED",
+            "message": "Changeover window constrained to 72 hours"
+          },
+          {
+            "time": "08:50",
+            "type": "QUALITY",
+            "severity": "LOW",
+            "message": "Yield stable at 96.5%"
+          },
+          {
+            "time": "08:20",
+            "type": "PLAN",
+            "severity": "LOW",
+            "message": "SKU mix complexity increasing"
+          }
+        ]
+      },
+      "riskRadar": {
+        "lateRisks": [
+          {
+            "id": "RISK-C1-001",
+            "object": "SKU-C1 / WF / 2026-W05",
+            "score": 68,
+            "confidence": 72,
+            "drivers": [
+              "Line changeover window limited",
+              "Capacity constraint",
+              "SKU mix complexity"
+            ],
+            "impact": "Potential 2-day delay",
+            "recommendedAction": "Lock changeover plan + targeted overtime",
+            "route": "AUTO_ACTION"
+          }
+        ],
+        "excessRisks": []
+      }
+    },
+    "D": {
+      "deliveryCommit": {
+        "week": "2026-W04",
+        "product": "Product D",
+        "factorySite": "SZ",
+        "commitHealth": "YELLOW",
+        "commitHealthLabel": "Labor shortage impacting output",
+        "atRiskUnits": 6800,
+        "confidence": 68,
+        "recoveryActions": [
+          {
+            "priority": 1,
+            "action": "Expedite temporary labor staffing",
+            "owner": "HR + Factory Ops",
+            "sla": "48h",
+            "status": "IN_PROGRESS"
+          },
+          {
+            "priority": 2,
+            "action": "Re-balance workload across shifts",
+            "owner": "Factory Ops",
+            "sla": "24h",
+            "status": "IN_PROGRESS"
+          },
+          {
+            "priority": 3,
+            "action": "Evaluate alternative site capacity",
+            "owner": "Planning",
+            "sla": "72h",
+            "status": "PENDING"
+          }
+        ],
+        "nextCheckpoint": "Daily staffing update + capacity re-assessment"
+      },
+      "topDeliveryRisks": [
+        {
+          "id": "RISK-D1-001",
+          "sku": "SKU-D1",
+          "factory": "SZ-01",
+          "week": "2026-W04",
+          "type": "LATE",
+          "score": 70,
+          "confidence": 68,
+          "driver": "Labor shortage -18% vs plan + absenteeism spike",
+          "impact": "Output reduction risk if staffing not recovered",
+          "action": "Expedite temp labor + re-balance shifts + overtime",
+          "route": "HUMAN_REVIEW",
+          "routeReason": "Cross-functional coordination required",
+          "owner": "HR + Factory Ops",
+          "sla": "48h"
+        },
+        {
+          "id": "RISK-D1-002",
+          "sku": "SKU-D2",
+          "factory": "SZ-01",
+          "week": "2026-W04",
+          "type": "LATE",
+          "score": 62,
+          "confidence": 65,
+          "driver": "Training ramp-up slower than expected for new hires",
+          "impact": "Productivity below target",
+          "action": "Accelerate training program + pair with experienced workers",
+          "route": "AUTO_ACTION",
+          "routeReason": "HR process improvement",
+          "owner": "HR + Training",
+          "sla": "72h"
+        }
+      ],
+      "todaysLoop": {
+        "caseId": "SKU-D1 / SZ-01 / 2026-W04",
+        "deliveryImpact": "Output reduction if staffing not recovered",
+        "lateScore": 70,
+        "excessScore": 20,
+        "confidence": 68,
+        "signals": [
+          "Labor shortage -18% vs plan",
+          "Absenteeism spike (illness + attrition)",
+          "New hire training slower than expected"
+        ],
+        "factoryReality": [
+          "Current headcount: 820 (target: 1000)",
+          "Absenteeism rate: 12% (vs 5% baseline)",
+          "New hire productivity: 65% (vs 85% target)"
+        ],
+        "decision": "Human review + coordinated recovery",
+        "actions": [
+          "Expedite temp labor (HR, 48h)",
+          "Re-balance shifts (Factory Ops, 24h)",
+          "Accelerate training (HR, 72h)"
+        ],
+        "evidencePack": "Ready — open briefing",
+        "feedback": "Pending (next cut: 24h)"
+      },
+      "pacingGuardrail": {
+        "message": "Labor constraint detected. Monitor capacity before committing incremental volume.",
+        "rule": "Hold new releases until headcount recovers to 90%+ target.",
+        "status": "ACTIVE"
+      },
+      "kpis": {
+        "executionHealth": 58,
+        "executionHealthStatus": "YELLOW",
+        "executionHealthDrivers": "Labor shortage; training ramp slower than expected",
+        "inventoryPressure": 65,
+        "inventoryPressureStatus": "YELLOW",
+        "inventoryPressureDrivers": "WIP building due to slower output"
+      },
+      "signals": {
+        "dataQuality": [
+          { "source": "Planning", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Factory MES", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Materials / Supplier ETA", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Inventory (FG/WIP/Transit)", "freshness": "YELLOW", "coverage": "GREEN", "trust": "GREEN" },
+          { "source": "Demand / Sell-through", "freshness": "GREEN", "coverage": "GREEN", "trust": "GREEN" }
+        ],
+        "eventStream": [
+          {
+            "time": "10:05",
+            "type": "LABOR",
+            "severity": "HIGH",
+            "message": "Labor shortage -18% vs plan (illness + attrition)"
+          },
+          {
+            "time": "09:40",
+            "type": "LABOR",
+            "severity": "MED",
+            "message": "Absenteeism spike: 12% (vs 5% baseline)"
+          },
+          {
+            "time": "09:10",
+            "type": "LABOR",
+            "severity": "MED",
+            "message": "New hire productivity below target (65% vs 85%)"
+          },
+          {
+            "time": "08:35",
+            "type": "INVENTORY",
+            "severity": "LOW",
+            "message": "WIP building due to slower output"
+          }
+        ]
+      },
+      "riskRadar": {
+        "lateRisks": [
+          {
+            "id": "RISK-D1-001",
+            "object": "SKU-D1 / SZ-01 / 2026-W04",
+            "score": 70,
+            "confidence": 68,
+            "drivers": [
+              "Labor shortage -18% vs plan",
+              "Absenteeism spike",
+              "Training ramp slower than expected"
+            ],
+            "impact": "6.8k units at risk if staffing not recovered",
+            "recommendedAction": "Expedite temp labor + re-balance shifts + overtime",
+            "route": "HUMAN_REVIEW"
+          }
+        ],
+        "excessRisks": []
       }
     }
   }
