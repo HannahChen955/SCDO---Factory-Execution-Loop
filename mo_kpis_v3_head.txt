@@ -1,0 +1,125 @@
+/**
+ * Render MO KPIs page V3
+ * High-end Executive KPI Dashboard
+ */
+function renderMOKpis() {
+  const content = $("content");
+
+  // Mock data with enhanced metrics
+  const kpiData = {
+    production: {
+      current: 45800,
+      target: 50000,
+      weeklyTrend: [42000, 43500, 44200, 45800],
+      variance: -8.4,
+      delta: -4200,
+      wow: 2.4,
+      mom: 8.1,
+      trend: 'up',
+      driver: "Yield –3.3pp (WF)",
+      owner: "Operations",
+      wf: { current: 28500, target: 32000, yield: 91.2 },
+      vn02: { current: 17300, target: 18000, yield: 95.5 }
+    },
+    shipment: {
+      current: 44200,
+      target: 48000,
+      weeklyTrend: [41000, 42800, 43500, 44200],
+      variance: -7.9,
+      delta: -3800,
+      wow: 1.6,
+      mom: 7.8,
+      trend: 'stable',
+      driver: "Backlog +12%",
+      owner: "Logistics",
+      wf: { current: 27200, shipped: 26800 },
+      vn02: { current: 17000, shipped: 16900 }
+    },
+    labor: {
+      current: 2450,
+      target: 2600,
+      weeklyTrend: [2380, 2420, 2440, 2450],
+      variance: -5.8,
+      delta: -150,
+      wow: 0.4,
+      mom: 2.9,
+      trend: 'up',
+      fulfillmentRate: 94.2,
+      driver: "Fill 94.2%, OT +18%",
+      owner: "HR / Operations",
+      wf: { current: 1620, target: 1700, fill: 95.3 },
+      vn02: { current: 830, target: 900, fill: 92.2 }
+    },
+    fvCost: {
+      current: 285.5,
+      target: 275.0,
+      weeklyTrend: [288.2, 286.8, 286.0, 285.5],
+      variance: 3.8,
+      delta: 10.5,
+      wow: -0.2,
+      mom: -0.9,
+      trend: 'up',
+      driver: "Freight +$8, Rework +$4",
+      owner: "Finance",
+      breakdown: { material: 195.2, labor: 48.5, overhead: 32.8, rework: 9.0 }
+    },
+    campus: {
+      readiness: 96.5,
+      target: 98.0,
+      weeklyTrend: [95.8, 96.0, 96.2, 96.5],
+      variance: -1.5,
+      delta: -1.5,
+      wow: 0.3,
+      mom: 0.7,
+      trend: 'stable',
+      issues: 3,
+      driver: "3 issues: Utility (critical)",
+      owner: "Facilities",
+      wf: { readiness: 97.2, issues: 1 },
+      vn02: { readiness: 95.8, issues: 2 }
+    }
+  };
+
+  // Calculate Overall Health Score
+  const healthScore = Math.round(
+    (kpiData.production.current / kpiData.production.target * 100 * 0.25) +
+    (kpiData.shipment.current / kpiData.shipment.target * 100 * 0.25) +
+    (kpiData.labor.fulfillmentRate * 0.20) +
+    ((100 - Math.abs(kpiData.fvCost.variance)) * 0.15) +
+    (kpiData.campus.readiness * 0.15)
+  );
+
+  const healthStatus = healthScore >= 80 ? 'Good' : healthScore >= 60 ? 'Fair' : 'Poor';
+  const healthColor = healthScore >= 80 ? 'text-green-600' : healthScore >= 60 ? 'text-amber-600' : 'text-red-600';
+
+  const formatNumber = (num) => num.toLocaleString('en-US');
+  const formatPercent = (num) => (num >= 0 ? '+' : '') + num.toFixed(1) + '%';
+  const formatDelta = (num) => (num >= 0 ? '+' : '') + formatNumber(num);
+
+  const getTrendIcon = (trend) => {
+    if (trend === 'up') return '↗️';
+    if (trend === 'down') return '↘️';
+    return '→';
+  };
+
+  const getTrendText = (trend) => {
+    if (trend === 'up') return 'Improving';
+    if (trend === 'down') return 'Declining';
+    return 'Stable';
+  };
+
+  const generateSparkline = (data, color = '#3b82f6') => {
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max - min || 1;
+    const width = 60;
+    const height = 20;
+
+    const points = data.map((val, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((val - min) / range) * height;
+      return x + ',' + y;
+    }).join(' ');
+
+    return '<svg width="' + width + '" height="' + height + '" class="inline-block"><polyline points="' + points + '" fill="none" stroke="' + color + '" stroke-width="1.5"/></svg>';
+  };

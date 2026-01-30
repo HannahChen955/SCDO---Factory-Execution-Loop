@@ -191,15 +191,30 @@ function validateForecastData(data) {
  * Update Forecast Summary Display
  */
 function updateForecastSummary(versionData) {
+  // Validate input
+  if (!versionData || !versionData.data) {
+    console.warn('[ForecastCTB] updateForecastSummary called with invalid data:', versionData);
+    return;
+  }
+
+  // Check if DOM elements exist
+  const versionEl = document.getElementById('forecastVersion');
+  const dateEl = document.getElementById('forecastReleaseDate');
+  const tbody = document.getElementById('forecastSummaryTable');
+
+  if (!versionEl || !dateEl || !tbody) {
+    console.warn('[ForecastCTB] Required DOM elements not found, skipping update');
+    return;
+  }
+
   // Update version info
-  document.getElementById('forecastVersion').textContent = versionData.version;
-  document.getElementById('forecastReleaseDate').textContent = versionData.releaseDate;
+  versionEl.textContent = versionData.version;
+  dateEl.textContent = versionData.releaseDate;
 
   // Get recent 4 weeks
   const recentWeeks = versionData.data.slice(0, 4);
 
   // Update table
-  const tbody = document.getElementById('forecastSummaryTable');
   tbody.innerHTML = recentWeeks.map(row => `
     <tr class="border-t hover:bg-purple-50">
       <td class="px-3 py-2">${row.week_id}</td>
@@ -766,9 +781,25 @@ function validateCTBData(data) {
  * Update CTB Summary Display
  */
 function updateCTBSummary(versionData) {
+  // Validate input
+  if (!versionData || !versionData.data) {
+    console.warn('[ForecastCTB] updateCTBSummary called with invalid data:', versionData);
+    return;
+  }
+
+  // Check if DOM elements exist
+  const versionEl = document.getElementById('ctbVersion');
+  const dateEl = document.getElementById('ctbUpdateDate');
+  const container = document.getElementById('ctbSummaryBySite');
+
+  if (!versionEl || !dateEl || !container) {
+    console.warn('[ForecastCTB] Required DOM elements not found, skipping update');
+    return;
+  }
+
   // Update version info
-  document.getElementById('ctbVersion').textContent = versionData.version;
-  document.getElementById('ctbUpdateDate').textContent = versionData.updateDate;
+  versionEl.textContent = versionData.version;
+  dateEl.textContent = versionData.updateDate;
 
   // Group by site
   const bySite = {};
@@ -780,7 +811,6 @@ function updateCTBSummary(versionData) {
   });
 
   // Create summary by site
-  const container = document.getElementById('ctbSummaryBySite');
   container.innerHTML = Object.entries(bySite).map(([site, siteData]) => {
     const recentWeeks = siteData.slice(0, 4);
 

@@ -5,7 +5,7 @@ let STATE = {
   data: null,
   scenarioId: "A",
   filters: { product: null, factorySite: null, week: null },
-  activeView: "overview", // overview | portfolio (Decision Center) | home | signals | radar | actions | reports | dataFoundation
+  activeView: "overview", // overview | portfolio | home | signals | radar | actions | reports | dataFoundation
   currentProgram: null, // Current program context { product, factorySite, week }
   selectedRiskId: null,
   prdMode: false,
@@ -18,23 +18,6 @@ let STATE = {
 };
 
 const $ = (id) => document.getElementById(id);
-
-// ========================================
-// Navigation Helper
-// ========================================
-function navigateTo(view, updateUrl = true) {
-  STATE.activeView = view;
-  if (updateUrl && window.Router) {
-    window.Router.navigate(
-      view,
-      STATE.filters.product,
-      STATE.filters.factorySite,
-      STATE.filters.week
-    );
-  } else {
-    render();
-  }
-}
 
 // Route icons
 const ROUTE_ICONS = {
@@ -97,28 +80,6 @@ function populateSelect(selectEl, options, value) {
   console.log(`[populateSelect] Populated ${selectEl.id} with ${options.length} options, selected: ${value}`);
 }
 
-function populateSelectWithOptions(selectEl, options, value) {
-  if (!selectEl) {
-    console.error('[populateSelectWithOptions] selectEl is null');
-    return;
-  }
-  if (!options || !Array.isArray(options)) {
-    console.error('[populateSelectWithOptions] options is not an array:', options);
-    return;
-  }
-
-  selectEl.innerHTML = "";
-  options.forEach(opt => {
-    const o = document.createElement("option");
-    o.value = opt.value;
-    o.textContent = opt.label;
-    if (opt.value === value) o.selected = true;
-    selectEl.appendChild(o);
-  });
-
-  console.log(`[populateSelectWithOptions] Populated ${selectEl.id} with ${options.length} options, selected: ${value}`);
-}
-
 function initControls() {
   console.log('[initControls] Starting initialization');
   console.log('[initControls] STATE.data:', STATE.data);
@@ -143,82 +104,25 @@ function initControls() {
   const { product, factorySite, week } = scenario.defaultFilters;
   console.log('[initControls] Default filters:', { product, factorySite, week });
 
-  // Initialize filters from URL if available, otherwise use defaults
-  if (!STATE.filters.product) {
-    STATE.filters = { product, factorySite, week };
-  }
+  STATE.filters = { product, factorySite, week };
 
-  // For product filter, use simple values: A, B, C, D
-  const productValues = ['A', 'B', 'C', 'D'];
-  const productOptions = productValues.map(p => ({ value: p, label: `Product ${p}` }));
+  populateSelect($("productFilter"), products, product);
+  populateSelect($("factorySiteFilter"), factorySites, factorySite);
+  populateSelect($("weekFilter"), weeks, week);
 
-  // Populate selects
-  populateSelectWithOptions($("productFilter"), productOptions, STATE.filters.product);
-  populateSelect($("factorySiteFilter"), factorySites, STATE.filters.factorySite);
-  populateSelect($("weekFilter"), weeks, STATE.filters.week);
-
-  // Add debug logging for product filter
-  const productFilterEl = $("productFilter");
-  console.log('[initControls] Product filter element:', productFilterEl);
-  console.log('[initControls] Product filter exists?', !!productFilterEl);
-  console.log('[initControls] Product filter options count:', productFilterEl?.options?.length);
-  console.log('[initControls] Product filter current value:', productFilterEl?.value);
-
-  // Add click listener to verify element is interactive
-  productFilterEl.addEventListener("click", () => {
-    console.log('[Product Filter] ===== CLICK EVENT FIRED =====');
-    console.log('[Product Filter] Current value on click:', productFilterEl.value);
-  });
-
-  productFilterEl.addEventListener("change", (e) => {
-    console.log('[Product Filter] ===== CHANGE EVENT FIRED =====');
-    console.log('[Product Filter] Changed to:', e.target.value);
-    console.log('[Product Filter] e.target:', e.target);
-    console.log('[Product Filter] e.target.selectedIndex:', e.target.selectedIndex);
+  $("productFilter").addEventListener("change", (e) => {
     STATE.filters.product = e.target.value;
-    console.log('[Product Filter] STATE.filters.product is now:', STATE.filters.product);
-    // Update URL with new product
-    if (window.Router) {
-      console.log('[Product Filter] Navigating to:', STATE.activeView, STATE.filters.product);
-      window.Router.navigate(
-        STATE.activeView,
-        STATE.filters.product,
-        STATE.filters.factorySite,
-        STATE.filters.week
-      );
-    } else {
-      render();
-    }
+    render();
   });
 
   $("factorySiteFilter").addEventListener("change", (e) => {
     STATE.filters.factorySite = e.target.value;
-    // Update URL with new site
-    if (window.Router) {
-      window.Router.navigate(
-        STATE.activeView,
-        STATE.filters.product,
-        STATE.filters.factorySite,
-        STATE.filters.week
-      );
-    } else {
-      render();
-    }
+    render();
   });
 
   $("weekFilter").addEventListener("change", (e) => {
     STATE.filters.week = e.target.value;
-    // Update URL with new week
-    if (window.Router) {
-      window.Router.navigate(
-        STATE.activeView,
-        STATE.filters.product,
-        STATE.filters.factorySite,
-        STATE.filters.week
-      );
-    } else {
-      render();
-    }
+    render();
   });
 
   // Navigation
@@ -226,7 +130,8 @@ function initControls() {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       const view = btn.getAttribute("data-view");
-      navigateTo(view);
+      STATE.activeView = view;
+      render();
     });
   });
 }
@@ -239,15 +144,11 @@ function applyFilters(filters) {
 }
 
 function getScenario() {
-  // Use product from filters if available, otherwise use scenarioId
-  const productId = STATE.filters.product || STATE.scenarioId;
-  return STATE.data.scenarios.find(s => s.id === productId);
+  return STATE.data.scenarios.find(s => s.id === STATE.scenarioId);
 }
 
 function getDemo() {
-  // Use product from filters if available, otherwise use scenarioId
-  const productId = STATE.filters.product || STATE.scenarioId;
-  return STATE.data.demoData[productId];
+  return STATE.data.demoData[STATE.scenarioId];
 }
 
 function enterProgram(productName, factorySite) {
@@ -343,7 +244,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
-  // Decision Center and Data Foundation are global pages - no sidebar filters
+  // Portfolio and Data Foundation are global pages - no sidebar filters
   const isProgramWorkspace = ["home", "delivery", "production-plan", "command-center", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
@@ -381,7 +282,7 @@ function render() {
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
   if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
-    // Hide filters on global pages (Overview, Decision Center, MO KPIs, Data Foundation, White Paper)
+    // Hide filters on global pages (Overview, Portfolio, MO KPIs, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -471,7 +372,7 @@ function updateBreadcrumb() {
 
   breadcrumb.innerHTML = `
     <div class="flex items-center gap-1 flex-wrap">
-      <a href="#" onclick="navigateTo('portfolio'); return false;" class="hover:text-blue-600">Decision Center</a>
+      <a href="#" onclick="STATE.activeView = 'portfolio'; render(); return false;" class="hover:text-blue-600">Portfolio</a>
       <span>›</span>
       <span class="font-semibold">${product} / ${factorySite}</span>
       <span>›</span>
@@ -811,7 +712,7 @@ function renderOverview() {
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Decision Center & Program Workspace UI</span></li>
+                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Portfolio & Program Workspace UI</span></li>
                   <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Delivery Command Center module</span></li>
                   <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Manufacturing & BTO/CTO Lead-time tracking</span></li>
                   <li class="flex items-start gap-2"><span class="text-yellow-600">⏳</span><span>Basic data ingestion pipeline</span></li>
@@ -960,7 +861,7 @@ function renderOverview() {
               <div class="font-semibold mb-2">Data & Interactions</div>
               <ul class="space-y-1">
                 <li>• All data is mocked for demonstration purposes</li>
-                <li>• Click <strong>Decision Center</strong> to explore program-level details</li>
+                <li>• Click <strong>Portfolio</strong> to explore program-level details</li>
                 <li>• Try the chatbot and data update features</li>
               </ul>
             </div>
@@ -979,10 +880,10 @@ function renderOverview() {
 }
 
 // ========================================
-// DECISION CENTER - All Programs
+// PORTFOLIO - All Programs
 // ========================================
 // ========================================
-// Decision Center Helper Functions
+// Portfolio Helper Functions
 // ========================================
 
 function calculateDriverBreakdown(programs) {
@@ -1057,44 +958,44 @@ function generateTopFocusCards(programs) {
 
 // Placeholder functions for card click handlers
 function filterPrograms(filter) {
-  console.log(`[Decision Center] Filter programs by: ${filter}`);
+  console.log(`[Portfolio] Filter programs by: ${filter}`);
   // TODO: Implement filtering logic
 }
 
 function openDecisionInbox() {
-  console.log('[Decision Center] Opening Decision Inbox');
+  console.log('[Portfolio] Opening Decision Inbox');
   // TODO: Implement decision inbox
 }
 
 function openAtRiskBreakdown() {
-  console.log('[Decision Center] Opening At-risk breakdown');
+  console.log('[Portfolio] Opening At-risk breakdown');
   // TODO: Implement at-risk breakdown
 }
 
 function openInventoryDrilldown() {
-  console.log('[Decision Center] Opening Inventory drilldown');
+  console.log('[Portfolio] Opening Inventory drilldown');
   // TODO: Implement inventory drilldown
 }
 
 function assignOrEscalate(program) {
-  console.log(`[Decision Center] Assign/Escalate for program: ${program}`);
+  console.log(`[Portfolio] Assign/Escalate for program: ${program}`);
   // TODO: Implement assign/escalate flow
 }
 
 function openException(program, issue) {
-  console.log(`[Decision Center] Opening exception: ${program} - ${issue}`);
+  console.log(`[Portfolio] Opening exception: ${program} - ${issue}`);
   // TODO: Implement exception detail view
 }
 
 // ========================================
-// Decision Center Rendering
+// Portfolio Rendering
 // ========================================
 
 function renderPortfolio() {
   const portfolio = STATE.data.portfolio;
 
   if (!portfolio) {
-    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Decision Center data not available</div>`;
+    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Portfolio data not available</div>`;
     return;
   }
 
@@ -1108,7 +1009,7 @@ function renderPortfolio() {
     <div class="bg-white border-2 border-slate-300 rounded-xl p-6 mb-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex-1">
-          <div class="text-xl font-bold mb-2">Decision Center — Weekly Decision Triage</div>
+          <div class="text-xl font-bold mb-2">Portfolio — Weekly Decision Triage</div>
           <div class="text-sm text-slate-700 mb-3">Highlights where attention changes outcomes (not a performance ranking).</div>
           <div class="grid grid-cols-3 gap-4 text-xs text-slate-600">
             <div><span class="font-semibold text-slate-900">1.</span> What needs a decision this week / within 48h</div>
@@ -2191,53 +2092,7 @@ window.closeReportModal = closeReportModal;
   await loadData();
   setMeta();
   initControls();
-
-  // Initialize router
-  if (window.Router) {
-    window.Router.init((route) => {
-      console.log('[App] Route changed:', route);
-      console.log('[App] Before update - STATE.filters.product:', STATE.filters.product);
-
-      // Update STATE from route
-      STATE.activeView = route.view;
-
-      // Update filters if provided in URL
-      if (route.product) {
-        console.log('[App] Updating STATE.filters.product from route:', route.product);
-        STATE.filters.product = route.product;
-      }
-      if (route.site) {
-        STATE.filters.factorySite = route.site;
-      }
-      if (route.week) {
-        STATE.filters.week = route.week;
-      }
-
-      console.log('[App] After update - STATE.filters.product:', STATE.filters.product);
-
-      // Sync filter dropdowns with STATE
-      const productFilter = $("productFilter");
-      const siteFilter = $("factorySiteFilter");
-      const weekFilter = $("weekFilter");
-
-      if (productFilter && STATE.filters.product) {
-        productFilter.value = STATE.filters.product;
-      }
-      if (siteFilter && STATE.filters.factorySite) {
-        siteFilter.value = STATE.filters.factorySite;
-      }
-      if (weekFilter && STATE.filters.week) {
-        weekFilter.value = STATE.filters.week;
-      }
-
-      // Render the view
-      render();
-    });
-  } else {
-    // Fallback if router not loaded
-    console.warn('[App] Router not loaded, using default initialization');
-    render();
-  }
+  render();
 })();
 // Home v3 - Delivery Command Center
 // This is the new renderHome function with v3 architecture
@@ -3350,86 +3205,21 @@ function renderProductionPlan() {
       mode: 'unconstrained',
       planResults: null,
       engine: null,
-      activeTab: 'generate' // 'generate' | 'library' | 'por' | 'history'
+      activeSubpage: 'latest' // 'latest' or 'generate'
     };
   }
 
   const state = window.productionPlanState;
-  const content = $('content');
 
-  // Render tab navigation
-  content.innerHTML = `
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800">Production Plan</h2>
-          <p class="text-sm text-gray-600 mt-1">Generate simulations, manage versions, and promote to POR</p>
-        </div>
-      </div>
-
-      <!-- Tab Navigation -->
-      <div class="border-b border-gray-200 mb-6">
-        <nav class="-mb-px flex space-x-8">
-          <button
-            onclick="switchProductionPlanTab('generate')"
-            class="tab-button ${state.activeTab === 'generate' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            ⭐ Generate New Simulation
-          </button>
-          <button
-            onclick="switchProductionPlanTab('library')"
-            class="tab-button ${state.activeTab === 'library' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            📚 Simulation Library
-          </button>
-          <button
-            onclick="switchProductionPlanTab('por')"
-            class="tab-button ${state.activeTab === 'por' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            ✅ POR (Plan of Record)
-          </button>
-          <button
-            onclick="switchProductionPlanTab('history')"
-            class="tab-button ${state.activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            📜 POR Version History
-          </button>
-        </nav>
-      </div>
-
-      <!-- Tab Content -->
-      <div id="tabContent"></div>
-
-      <!-- Floating Ask AI Button -->
-      <button
-        onclick="openProductionPlanAIChat()"
-        class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50 no-print"
-        title="Ask AI about Production Planning">
-        <span class="text-2xl">💬</span>
-      </button>
-    </div>
-  `;
-
-  // Render active tab content
-  switch (state.activeTab) {
-    case 'generate':
-      renderProductionPlanGenerate();
-      break;
-    case 'library':
-      renderSimulationLibrary();
-      break;
-    case 'por':
-      renderCurrentPOR();
-      break;
-    case 'history':
-      renderPORHistory();
-      break;
-    default:
-      renderProductionPlanGenerate();
+  // Render based on active subpage
+  if (state.activeSubpage === 'generate') {
+    renderProductionPlanGenerate();
+    return;
   }
-}
 
-// Tab switching function
-window.switchProductionPlanTab = function(tabName) {
-  window.productionPlanState.activeTab = tabName;
-  renderProductionPlan();
-};
+  // Default: render Latest Production Plan
+  renderProductionPlanLatest();
+}
 
 // 2.1 Latest Production Plan (read-only view)
 function renderProductionPlanLatest() {
@@ -3957,30 +3747,6 @@ function renderProductionPlanGenerate() {
 
   const html = `
     <div class="space-y-4">
-      <!-- AI Assistant Tip -->
-      <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-5">
-        <div class="flex items-start gap-3">
-          <span class="text-3xl">💡</span>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-purple-900 mb-2">New to Production Planning?</h3>
-            <p class="text-sm text-purple-700 mb-3">
-              Not sure how to configure your plan? Use our <strong>AI Assistant</strong> to help you get started!
-              Just describe what you want in plain language.
-            </p>
-            <div class="flex gap-2">
-              <button
-                onclick="openProductionPlanAIChat()"
-                class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
-                💬 Open AI Assistant
-              </button>
-              <div class="text-xs text-purple-600 self-center italic">
-                Try: "Create a 90-day plan for SZ and WH sites with Sunday OT"
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Subpage Navigation -->
       <div class="bg-white border rounded-xl p-4">
         <div class="flex gap-2">
@@ -4236,46 +4002,6 @@ function renderProductionPlanGenerate() {
             </div>
           </div>
 
-          <!-- Configuration Summary (shown after loading demo data) -->
-          <div id="configSummaryCard" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-5 mt-6">
-            <div class="flex items-start justify-between">
-              <div class="flex items-start gap-4 flex-1">
-                <span id="configSummaryIcon" class="text-4xl">🚀</span>
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <span class="text-lg font-bold text-slate-900" id="configSummaryName">Q4 Ramp-Up (Oct-Dec)</span>
-                    <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">DEMO LOADED</span>
-                  </div>
-                  <div class="text-sm text-slate-700 mb-3" id="configSummaryDescription">National Day holiday, new product ramp, year-end sprint</div>
-
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                    <div class="flex items-center gap-2">
-                      <span class="font-semibold text-slate-700">📅 Period:</span>
-                      <span class="text-slate-900 font-mono" id="configSummaryPeriod">2026-10-01 ~ 2026-12-27</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-semibold text-slate-700">📊 Forecast:</span>
-                      <span class="text-slate-900" id="configSummaryForecast">13 weeks</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-semibold text-slate-700">🏭 Sites:</span>
-                      <span class="text-slate-900" id="configSummarySites">WF, VN02</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-semibold text-slate-700">📦 CTB:</span>
-                      <span class="text-slate-900" id="configSummaryCTB">Variable constraints</span>
-                    </div>
-                  </div>
-
-                  <div class="mt-3 flex flex-wrap gap-1" id="configSummaryHighlights">
-                    <!-- Highlights will be populated here -->
-                  </div>
-                </div>
-              </div>
-              <button onclick="clearConfigSummary()" class="text-slate-400 hover:text-slate-600 text-xl leading-none ml-4" title="Clear demo selection">✕</button>
-            </div>
-          </div>
-
           <!-- Generate Button -->
           <div class="flex items-center justify-between pt-4 border-t">
             <button onclick="loadDemoDataForProductionPlan()"
@@ -4289,7 +4015,7 @@ function renderProductionPlanGenerate() {
               </button>
               <button onclick="generatePlanFromConfig()"
                       class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-                🚀 Generate New Simulation
+                🚀 Generate New Production Plan
               </button>
             </div>
           </div>
@@ -4327,1032 +4053,6 @@ function switchProductionPlanSubpage(subpage) {
   window.productionPlanState.activeSubpage = subpage;
   renderProductionPlan();
 }
-
-// ==================== NEW: Simulation & POR Management Functions ====================
-
-/**
- * Render Simulation Library Tab
- */
-function renderSimulationLibrary() {
-  const tabContent = document.getElementById('tabContent');
-  if (!tabContent) return;
-
-  const simulations = SimulationManager.getSimulations();
-
-  // Sort by creation date (most recent first)
-  simulations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  const formatNumber = (num) => num.toLocaleString('en-US');
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  tabContent.innerHTML = `
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">Simulation Library</h3>
-        <p class="text-sm text-gray-600 mt-1">Manage and compare production plan simulations</p>
-      </div>
-      <button
-        onclick="switchProductionPlanTab('generate')"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-        + Generate New Simulation
-      </button>
-    </div>
-
-    ${simulations.length === 0 ? `
-      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-        <div class="text-gray-400 text-5xl mb-4">📊</div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">No Simulations Yet</h3>
-        <p class="text-gray-600 mb-6">Create your first production plan simulation to get started</p>
-        <button
-          onclick="switchProductionPlanTab('generate')"
-          class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-          Generate New Simulation
-        </button>
-      </div>
-    ` : `
-      <!-- Simulation Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        ${simulations.map(sim => {
-          const summary = sim.results.summary;
-          const weeklyMetrics = sim.results.weeklyMetrics;
-          const weeksWithGap = weeklyMetrics.filter(w => w.gap < 0);
-
-          return `
-            <div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition">
-              <!-- Header -->
-              <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h4 class="font-semibold text-gray-800 mb-1">${sim.name}</h4>
-                    ${sim.description ? `<p class="text-xs text-gray-600">${sim.description}</p>` : ''}
-                  </div>
-                  <span class="text-2xl">📊</span>
-                </div>
-              </div>
-
-              <!-- Config Info -->
-              <div class="p-4 space-y-2 text-sm border-b border-gray-100">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Mode:</span>
-                  <span class="font-medium text-gray-800">${sim.config.mode}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Period:</span>
-                  <span class="font-medium text-gray-800">${formatDate(sim.config.dateRange.start)} - ${formatDate(sim.config.dateRange.end)}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Created:</span>
-                  <span class="font-medium text-gray-800">${formatDate(sim.createdAt)}</span>
-                </div>
-              </div>
-
-              <!-- Summary -->
-              <div class="p-4 space-y-2">
-                <div class="text-xs font-semibold text-gray-700 mb-2">Gap Summary:</div>
-                ${weeksWithGap.length === 0 ? `
-                  <div class="flex items-center text-sm text-green-600">
-                    <span class="mr-2">✅</span>
-                    <span>All weeks meet demand</span>
-                  </div>
-                ` : `
-                  ${weeksWithGap.slice(0, 3).map(week => `
-                    <div class="flex items-center justify-between text-sm">
-                      <span class="text-gray-600">${week.week_id}:</span>
-                      <span class="text-red-600 font-medium">${week.gap > 0 ? '+' : ''}${formatNumber(week.gap)}</span>
-                    </div>
-                  `).join('')}
-                  ${weeksWithGap.length > 3 ? `<div class="text-xs text-gray-500">+${weeksWithGap.length - 3} more weeks</div>` : ''}
-                `}
-
-                <div class="pt-2 border-t border-gray-100 text-xs text-gray-600">
-                  <div>Output: ${formatNumber(summary.totalOutput)} units</div>
-                  <div>Attainment: ${summary.overallAttainment.toFixed(1)}%</div>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="p-4 border-t border-gray-200 space-y-2">
-                <button
-                  onclick="viewSimulationReport('${sim.id}')"
-                  class="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                  View Report
-                </button>
-                <button
-                  onclick="ExcelExport.exportSimulation(SimulationManager.getSimulationById('${sim.id}'))"
-                  class="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium">
-                  📥 Export to Excel
-                </button>
-                <button
-                  onclick="promptPromoteSimulationToPOR('${sim.id}')"
-                  class="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium">
-                  → Convert to POR
-                </button>
-                <button
-                  onclick="deleteSimulation('${sim.id}')"
-                  class="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
-                  Delete
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `}
-  `;
-}
-
-/**
- * Render Current POR Tab
- */
-function renderCurrentPOR() {
-  const tabContent = document.getElementById('tabContent');
-  if (!tabContent) return;
-
-  const currentPOR = SimulationManager.getCurrentPOR();
-
-  if (!currentPOR) {
-    tabContent.innerHTML = `
-      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-        <div class="text-gray-400 text-5xl mb-4">✅</div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">No POR Yet</h3>
-        <p class="text-gray-600 mb-6">Generate a simulation and promote it to create your first Plan of Record</p>
-        <button
-          onclick="switchProductionPlanTab('generate')"
-          class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-          Generate New Simulation
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  const formatNumber = (num) => num.toLocaleString('en-US');
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
-
-  tabContent.innerHTML = `
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-800">Current POR (Plan of Record)</h3>
-      <p class="text-sm text-gray-600 mt-1">Official production plan version</p>
-    </div>
-
-    <!-- POR Card -->
-    <div class="bg-white border-2 border-blue-200 rounded-xl shadow-md">
-      <!-- Header -->
-      <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="flex items-center space-x-3">
-              <span class="text-3xl">✅</span>
-              <div>
-                <h3 class="text-xl font-bold text-gray-800">POR ${currentPOR.version}</h3>
-                <p class="text-sm text-gray-600">${currentPOR.name}</p>
-              </div>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-xs text-gray-600">Generated</div>
-            <div class="text-sm font-medium text-gray-800">${formatDate(currentPOR.createdAt)}</div>
-          </div>
-        </div>
-        ${currentPOR.promotedFrom ? `
-          <div class="mt-3 text-sm text-gray-600">
-            Promoted from: <span class="font-medium">"${currentPOR.name}" (Simulation)</span>
-          </div>
-        ` : ''}
-      </div>
-
-      <!-- Configuration -->
-      <div class="p-6 border-b border-gray-200">
-        <h4 class="font-semibold text-gray-800 mb-3">Configuration</h4>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          <div>
-            <div class="text-gray-600 mb-1">Mode</div>
-            <div class="font-medium text-gray-800">${currentPOR.config.mode}</div>
-          </div>
-          <div>
-            <div class="text-gray-600 mb-1">Period</div>
-            <div class="font-medium text-gray-800">${currentPOR.config.dateRange.start} to ${currentPOR.config.dateRange.end}</div>
-          </div>
-          <div>
-            <div class="text-gray-600 mb-1">Sites</div>
-            <div class="font-medium text-gray-800">${currentPOR.config.sites.join(', ')}</div>
-          </div>
-          <div>
-            <div class="text-gray-600 mb-1">Ramp Curve</div>
-            <div class="font-medium text-gray-800">${currentPOR.config.rampCurve}</div>
-          </div>
-          <div>
-            <div class="text-gray-600 mb-1">Sunday OT</div>
-            <div class="font-medium text-gray-800">${currentPOR.config.otEnabled ? '✅ Enabled' : '❌ Disabled'}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Key Metrics -->
-      <div class="p-6 border-b border-gray-200">
-        <h4 class="font-semibold text-gray-800 mb-3">Key Metrics</h4>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-blue-50 p-4 rounded-lg">
-            <div class="text-xs text-gray-600 mb-1">Total Output</div>
-            <div class="text-lg font-bold text-blue-600">${formatNumber(currentPOR.results.summary.totalOutput)}</div>
-          </div>
-          <div class="bg-green-50 p-4 rounded-lg">
-            <div class="text-xs text-gray-600 mb-1">Total Shipment</div>
-            <div class="text-lg font-bold text-green-600">${formatNumber(currentPOR.results.summary.totalShipment)}</div>
-          </div>
-          <div class="bg-purple-50 p-4 rounded-lg">
-            <div class="text-xs text-gray-600 mb-1">Attainment</div>
-            <div class="text-lg font-bold text-purple-600">${currentPOR.results.summary.overallAttainment.toFixed(1)}%</div>
-          </div>
-          <div class="bg-${currentPOR.results.summary.weeksWithGap.length > 0 ? 'red' : 'green'}-50 p-4 rounded-lg">
-            <div class="text-xs text-gray-600 mb-1">Weeks with Gap</div>
-            <div class="text-lg font-bold text-${currentPOR.results.summary.weeksWithGap.length > 0 ? 'red' : 'green'}-600">${currentPOR.results.summary.weeksWithGap.length}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Changes from Previous POR -->
-      ${currentPOR.changesFromPrevious ? `
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-semibold text-gray-800">Changes from Previous POR</h4>
-            <button
-              onclick="generatePORChangeSummary('${currentPOR.id}')"
-              class="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition">
-              🤖 AI Summary
-            </button>
-          </div>
-          <div id="porAISummary_${currentPOR.id}" class="mb-4 hidden"></div>
-
-          ${currentPOR.changesFromPrevious.configChanges.length > 0 ? `
-            <div class="mb-4">
-              <div class="text-sm font-medium text-gray-700 mb-2">Configuration Changes:</div>
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-3 py-2 text-left text-gray-600">Parameter</th>
-                      <th class="px-3 py-2 text-left text-gray-600">Previous</th>
-                      <th class="px-3 py-2 text-left text-gray-600">Current</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${currentPOR.changesFromPrevious.configChanges.map(change => `
-                      <tr class="border-t border-gray-200">
-                        <td class="px-3 py-2 font-medium text-gray-800">${change.parameter}</td>
-                        <td class="px-3 py-2 text-gray-600">${change.oldValue}</td>
-                        <td class="px-3 py-2 text-blue-600 font-medium">${change.newValue} 🔄</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ` : ''}
-
-          ${currentPOR.changesFromPrevious.summaryChanges.length > 0 ? `
-            <div>
-              <div class="text-sm font-medium text-gray-700 mb-2">Metrics Changes:</div>
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-3 py-2 text-left text-gray-600">Metric</th>
-                      <th class="px-3 py-2 text-left text-gray-600">Previous</th>
-                      <th class="px-3 py-2 text-left text-gray-600">Current</th>
-                      <th class="px-3 py-2 text-left text-gray-600">Change</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${currentPOR.changesFromPrevious.summaryChanges.map(change => {
-                      const deltaStr = change.deltaPercent !== null
-                        ? `${change.deltaPercent > 0 ? '+' : ''}${change.deltaPercent.toFixed(1)}%`
-                        : `${change.delta > 0 ? '+' : ''}${change.delta}`;
-                      const color = change.delta > 0 ? 'green' : change.delta < 0 ? 'red' : 'gray';
-                      return `
-                        <tr class="border-t border-gray-200">
-                          <td class="px-3 py-2 font-medium text-gray-800">${change.metric}</td>
-                          <td class="px-3 py-2 text-gray-600">${formatNumber(change.oldValue)}</td>
-                          <td class="px-3 py-2 text-gray-800">${formatNumber(change.newValue)}</td>
-                          <td class="px-3 py-2 text-${color}-600 font-medium">${deltaStr} ${change.delta > 0 ? '📈' : change.delta < 0 ? '📉' : ''}</td>
-                        </tr>
-                      `;
-                    }).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
-
-      <!-- Actions -->
-      <div class="p-6 border-t border-gray-200 flex space-x-3">
-        <button
-          onclick="viewSimulationReport('${currentPOR.id}')"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-          📄 View Full Report
-        </button>
-        <button
-          onclick="ExcelExport.exportPOR(SimulationManager.getCurrentPOR())"
-          class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium">
-          📥 Export to Excel
-        </button>
-        <button
-          onclick="switchProductionPlanTab('history')"
-          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
-          📜 View Version History
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-/**
- * Render POR History Tab
- */
-function renderPORHistory() {
-  const tabContent = document.getElementById('tabContent');
-  if (!tabContent) return;
-
-  const history = SimulationManager.getPORHistory();
-  const currentPOR = SimulationManager.getCurrentPOR();
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  tabContent.innerHTML = `
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-800">POR Version History</h3>
-      <p class="text-sm text-gray-600 mt-1">Track changes across Plan of Record versions</p>
-    </div>
-
-    ${!currentPOR && history.length === 0 ? `
-      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-        <div class="text-gray-400 text-5xl mb-4">📜</div>
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">No POR History</h3>
-        <p class="text-gray-600">Version history will appear here after you create PORs</p>
-      </div>
-    ` : `
-      <div class="space-y-4">
-        ${currentPOR ? `
-          <div class="bg-white border-2 border-green-200 rounded-xl shadow-sm p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <span class="text-2xl">✅</span>
-                <div>
-                  <div class="flex items-center space-x-2">
-                    <span class="font-bold text-gray-800">POR ${currentPOR.version}</span>
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Current</span>
-                  </div>
-                  <div class="text-sm text-gray-600 mt-1">${currentPOR.name}</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs text-gray-600">Created</div>
-                <div class="text-sm font-medium text-gray-800">${formatDate(currentPOR.createdAt)}</div>
-              </div>
-            </div>
-            ${currentPOR.notes ? `
-              <div class="mt-3 text-sm text-gray-600">
-                <span class="font-medium">Notes:</span> ${currentPOR.notes}
-              </div>
-            ` : ''}
-            <div class="mt-4 flex space-x-2">
-              <button
-                onclick="viewSimulationReport('${currentPOR.id}')"
-                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                View Report
-              </button>
-            </div>
-          </div>
-        ` : ''}
-
-        ${history.map(por => `
-          <div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <span class="text-2xl">📋</span>
-                <div>
-                  <div class="font-bold text-gray-800">POR ${por.version}</div>
-                  <div class="text-sm text-gray-600 mt-1">${por.name}</div>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-xs text-gray-600">Created</div>
-                <div class="text-sm font-medium text-gray-800">${formatDate(por.createdAt)}</div>
-              </div>
-            </div>
-            ${por.notes ? `
-              <div class="mt-3 text-sm text-gray-600">
-                <span class="font-medium">Notes:</span> ${por.notes}
-              </div>
-            ` : ''}
-            <div class="mt-4 flex space-x-2">
-              <button
-                onclick="viewSimulationReport('${por.id}')"
-                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                View Report
-              </button>
-              ${currentPOR ? `
-                <button
-                  onclick="comparePORVersions('${currentPOR.version}', '${por.version}')"
-                  class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
-                  Compare with Current
-                </button>
-              ` : ''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `}
-  `;
-}
-
-// ==================== Action Handlers ====================
-
-/**
- * View simulation report in new window
- */
-window.viewSimulationReport = function(simId) {
-  // Save to localStorage with temporary ID
-  const planId = 'temp_' + Date.now();
-
-  let planData;
-  if (simId.startsWith('POR_')) {
-    // It's a POR
-    const por = SimulationManager.getCurrentPOR();
-    if (por && por.id === simId) {
-      planData = { results: por.results, config: por.config };
-    } else {
-      const history = SimulationManager.getPORHistory();
-      const historicalPOR = history.find(p => p.id === simId);
-      if (historicalPOR) {
-        planData = { results: historicalPOR.results, config: historicalPOR.config };
-      }
-    }
-  } else {
-    // It's a simulation
-    const sim = SimulationManager.getSimulationById(simId);
-    if (sim) {
-      planData = { results: sim.results, config: sim.config };
-    }
-  }
-
-  if (planData) {
-    localStorage.setItem('productionPlan_' + planId, JSON.stringify(planData));
-
-    const reportWindow = window.open(
-      'production_plan_report.html?planId=' + planId,
-      '_blank',
-      'width=1200,height=800,scrollbars=yes,resizable=yes'
-    );
-
-    if (!reportWindow) {
-      alert('Please allow pop-ups for this site to view the report.');
-    }
-  } else {
-    alert('Simulation or POR not found.');
-  }
-};
-
-/**
- * Delete a simulation
- */
-window.deleteSimulation = function(simId) {
-  if (confirm('Are you sure you want to delete this simulation?')) {
-    const success = SimulationManager.deleteSimulation(simId);
-    if (success) {
-      renderProductionPlan(); // Refresh the view
-      console.log('[UI] Simulation deleted:', simId);
-    } else {
-      alert('Failed to delete simulation.');
-    }
-  }
-};
-
-/**
- * Prompt to promote simulation to POR
- */
-window.promptPromoteSimulationToPOR = function(simId) {
-  const simulation = SimulationManager.getSimulationById(simId);
-  if (!simulation) {
-    alert('Simulation not found.');
-    return;
-  }
-
-  const currentPOR = SimulationManager.getCurrentPOR();
-  const nextVersion = calculateNextVersionHelper(currentPOR, simulation.config);
-
-  // Show modal
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-  modal.innerHTML = `
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
-      <div class="p-6 border-b border-gray-200">
-        <h3 class="text-lg font-bold text-gray-800">Promote to POR</h3>
-      </div>
-      <div class="p-6">
-        <p class="text-sm text-gray-600 mb-4">
-          Are you sure you want to promote:
-        </p>
-        <div class="bg-blue-50 p-3 rounded-lg mb-4">
-          <div class="font-medium text-gray-800">"${simulation.name}"</div>
-        </div>
-        <p class="text-sm text-gray-600 mb-4">
-          to the new Plan of Record?
-        </p>
-        ${currentPOR ? `
-          <p class="text-sm text-gray-600 mb-4">
-            This will replace the current POR:<br>
-            <span class="font-medium">${currentPOR.version} → ${nextVersion}</span>
-          </p>
-        ` : ''}
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional):</label>
-          <textarea
-            id="porNotes"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., Responding to Spring Festival demand peak, enabled Sunday OT"></textarea>
-        </div>
-      </div>
-      <div class="p-6 border-t border-gray-200 flex space-x-3">
-        <button
-          onclick="this.closest('.fixed').remove()"
-          class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-          Cancel
-        </button>
-        <button
-          onclick="confirmPromoteToPOR('${simId}')"
-          class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
-          Confirm Promotion
-        </button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-};
-
-// Helper function for version calculation
-function calculateNextVersionHelper(currentPOR, newConfig) {
-  if (!currentPOR) return 'v1.0';
-
-  const currentVersion = currentPOR.version;
-  const [, major, minor] = currentVersion.match(/v(\d+)\.(\d+)/) || ['', '0', '0'];
-
-  const isMajorChange = (
-    currentPOR.config.mode !== newConfig.mode ||
-    JSON.stringify(currentPOR.config.sites) !== JSON.stringify(newConfig.sites)
-  );
-
-  if (isMajorChange) {
-    return `v${parseInt(major) + 1}.0`;
-  } else {
-    return `v${major}.${parseInt(minor) + 1}`;
-  }
-}
-
-/**
- * Confirm promotion to POR
- */
-window.confirmPromoteToPOR = function(simId) {
-  const notes = document.getElementById('porNotes').value;
-
-  const newPOR = SimulationManager.promoteSimulationToPOR(simId, notes);
-
-  if (newPOR) {
-    // Close modal
-    document.querySelector('.fixed.inset-0').remove();
-
-    // Show success message
-    alert(`✅ Simulation promoted to POR ${newPOR.version} successfully!`);
-
-    // Switch to POR tab
-    window.productionPlanState.activeTab = 'por';
-    renderProductionPlan();
-  } else {
-    alert('Failed to promote simulation to POR.');
-  }
-};
-
-// Note: processNaturalLanguageQuery and applyAIConfig functions removed
-// AI configuration is now handled through the unified openProductionPlanAIChat function
-
-/**
- * Generate AI summary of POR changes
- */
-window.generatePORChangeSummary = async function(porId) {
-  if (typeof window.AI_SYSTEM === 'undefined') {
-    alert('AI System not available.');
-    return;
-  }
-
-  const summaryDiv = document.getElementById(`porAISummary_${porId}`);
-  if (!summaryDiv) return;
-
-  const currentPOR = SimulationManager.getCurrentPOR();
-  if (!currentPOR || !currentPOR.changesFromPrevious) return;
-
-  // Show loading
-  summaryDiv.className = 'mb-4 p-4 bg-purple-50 border border-purple-300 rounded-lg';
-  summaryDiv.innerHTML = `
-    <div class="flex items-center gap-3">
-      <div class="animate-spin w-5 h-5 border-3 border-purple-600 border-t-transparent rounded-full"></div>
-      <span class="text-purple-900 text-sm">AI is analyzing version changes...</span>
-    </div>
-  `;
-  summaryDiv.classList.remove('hidden');
-
-  try {
-    const configChanges = currentPOR.changesFromPrevious.configChanges;
-    const summaryChanges = currentPOR.changesFromPrevious.summaryChanges;
-
-    const prompt = `You are analyzing changes between two versions of a production plan (Plan of Record).
-
-Previous Version: ${currentPOR.previousVersion || 'Unknown'}
-Current Version: ${currentPOR.version}
-
-Configuration Changes:
-${configChanges.map(c => `- ${c.parameter}: ${c.oldValue} → ${c.newValue}`).join('\n')}
-
-Metrics Changes:
-${summaryChanges.map(c => {
-  const delta = c.deltaPercent !== null
-    ? `${c.deltaPercent > 0 ? '+' : ''}${c.deltaPercent.toFixed(1)}%`
-    : `${c.delta > 0 ? '+' : ''}${c.delta}`;
-  return `- ${c.metric}: ${c.oldValue.toLocaleString()} → ${c.newValue.toLocaleString()} (${delta})`;
-}).join('\n')}
-
-Provide a 2-3 sentence executive summary:
-1. What changed and why it matters
-2. Key impact (positive/negative)
-3. Recommendation (approve/review/reject)
-
-Be concise and business-focused.`;
-
-    const response = await window.AI_SYSTEM.chat(prompt);
-
-    summaryDiv.className = 'mb-4 p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg';
-    summaryDiv.innerHTML = `
-      <div class="flex items-start gap-3">
-        <span class="text-2xl">🤖</span>
-        <div class="flex-1">
-          <h5 class="font-bold text-purple-900 mb-2">AI Executive Summary</h5>
-          <div class="text-sm text-slate-800 whitespace-pre-wrap">${response}</div>
-          <div class="mt-3 text-xs text-purple-600 italic">
-            💡 AI-generated summary. Always validate with domain knowledge.
-          </div>
-        </div>
-      </div>
-    `;
-
-  } catch (error) {
-    console.error('[POR AI Summary] Error:', error);
-    summaryDiv.className = 'mb-4 p-4 bg-red-50 border border-red-300 rounded-lg';
-    summaryDiv.innerHTML = `
-      <p class="text-sm text-red-900">Failed to generate AI summary: ${error.message}</p>
-    `;
-  }
-};
-
-/**
- * Open Production Plan AI Assistant (Unified)
- * Handles both configuration requests and analysis questions
- */
-window.openProductionPlanAIChat = function() {
-  if (typeof window.AI_SYSTEM === 'undefined') {
-    alert('AI System not available. Please make sure the chatbot is initialized.');
-    return;
-  }
-
-  // Get context
-  const currentPOR = SimulationManager.getCurrentPOR();
-  const simulations = SimulationManager.getSimulations();
-  const state = window.productionPlanState;
-  const today = new Date().toISOString().split('T')[0];
-
-  // Enhanced context with configuration capabilities
-  const context = `
-**Production Plan AI Assistant**
-
-**Current Context**:
-- Today's date: ${today}
-- Current POR: ${currentPOR ? `${currentPOR.version} (${currentPOR.name})` : 'None'}
-- Available Simulations: ${simulations.length}
-- Active Tab: ${state.activeTab}
-
-**I can help you with**:
-
-1. **Configure New Plans** (Natural Language → Configuration)
-   - Example: "Create a 90-day constrained plan for SZ and WH sites with Sunday OT enabled"
-   - I'll extract the configuration and guide you to apply it
-
-2. **Analyze Existing Plans**
-   - Compare simulations
-   - Explain gaps and constraints
-   - Identify bottlenecks
-
-3. **Answer Questions**
-   - "Why is Week 23 showing a gap?"
-   - "What's the difference between constrained and unconstrained mode?"
-   - "How do I improve attainment?"
-
-4. **Suggest Optimizations**
-   - Recommend configuration changes
-   - Identify improvement opportunities
-
-**Configuration Options**:
-- Modes: constrained (respects limits), unconstrained (no limits), combined (both)
-- Sites: SZ, WH, CD, TJ, SH
-- OT Settings: Sunday OT enabled/disabled
-- Shift Hours: 8h, 16h, or 24h
-- Working Days: 5, 6, or 7 days/week
-
-How can I help you today?
-`;
-
-  // Open AI Drawer
-  if (typeof window.openAIDrawer === 'function') {
-    window.openAIDrawer(context);
-  } else {
-    alert('AI Drawer not available.');
-  }
-};
-
-/**
- * Compare POR versions (placeholder)
- */
-window.comparePORVersions = function(versionA, versionB) {
-  alert(`POR comparison feature coming soon!\nComparing ${versionA} vs ${versionB}`);
-  // TODO: Implement detailed comparison view
-};
-
-/**
- * Show Save Simulation Modal after plan generation
- */
-window.showSaveSimulationModal = function(planResults, config) {
-  // Extract summary for default name
-  const summary = planResults.mode === 'combined'
-    ? planResults.constrained.summary
-    : planResults.summary;
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const defaultName = `Production Plan - ${config.mode} - ${formatDate(config.startDate)}`;
-
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-  modal.innerHTML = `
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4">
-      <div class="p-6 border-b border-gray-200">
-        <h3 class="text-lg font-bold text-gray-800">Save Simulation</h3>
-        <p class="text-sm text-gray-600 mt-1">Give this simulation a name for future reference</p>
-      </div>
-      <div class="p-6">
-        <div class="mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-medium text-gray-700">
-              Simulation Name <span class="text-red-500">*</span>
-            </label>
-            <button
-              type="button"
-              onclick="generateAINameAndDescription()"
-              class="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition">
-              ✨ AI Suggest
-            </button>
-          </div>
-          <input
-            type="text"
-            id="simName"
-            value="${defaultName}"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., Spring Festival Peak Response Plan A">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Description (Optional)
-          </label>
-          <textarea
-            id="simDescription"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., Assumes CTB is sufficient, Sunday OT enabled"></textarea>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div class="text-xs font-semibold text-gray-700 mb-2">Preview:</div>
-          <div class="text-sm space-y-1">
-            <div><span class="text-gray-600">Mode:</span> <span class="font-medium">${config.mode}</span></div>
-            <div><span class="text-gray-600">Period:</span> <span class="font-medium">${config.startDate} to ${config.endDate}</span></div>
-            <div><span class="text-gray-600">Total Output:</span> <span class="font-medium">${summary.totalOutput.toLocaleString()} units</span></div>
-            <div><span class="text-gray-600">Attainment:</span> <span class="font-medium">${summary.overallAttainment.toFixed(1)}%</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="p-6 border-t border-gray-200 flex space-x-3">
-        <button
-          onclick="this.closest('.fixed').remove()"
-          class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-          Cancel
-        </button>
-        <button
-          onclick="confirmSaveSimulation()"
-          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-          Save Simulation
-        </button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  // Store data temporarily
-  window._tempSimulationData = { planResults, config };
-};
-
-/**
- * Generate AI-powered name and description for simulation
- */
-window.generateAINameAndDescription = async function() {
-  if (typeof window.AI_SYSTEM === 'undefined') {
-    alert('AI System not available. Please make sure the chatbot is initialized.');
-    return;
-  }
-
-  const { planResults, config } = window._tempSimulationData;
-  const summary = planResults.mode === 'combined'
-    ? planResults.constrained.summary
-    : planResults.summary;
-
-  const nameInput = document.getElementById('simName');
-  const descInput = document.getElementById('simDescription');
-
-  // Save original values
-  const originalName = nameInput.value;
-  const originalDesc = descInput.value;
-
-  // Show loading
-  nameInput.value = 'Generating...';
-  nameInput.disabled = true;
-  descInput.value = 'AI is analyzing...';
-  descInput.disabled = true;
-
-  try {
-    const prompt = `Generate a concise name and description for a production plan simulation:
-
-Config:
-- Mode: ${config.mode}
-- Period: ${config.startDate} to ${config.endDate}
-- Sites: ${config.sites?.join(', ') || 'Multiple sites'}
-
-Results:
-- Total Output: ${summary.totalOutput.toLocaleString()} units
-- Attainment: ${summary.overallAttainment.toFixed(1)}%
-- Weeks with Gap: ${summary.weeksWithGap?.length || 0}
-
-Provide:
-1. **Name** (max 60 chars, descriptive and professional)
-2. **Description** (max 150 chars, summarize key assumptions and results)
-
-Format your response as:
-NAME: [your suggested name]
-DESCRIPTION: [your suggested description]`;
-
-    const response = await window.AI_SYSTEM.chat(prompt);
-
-    // Parse response
-    const nameMatch = response.match(/NAME:\s*(.+)/i);
-    const descMatch = response.match(/DESCRIPTION:\s*(.+)/i);
-
-    if (nameMatch && nameMatch[1]) {
-      nameInput.value = nameMatch[1].trim();
-    } else {
-      nameInput.value = originalName;
-    }
-
-    if (descMatch && descMatch[1]) {
-      descInput.value = descMatch[1].trim();
-    } else {
-      descInput.value = originalDesc;
-    }
-
-  } catch (error) {
-    console.error('[AI Name Generator] Error:', error);
-    nameInput.value = originalName;
-    descInput.value = originalDesc;
-    alert('Failed to generate AI suggestions: ' + error.message);
-  } finally {
-    nameInput.disabled = false;
-    descInput.disabled = false;
-  }
-};
-
-/**
- * Confirm and save simulation
- */
-window.confirmSaveSimulation = function() {
-  const name = document.getElementById('simName').value.trim();
-  if (!name) {
-    alert('Please enter a simulation name.');
-    return;
-  }
-
-  const description = document.getElementById('simDescription').value.trim();
-  const { planResults, config } = window._tempSimulationData;
-
-  // Calculate summary
-  const summary = planResults.mode === 'combined'
-    ? {
-        totalOutput: planResults.constrained.summary.totalOutput,
-        totalShipment: planResults.constrained.summary.totalShipment,
-        overallAttainment: planResults.constrained.summary.overallAttainment,
-        weeksWithGap: planResults.constrained.weeklyMetrics.filter(w => w.gap < 0).map(w => w.week_id)
-      }
-    : {
-        totalOutput: planResults.summary.totalOutput,
-        totalShipment: planResults.summary.totalShipment,
-        overallAttainment: planResults.summary.overallAttainment,
-        weeksWithGap: planResults.weeklyMetrics.filter(w => w.gap < 0).map(w => w.week_id)
-      };
-
-  // Prepare results
-  const results = planResults.mode === 'combined'
-    ? {
-        mode: 'combined',
-        unconstrained: {
-          programResults: planResults.unconstrained.programResults,
-          weeklyMetrics: planResults.unconstrained.weeklyMetrics,
-          siteResults: planResults.unconstrained.siteResults,
-          summary: planResults.unconstrained.summary
-        },
-        constrained: {
-          programResults: planResults.constrained.programResults,
-          weeklyMetrics: planResults.constrained.weeklyMetrics,
-          siteResults: planResults.constrained.siteResults,
-          summary: planResults.constrained.summary
-        }
-      }
-    : {
-        programResults: planResults.programResults,
-        weeklyMetrics: planResults.weeklyMetrics,
-        siteResults: planResults.siteResults,
-        summary: planResults.summary
-      };
-
-  results.summary = summary;
-
-  // Enhanced config
-  const seedData = PRODUCTION_PLAN_SEED_DATA;
-  const enhancedConfig = {
-    mode: config.mode,
-    dateRange: {
-      start: config.startDate,
-      end: config.endDate
-    },
-    sites: seedData.sites ? seedData.sites.map(s => s.site_id) : [],
-    rampCurve: 'standard', // TODO: Get from config
-    otEnabled: false, // TODO: Get from config
-    shiftHours: config.shiftHours,
-    workingDays: config.workingDays
-  };
-
-  // Create simulation
-  const simId = SimulationManager.createSimulation({
-    name,
-    description,
-    tags: [],
-    config: enhancedConfig,
-    results
-  });
-
-  console.log('[UI] Simulation saved:', simId);
-
-  // Close modal
-  document.querySelector('.fixed.inset-0').remove();
-
-  // Open report in new window
-  viewSimulationReport(simId);
-
-  // Switch to Library tab
-  window.productionPlanState.activeTab = 'library';
-  renderProductionPlan();
-
-  // Show success message
-  showNotification('✅ Simulation saved successfully!', 'success');
-
-  // Cleanup
-  delete window._tempSimulationData;
-};
 
 // Render capacity configuration with hierarchical structure (Site → Line → Shift)
 function renderCapacityUnitsConfig() {
@@ -5840,7 +4540,7 @@ function loadDemoDataForProductionPlan() {
     return `
       <button onclick="confirmLoadDemoData('${key}')" class="w-full text-left border-2 border-slate-200 rounded-lg p-5 hover:border-blue-500 hover:bg-blue-50 transition-all group">
         <div class="flex items-start gap-4">
-          <span class="text-3xl">${preset.scenario.icon}</span>
+          <span class="text-3xl">${preset.icon}</span>
           <div class="flex-1">
             <div class="font-bold text-slate-900 text-lg group-hover:text-blue-700 mb-1">${preset.name}</div>
             <div class="text-sm text-slate-600 mb-3">${preset.description}</div>
@@ -5855,7 +4555,7 @@ function loadDemoDataForProductionPlan() {
               </div>
             </div>
             <div class="mt-2 flex flex-wrap gap-1">
-              ${preset.scenario.highlights.map(h => `<span class="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded">${h}</span>`).join('')}
+              ${preset.highlights.map(h => `<span class="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded">${h}</span>`).join('')}
             </div>
           </div>
         </div>
@@ -5895,9 +4595,6 @@ function loadDemoDataForProductionPlan() {
   document.body.appendChild(presetModal);
 }
 
-// Global variable to store current configuration
-window.CURRENT_PLAN_CONFIG = null;
-
 function confirmLoadDemoData(presetKey) {
   // Close modal
   const modal = document.querySelector('.fixed.inset-0.bg-black\\/50');
@@ -5914,18 +4611,6 @@ function confirmLoadDemoData(presetKey) {
 
     const preset = PRODUCTION_PLAN_DEMO_PRESETS[presetKey];
 
-    // Store configuration globally for later use in report
-    window.CURRENT_PLAN_CONFIG = {
-      presetKey: presetKey,
-      name: preset.name,
-      description: preset.description,
-      icon: preset.scenario.icon,
-      dateRange: preset.dateRange,
-      highlights: preset.scenario.highlights,
-      weeklyDemand: preset.weeklyDemand,
-      ctbPattern: preset.ctbPattern
-    };
-
     // Auto-fill configuration fields with demo data
     const startDate = document.getElementById('configStartDate');
     const endDate = document.getElementById('configEndDate');
@@ -5933,14 +4618,11 @@ function confirmLoadDemoData(presetKey) {
     if (startDate) startDate.value = preset.dateRange.start;
     if (endDate) endDate.value = preset.dateRange.end;
 
-    // Update configuration summary card
-    updateConfigSummaryCard(preset);
-
     // Show success notification
     const notification = document.createElement('div');
     notification.className = 'fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 max-w-md';
     notification.innerHTML = `
-      <span class="text-2xl">${preset.scenario.icon}</span>
+      <span class="text-2xl">${preset.icon}</span>
       <div>
         <div class="font-bold">${preset.name} Loaded!</div>
         <div class="text-sm opacity-90">Date range: ${preset.dateRange.start} ~ ${preset.dateRange.end} (${preset.weeklyDemand.length} weeks)</div>
@@ -5948,8 +4630,8 @@ function confirmLoadDemoData(presetKey) {
     `;
     document.body.appendChild(notification);
 
-    // Auto-remove notification after 3 seconds
-    setTimeout(() => notification.remove(), 3000);
+    // Auto-remove notification after 6 seconds
+    setTimeout(() => notification.remove(), 6000);
 
     console.log(`✅ Demo preset loaded: ${preset.name}`);
     console.log(`  Start Date: ${preset.dateRange.start}`);
@@ -5961,40 +4643,6 @@ function confirmLoadDemoData(presetKey) {
     console.error('Error loading demo preset:', error);
     alert(`❌ Failed to load demo preset: ${error.message}`);
   }
-}
-
-function updateConfigSummaryCard(preset) {
-  const card = document.getElementById('configSummaryCard');
-  if (!card) return;
-
-  // Get unique sites from capacity units
-  const sites = [...new Set(PRODUCTION_PLAN_SEED_DATA.capacityUnits.map(u => u.site_id))];
-
-  // Update card content
-  document.getElementById('configSummaryIcon').textContent = preset.scenario.icon;
-  document.getElementById('configSummaryName').textContent = preset.name;
-  document.getElementById('configSummaryDescription').textContent = preset.description;
-  document.getElementById('configSummaryPeriod').textContent = `${preset.dateRange.start} ~ ${preset.dateRange.end}`;
-  document.getElementById('configSummaryForecast').textContent = `${preset.weeklyDemand.length} weeks`;
-  document.getElementById('configSummarySites').textContent = sites.join(', ').toUpperCase();
-  document.getElementById('configSummaryCTB').textContent = preset.ctbPattern.replace(/_/g, ' ');
-
-  // Update highlights
-  const highlightsContainer = document.getElementById('configSummaryHighlights');
-  highlightsContainer.innerHTML = preset.scenario.highlights.map(h =>
-    `<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded border border-green-300">${h}</span>`
-  ).join('');
-
-  // Show the card
-  card.classList.remove('hidden');
-}
-
-function clearConfigSummary() {
-  const card = document.getElementById('configSummaryCard');
-  if (card) {
-    card.classList.add('hidden');
-  }
-  window.CURRENT_PLAN_CONFIG = null;
 }
 
 function generatePlanFromConfig() {
@@ -6042,7 +4690,7 @@ function showPlanningModeModal() {
           Cancel
         </button>
         <button onclick="proceedWithPlanGeneration()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-          🚀 Generate Simulation
+          🚀 Generate Plan
         </button>
       </div>
     </div>
@@ -6209,11 +4857,35 @@ function proceedWithPlanGeneration() {
         state.planResults = plan;
       }
 
-      // Close loading overlay
-      loadingOverlay.remove();
+      // Save plan as versioned plan
+      if (typeof saveProductionPlanVersion === 'function') {
+        saveProductionPlanVersion(state.planResults, config);
+      }
 
-      // Show "Save Simulation" modal
-      showSaveSimulationModal(state.planResults, config);
+      // Save plan to localStorage for the report window
+      const planId = 'plan_' + Date.now();
+      localStorage.setItem('productionPlan_' + planId, JSON.stringify(state.planResults));
+      localStorage.setItem('productionPlan_latest', JSON.stringify(state.planResults)); // Also save as latest
+
+      // Try to open report in new window
+      const reportWindow = window.open(
+        'production_plan_report.html?planId=' + planId,
+        '_blank',
+        'width=1200,height=800,scrollbars=yes,resizable=yes'
+      );
+
+      // Switch to Latest Plan view (which will show the embedded report)
+      state.activeSubpage = 'latest';
+
+      loadingOverlay.remove();
+      renderProductionPlan();
+
+      if (!reportWindow) {
+        // If popup was blocked, show notification to view in Latest Plan tab
+        showNotification('✅ Plan Generated! View report in "Latest Production Plan" tab below (pop-up was blocked).', 'warning');
+      } else {
+        showNotification('✅ Production Plan Generated Successfully! Report opened in new window.', 'success');
+      }
     } catch (error) {
       console.error('[Generate] Error generating plan:', error);
       console.error('[Generate] Error stack:', error.stack);
@@ -7997,709 +6669,483 @@ function toggleFiscalCalendar() {
 // ========================================
 
 /**
- * Get KPI data by product
- * Each product has different performance characteristics
+ * Render MO KPIs page
+ * Manufacturing Operations Executive Brief - Decision-oriented dashboard
  */
-function getKPIDataByProduct(productId) {
-  const dataByProduct = {
-    'A': { // Product A: Strong performer, exceeding targets
-      production: {
-        current: 52300,
-        target: 50000,
-        weeklyTrend: [48000, 49500, 51000, 52300],
-        variance: 4.6,
-        delta: 2300,
-        wow: 2.5,
-        mom: 8.9,
-        trend: 'up',
-        driver: "Yield +2.1pp (WF)",
-        owner: "Operations",
-        wf: { current: 33500, target: 32000, yield: 96.8 },
-        vn02: { current: 18800, target: 18000, yield: 97.2 }
-      },
-      shipment: {
-        current: 50100,
-        target: 48000,
-        weeklyTrend: [46500, 47800, 49200, 50100],
-        variance: 4.4,
-        delta: 2100,
-        wow: 1.8,
-        mom: 7.7,
-        trend: 'up',
-        driver: "On-time delivery 98%",
-        owner: "Logistics",
-        wf: { current: 31000, shipped: 30800 },
-        vn02: { current: 19100, shipped: 19000 }
-      },
-      labor: {
-        current: 2580,
-        target: 2600,
-        weeklyTrend: [2520, 2550, 2570, 2580],
-        variance: -0.8,
-        delta: -20,
-        wow: 0.4,
-        mom: 2.4,
-        trend: 'up',
-        fulfillmentRate: 99.2,
-        driver: "Fill 99.2%, OT +5%",
-        owner: "HR / Operations",
-        wf: { current: 1680, target: 1700, fill: 98.8 },
-        vn02: { current: 900, target: 900, fill: 100.0 }
-      },
-      fvCost: {
-        current: 268.0,
-        target: 275.0,
-        weeklyTrend: [272.5, 270.2, 269.1, 268.0],
-        variance: -2.5,
-        delta: -7.0,
-        wow: -0.4,
-        mom: -1.6,
-        trend: 'down',
-        driver: "Process improvement –$5",
-        owner: "Finance",
-        breakdown: { material: 185.0, labor: 46.0, overhead: 30.0, rework: 7.0 }
-      },
-      campus: {
-        readiness: 98.2,
-        target: 98.0,
-        weeklyTrend: [97.5, 97.8, 98.0, 98.2],
-        variance: 0.2,
-        delta: 0.2,
-        wow: 0.2,
-        mom: 0.7,
-        trend: 'up',
-        issues: 1,
-        driver: "1 issue: Minor maintenance",
-        owner: "Facilities",
-        wf: { readiness: 98.5, issues: 0 },
-        vn02: { readiness: 97.9, issues: 1 }
-      }
-    },
-    'B': { // Product B: Struggling, below targets
-      production: {
-        current: 38200,
-        target: 50000,
-        weeklyTrend: [42000, 40500, 39000, 38200],
-        variance: -23.6,
-        delta: -11800,
-        wow: -2.1,
-        mom: -9.1,
-        trend: 'down',
-        driver: "Yield –5.8pp (VN02)",
-        owner: "Operations",
-        wf: { current: 24500, target: 32000, yield: 88.2 },
-        vn02: { current: 13700, target: 18000, yield: 85.5 }
-      },
-      shipment: {
-        current: 35800,
-        target: 48000,
-        weeklyTrend: [40000, 38500, 37000, 35800],
-        variance: -25.4,
-        delta: -12200,
-        wow: -3.2,
-        mom: -10.5,
-        trend: 'down',
-        driver: "Backlog +28%, Quality holds",
-        owner: "Logistics",
-        wf: { current: 22000, shipped: 21500 },
-        vn02: { current: 13800, shipped: 13500 }
-      },
-      labor: {
-        current: 2180,
-        target: 2600,
-        weeklyTrend: [2350, 2280, 2230, 2180],
-        variance: -16.2,
-        delta: -420,
-        wow: -2.2,
-        mom: -7.2,
-        trend: 'down',
-        fulfillmentRate: 83.8,
-        driver: "Fill 83.8%, High attrition",
-        owner: "HR / Operations",
-        wf: { current: 1420, target: 1700, fill: 83.5 },
-        vn02: { current: 760, target: 900, fill: 84.4 }
-      },
-      fvCost: {
-        current: 312.5,
-        target: 275.0,
-        weeklyTrend: [305.2, 308.8, 310.5, 312.5],
-        variance: 13.6,
-        delta: 37.5,
-        wow: 0.6,
-        mom: 2.4,
-        trend: 'up',
-        driver: "Rework +$18, Expedite +$12",
-        owner: "Finance",
-        breakdown: { material: 205.0, labor: 52.5, overhead: 36.0, rework: 19.0 }
-      },
-      campus: {
-        readiness: 91.2,
-        target: 98.0,
-        weeklyTrend: [93.5, 92.8, 92.0, 91.2],
-        variance: -6.9,
-        delta: -6.8,
-        wow: -0.9,
-        mom: -2.5,
-        trend: 'down',
-        issues: 8,
-        driver: "8 issues: Equipment (3 critical)",
-        owner: "Facilities",
-        wf: { readiness: 92.5, issues: 4 },
-        vn02: { readiness: 89.9, issues: 4 }
-      }
-    },
-    'C': { // Product C: Cost challenges, decent production
-      production: {
-        current: 47500,
-        target: 50000,
-        weeklyTrend: [46200, 46800, 47200, 47500],
-        variance: -5.0,
-        delta: -2500,
-        wow: 0.6,
-        mom: 2.8,
-        trend: 'stable',
-        driver: "Yield –1.2pp (both sites)",
-        owner: "Operations",
-        wf: { current: 30200, target: 32000, yield: 93.5 },
-        vn02: { current: 17300, target: 18000, yield: 94.1 }
-      },
-      shipment: {
-        current: 46200,
-        target: 48000,
-        weeklyTrend: [44800, 45500, 45900, 46200],
-        variance: -3.8,
-        delta: -1800,
-        wow: 0.7,
-        mom: 3.1,
-        trend: 'stable',
-        driver: "Backlog +8%",
-        owner: "Logistics",
-        wf: { current: 29000, shipped: 28700 },
-        vn02: { current: 17200, shipped: 17100 }
-      },
-      labor: {
-        current: 2620,
-        target: 2600,
-        weeklyTrend: [2550, 2590, 2610, 2620],
-        variance: 0.8,
-        delta: 20,
-        wow: 0.4,
-        mom: 2.7,
-        trend: 'stable',
-        fulfillmentRate: 100.8,
-        driver: "Fill 100.8%, OT +32%",
-        owner: "HR / Operations",
-        wf: { current: 1720, target: 1700, fill: 101.2 },
-        vn02: { current: 900, target: 900, fill: 100.0 }
-      },
-      fvCost: {
-        current: 298.0,
-        target: 275.0,
-        weeklyTrend: [302.5, 300.8, 299.2, 298.0],
-        variance: 8.4,
-        delta: 23.0,
-        wow: -0.4,
-        mom: -1.5,
-        trend: 'down',
-        driver: "Material +$15, Freight +$8",
-        owner: "Finance",
-        breakdown: { material: 210.0, labor: 51.0, overhead: 32.0, rework: 5.0 }
-      },
-      campus: {
-        readiness: 95.8,
-        target: 98.0,
-        weeklyTrend: [95.0, 95.4, 95.6, 95.8],
-        variance: -2.2,
-        delta: -2.2,
-        wow: 0.2,
-        mom: 0.8,
-        trend: 'up',
-        issues: 4,
-        driver: "4 issues: HVAC (1 critical)",
-        owner: "Facilities",
-        wf: { readiness: 96.8, issues: 2 },
-        vn02: { readiness: 94.8, issues: 2 }
-      }
-    },
-    'D': { // Product D: Labor shortage impacting output
-      production: {
-        current: 41200,
-        target: 50000,
-        weeklyTrend: [43500, 42800, 42000, 41200],
-        variance: -17.6,
-        delta: -8800,
-        wow: -1.9,
-        mom: -5.3,
-        trend: 'down',
-        driver: "Capacity limited by HC",
-        owner: "Operations",
-        wf: { current: 26000, target: 32000, yield: 94.2 },
-        vn02: { current: 15200, target: 18000, yield: 93.8 }
-      },
-      shipment: {
-        current: 40800,
-        target: 48000,
-        weeklyTrend: [42800, 42000, 41500, 40800],
-        variance: -15.0,
-        delta: -7200,
-        wow: -1.7,
-        mom: -4.7,
-        trend: 'down',
-        driver: "Production constrained",
-        owner: "Logistics",
-        wf: { current: 25800, shipped: 25500 },
-        vn02: { current: 15000, shipped: 14900 }
-      },
-      labor: {
-        current: 2120,
-        target: 2600,
-        weeklyTrend: [2280, 2220, 2170, 2120],
-        variance: -18.5,
-        delta: -480,
-        wow: -2.3,
-        mom: -7.0,
-        trend: 'down',
-        fulfillmentRate: 81.5,
-        driver: "Fill 81.5%, Hiring freeze",
-        owner: "HR / Operations",
-        wf: { current: 1380, target: 1700, fill: 81.2 },
-        vn02: { current: 740, target: 900, fill: 82.2 }
-      },
-      fvCost: {
-        current: 279.5,
-        target: 275.0,
-        weeklyTrend: [283.0, 281.2, 280.5, 279.5],
-        variance: 1.6,
-        delta: 4.5,
-        wow: -0.4,
-        mom: -1.2,
-        trend: 'down',
-        driver: "Lower volume, fixed costs",
-        owner: "Finance",
-        breakdown: { material: 192.0, labor: 48.0, overhead: 34.5, rework: 5.0 }
-      },
-      campus: {
-        readiness: 97.5,
-        target: 98.0,
-        weeklyTrend: [97.0, 97.2, 97.4, 97.5],
-        variance: -0.5,
-        delta: -0.5,
-        wow: 0.1,
-        mom: 0.5,
-        trend: 'up',
-        issues: 2,
-        driver: "2 issues: Safety inspection pending",
-        owner: "Facilities",
-        wf: { readiness: 98.0, issues: 1 },
-        vn02: { readiness: 97.0, issues: 1 }
-      }
-    }
-  };
-
-  return dataByProduct[productId] || dataByProduct['A']; // Default to Product A
-}
-
 /**
- * Render MO KPIs page V4
- * Tech-style Executive Dashboard with modern visuals
+ * Render MO KPIs page V2
+ * Manufacturing Operations Executive Brief - Decision-oriented dashboard
+ *
+ * This is the new improved version following ChatGPT's recommendations:
+ * - Remove "KPI打分墙" feeling
+ * - Add Executive Summary section
+ * - Transform Action Items into Decision List
+ * - Add collapsible drill-down sections
+ * - Use "OK/WATCH/ACTION_NEEDED" instead of GREEN/YELLOW/RED
  */
 function renderMOKpis() {
   const content = $("content");
 
-  // Get current product from filters (default to A)
-  const currentProduct = STATE.filters.product || 'A';
+  // Mock data for demonstration (replace with real data later)
+  const kpiData = {
+    production: {
+      current: 45800,
+      target: 50000,
+      weeklyTrend: [42000, 43500, 44200, 45800],
+      status: 'WATCH',
+      variance: -8.4,
+      delta: -4200,
+      driver: "Yield –3.3pp (WF) | CTB short 3 days (VN02)",
+      owner: "Operations",
+      details: {
+        wf: { current: 28500, target: 32000, yield: 0.912 },
+        vn02: { current: 17300, target: 18000, yield: 0.955 }
+      }
+    },
+    shipment: {
+      current: 44200,
+      target: 48000,
+      weeklyTrend: [41000, 42800, 43500, 44200],
+      status: 'WATCH',
+      variance: -7.9,
+      delta: -3800,
+      driver: "Ready-to-ship backlog +12% | WH packing bottleneck",
+      owner: "Logistics",
+      details: {
+        backlog: 8200,
+        avgLeadTime: 2.8,
+        onTimeRate: 0.892
+      }
+    },
+    labor: {
+      current: 2450,
+      target: 2600,
+      weeklyTrend: [2380, 2420, 2440, 2450],
+      status: 'WATCH',
+      variance: -5.8,
+      delta: -150,
+      fulfillmentRate: 94.2,
+      driver: "Fill rate 94.2% | Overtime +18% WoW | Absence 4.2%",
+      owner: "HR / Operations",
+      details: {
+        directLabor: 1850,
+        indirectLabor: 600,
+        overtime: 450,
+        absenceRate: 0.042
+      }
+    },
+    fvCost: {
+      current: 285.5,
+      target: 275.0,
+      weeklyTrend: [288.2, 286.8, 286.0, 285.5],
+      status: 'ACTION_NEEDED',
+      variance: 3.8,
+      delta: 10.5,
+      driver: "Material premium freight +$8/u | Rework cost +$4/u",
+      owner: "Finance / Operations",
+      details: {
+        material: 195.2,
+        labor: 48.5,
+        overhead: 32.8,
+        rework: 9.0
+      }
+    },
+    campus: {
+      readiness: 96.5,
+      target: 98.0,
+      issues: 3,
+      status: 'WATCH',
+      variance: -1.5,
+      driver: "3 open issues: Utility backup (critical) | HVAC (med) | Parking (low)",
+      owner: "Facilities",
+      details: {
+        infrastructure: { status: 'OK', issues: 0 },
+        safety: { status: 'OK', issues: 0 },
+        utilities: { status: 'WATCH', issues: 3 }
+      }
+    }
+  };
 
-  // Get KPI data for selected product
-  const kpiData = getKPIDataByProduct(currentProduct);
+  const getStatusPill = (status) => {
+    if (status === 'OK') return 'bg-green-100 text-green-700 border border-green-300';
+    if (status === 'WATCH') return 'bg-amber-100 text-amber-700 border border-amber-300';
+    return 'bg-rose-100 text-rose-700 border border-rose-300';
+  };
 
-  // Calculate Overall Health Score
-  const healthScore = Math.round(
-    (kpiData.production.current / kpiData.production.target * 100 * 0.25) +
-    (kpiData.shipment.current / kpiData.shipment.target * 100 * 0.25) +
-    (kpiData.labor.fulfillmentRate * 0.20) +
-    ((100 - Math.abs(kpiData.fvCost.variance)) * 0.15) +
-    (kpiData.campus.readiness * 0.15)
-  );
+  const getStatusText = (status) => {
+    if (status === 'OK') return 'OK';
+    if (status === 'WATCH') return 'Watch';
+    return 'Action needed';
+  };
 
   const formatNumber = (num) => num.toLocaleString('en-US');
-  const formatPercent = (num) => (num >= 0 ? '+' : '') + num.toFixed(1) + '%';
-  
-  // Generate area chart for trend
-  const generateAreaChart = (data, color = '#60a5fa') => {
-    const max = Math.max(...data);
-    const min = Math.min(...data);
-    const range = max - min || 1;
-    const width = 120;
-    const height = 40;
+  const formatPercent = (num) => `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
+  const formatDelta = (num) => `${num >= 0 ? '+' : ''}${formatNumber(num)}`;
 
-    const points = data.map((val, i) => {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - ((val - min) / range) * height;
-      return x + ',' + y;
-    }).join(' ');
-
-    const areaPoints = '0,' + height + ' ' + points + ' ' + width + ',' + height;
-
-    return `<svg width="${width}" height="${height}" class="inline-block">
-      <defs>
-        <linearGradient id="gradient-${color.replace('#','')}" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:${color};stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:${color};stop-opacity:0.05" />
-        </linearGradient>
-      </defs>
-      <polygon points="${areaPoints}" fill="url(#gradient-${color.replace('#','')})" />
-      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2"/>
-    </svg>`;
-  };
-
-  // Generate circular progress
-  const generateCircularProgress = (percent, color = '#60a5fa') => {
-    const radius = 35;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percent / 100) * circumference;
-    
-    return `<svg width="90" height="90" class="transform -rotate-90">
-      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="6"/>
-      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="${color}" stroke-width="6" 
-              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" 
-              stroke-linecap="round" class="transition-all duration-500"/>
-    </svg>`;
-  };
+  // Calculate overall status
+  const hasActionNeeded = Object.values(kpiData).some(kpi => kpi.status === 'ACTION_NEEDED');
+  const commitOutlook = hasActionNeeded ? 'At risk' : 'On track';
+  const primaryDrivers = [
+    kpiData.fvCost.status === 'ACTION_NEEDED' ? 'FV cost spike' : null,
+    kpiData.production.variance < -5 ? 'Production yield drift' : null,
+    kpiData.shipment.variance < -5 ? 'Shipment backlog' : null
+  ].filter(Boolean).slice(0, 2).join(', ') || 'No major concerns';
 
   content.innerHTML = `
     <div class="space-y-6">
-      <!-- Header with gradient -->
-      <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
-        <div class="flex items-center justify-between mb-4">
+      <!-- Executive Summary -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Executive Summary</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Left: One-sentence conclusion + Key metrics -->
+          <div class="space-y-4">
+            <div>
+              <div class="text-sm text-slate-600 mb-1">Commit Outlook</div>
+              <div class="text-2xl font-bold ${hasActionNeeded ? 'text-rose-600' : 'text-green-600'}">${commitOutlook}</div>
+            </div>
+            <div>
+              <div class="text-sm text-slate-600 mb-1">Primary Drivers</div>
+              <div class="text-base text-slate-900">${primaryDrivers}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <div class="text-sm text-slate-600 mb-1">Decisions due in 48h</div>
+                <div class="text-xl font-bold text-slate-900">2</div>
+              </div>
+              <div>
+                <div class="text-sm text-slate-600 mb-1">Data Confidence</div>
+                <div class="text-xl font-bold text-green-600">High</div>
+              </div>
+            </div>
+            <div class="text-xs text-slate-500 pt-2 border-t">
+              Cut-off: 2026-01-27 14:30 | Refreshes every 4h
+            </div>
+          </div>
+
+          <!-- Right: This Week Focus (Top 3 decisions) -->
           <div>
-            <h1 class="text-3xl font-bold mb-2">Manufacturing Operations KPIs</h1>
-            <p class="text-blue-200 text-sm">Real-time operational metrics and insights</p>
-          </div>
-          <div class="text-right">
-            <div class="text-sm text-blue-200 mb-1">Overall Health</div>
-            <div class="text-5xl font-bold">${healthScore}</div>
-            <div class="text-xs text-blue-300 mt-1">${healthScore >= 80 ? 'GOOD' : healthScore >= 60 ? 'FAIR' : 'AT RISK'}</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 pt-4 border-t border-white/20">
-          <label class="text-blue-200 text-sm">Product:</label>
-          <select
-            id="moKpisProductSelect"
-            class="bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onchange="STATE.filters.product = this.value; window.Router ? window.Router.navigate('moKpis', this.value) : render();"
-          >
-            <option value="A" ${currentProduct === 'A' ? 'selected' : ''}>Product A</option>
-            <option value="B" ${currentProduct === 'B' ? 'selected' : ''}>Product B</option>
-            <option value="C" ${currentProduct === 'C' ? 'selected' : ''}>Product C</option>
-            <option value="D" ${currentProduct === 'D' ? 'selected' : ''}>Product D</option>
-          </select>
-          <div class="text-blue-200 text-xs ml-auto">Viewing: <span class="font-semibold text-white">Product ${currentProduct}</span></div>
-        </div>
-      </div>
-
-      <!-- Main KPI Cards with Tech Style -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Production Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">📦 Production</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.production.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(91.6, '#3b82f6')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">92%</div>
+            <div class="text-sm font-semibold text-slate-900 mb-3">This Week Focus — Top 3</div>
+            <div class="space-y-2">
+              <div class="bg-rose-50 border border-rose-200 rounded-lg p-3">
+                <div class="flex items-start justify-between mb-1">
+                  <div class="text-sm font-semibold text-rose-900">FV cost mitigation plan</div>
+                  <span class="text-xs px-2 py-0.5 bg-rose-200 text-rose-800 rounded">48h</span>
+                </div>
+                <div class="text-xs text-rose-700 mb-2">Impact: +$XXk/week exposure | Owner: Finance</div>
+                <div class="flex gap-2">
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-rose-100 border border-rose-300 rounded" onclick="alert('Open FV Cost Details')">View details</button>
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-rose-100 border border-rose-300 rounded" onclick="alert('Request validation')">Request validation</button>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.production.weeklyTrend, '#3b82f6')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.production.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.production.driver}</div>
-          </div>
-        </div>
-
-        <!-- Shipment Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">🚚 Shipment</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.shipment.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(92.1, '#10b981')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">92%</div>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div class="flex items-start justify-between mb-1">
+                  <div class="text-sm font-semibold text-amber-900">Production capacity review</div>
+                  <span class="text-xs px-2 py-0.5 bg-amber-200 text-amber-800 rounded">24h</span>
+                </div>
+                <div class="text-xs text-amber-700 mb-2">Impact: –4.2k units vs plan | Owner: Operations</div>
+                <div class="flex gap-2">
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Check yield')">Check yield</button>
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Check capacity')">Check capacity</button>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.shipment.weeklyTrend, '#10b981')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.shipment.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.shipment.driver}</div>
-          </div>
-        </div>
-
-        <!-- Labor Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">👥 Labor</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.labor.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(94.2, '#8b5cf6')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">94%</div>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div class="flex items-start justify-between mb-1">
+                  <div class="text-sm font-semibold text-amber-900">Labor hiring acceleration</div>
+                  <span class="text-xs px-2 py-0.5 bg-amber-200 text-amber-800 rounded">72h</span>
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.labor.weeklyTrend, '#8b5cf6')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.labor.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.labor.driver}</div>
-          </div>
-        </div>
-
-        <!-- FV Cost Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">💰 FV Cost</div>
-              <div class="text-3xl font-bold text-slate-900">$${kpiData.fvCost.current}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: $${kpiData.fvCost.target}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(96.2, '#f59e0b')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">96%</div>
+                <div class="text-xs text-amber-700 mb-2">Impact: –150 HC gap, risk to W05 ramp | Owner: HR</div>
+                <div class="flex gap-2">
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Hiring plan')">Hiring plan</button>
+                  <button class="text-xs px-2 py-1 bg-white hover:bg-amber-100 border border-amber-300 rounded" onclick="alert('Shift re-balance')">Shift re-balance</button>
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.fvCost.weeklyTrend, '#f59e0b')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold ${kpiData.fvCost.wow >= 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.fvCost.driver}</div>
-          </div>
-        </div>
-
-        <!-- Campus Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">🏭 Campus</div>
-              <div class="text-3xl font-bold text-slate-900">${kpiData.campus.readiness}%</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${kpiData.campus.target}%</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(96.5, '#06b6d4')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">97%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.campus.weeklyTrend, '#06b6d4')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.campus.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.campus.driver}</div>
-          </div>
-        </div>
-
-        <!-- Additional KPI Placeholder -->
-        <div class="bg-gradient-to-br from-slate-100 to-slate-50 rounded-2xl shadow-lg border border-slate-200 p-6 flex items-center justify-center">
-          <div class="text-center">
-            <div class="text-4xl mb-3">📊</div>
-            <div class="text-sm font-semibold text-slate-600">More KPIs</div>
-            <div class="text-xs text-slate-400 mt-1">Coming soon</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Site Comparison with Modern Style -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">🏭 Site Performance Comparison</h3>
-        
-        <div class="grid grid-cols-2 gap-6">
-          <!-- WF Site -->
-          <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-            <div class="flex items-center justify-between mb-4">
-              <div class="text-xl font-bold text-slate-900">WF Site</div>
-              <div class="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Primary</div>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-600">Output</span>
-                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.wf.current)}</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-2">
-                <div class="bg-blue-600 h-2 rounded-full" style="width: ${(kpiData.production.wf.current / kpiData.production.wf.target * 100)}%"></div>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Yield</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.production.wf.yield}%</span>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Labor Fill</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.labor.wf.fill}%</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- VN02 Site -->
-          <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-5 border border-green-100">
-            <div class="flex items-center justify-between mb-4">
-              <div class="text-xl font-bold text-slate-900">VN02 Site</div>
-              <div class="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">Secondary</div>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-600">Output</span>
-                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.vn02.current)}</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-2">
-                <div class="bg-green-600 h-2 rounded-full" style="width: ${(kpiData.production.vn02.current / kpiData.production.vn02.target * 100)}%"></div>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Yield</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.production.vn02.yield}%</span>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Labor Fill</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.labor.vn02.fill}%</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Priority Decisions -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">⚠️ Priority Actions</h3>
-        
+      <!-- KPI Signals (white background, small pill status) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Production -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-600 mb-1">📦 Production</div>
+              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
+              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.production.target)}</div>
+            </div>
+            <span class="px-2 py-1 ${getStatusPill(kpiData.production.status)} rounded text-xs font-medium">
+              ${getStatusText(kpiData.production.status)}
+            </span>
+          </div>
+          <div class="text-sm text-slate-700 mb-2">
+            <span class="font-semibold ${kpiData.production.delta < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatDelta(kpiData.production.delta)}
+            </span>
+            <span class="text-slate-500"> (${formatPercent(kpiData.production.variance)})</span>
+          </div>
+          <div class="text-xs text-slate-600 mb-2">
+            <span class="font-medium">Driver:</span> ${kpiData.production.driver}
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-xs text-slate-500">Owner: ${kpiData.production.owner}</span>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('production')">
+              View details →
+            </button>
+          </div>
+        </div>
+
+        <!-- Shipment -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-600 mb-1">🚚 Shipment</div>
+              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
+              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.shipment.target)}</div>
+            </div>
+            <span class="px-2 py-1 ${getStatusPill(kpiData.shipment.status)} rounded text-xs font-medium">
+              ${getStatusText(kpiData.shipment.status)}
+            </span>
+          </div>
+          <div class="text-sm text-slate-700 mb-2">
+            <span class="font-semibold ${kpiData.shipment.delta < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatDelta(kpiData.shipment.delta)}
+            </span>
+            <span class="text-slate-500"> (${formatPercent(kpiData.shipment.variance)})</span>
+          </div>
+          <div class="text-xs text-slate-600 mb-2">
+            <span class="font-medium">Driver:</span> ${kpiData.shipment.driver}
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-xs text-slate-500">Owner: ${kpiData.shipment.owner}</span>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('shipment')">
+              View details →
+            </button>
+          </div>
+        </div>
+
+        <!-- Labor -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-600 mb-1">👷 Labor</div>
+              <div class="text-2xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
+              <div class="text-xs text-slate-500">Target: ${formatNumber(kpiData.labor.target)}</div>
+            </div>
+            <span class="px-2 py-1 ${getStatusPill(kpiData.labor.status)} rounded text-xs font-medium">
+              ${getStatusText(kpiData.labor.status)}
+            </span>
+          </div>
+          <div class="text-sm text-slate-700 mb-2">
+            <span class="font-semibold ${kpiData.labor.delta < 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatDelta(kpiData.labor.delta)}
+            </span>
+            <span class="text-slate-500"> (${formatPercent(kpiData.labor.variance)})</span>
+          </div>
+          <div class="text-xs text-slate-600 mb-2">
+            <span class="font-medium">Driver:</span> ${kpiData.labor.driver}
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-xs text-slate-500">Owner: ${kpiData.labor.owner}</span>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('labor')">
+              View details →
+            </button>
+          </div>
+        </div>
+
+        <!-- FV Cost -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-600 mb-1">💰 FV Cost</div>
+              <div class="text-2xl font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
+              <div class="text-xs text-slate-500">Target: $${kpiData.fvCost.target.toFixed(1)}</div>
+            </div>
+            <span class="px-2 py-1 ${getStatusPill(kpiData.fvCost.status)} rounded text-xs font-medium">
+              ${getStatusText(kpiData.fvCost.status)}
+            </span>
+          </div>
+          <div class="text-sm text-slate-700 mb-2">
+            <span class="font-semibold ${kpiData.fvCost.delta > 0 ? 'text-red-600' : 'text-green-600'}">
+              ${formatDelta(kpiData.fvCost.delta)}
+            </span>
+            <span class="text-slate-500"> (${formatPercent(kpiData.fvCost.variance)})</span>
+          </div>
+          <div class="text-xs text-slate-600 mb-2">
+            <span class="font-medium">Driver:</span> ${kpiData.fvCost.driver}
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-xs text-slate-500">Owner: ${kpiData.fvCost.owner}</span>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('fvCost')">
+              View details →
+            </button>
+          </div>
+        </div>
+
+        <!-- Campus -->
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-slate-600 mb-1">🏭 Campus</div>
+              <div class="text-2xl font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
+              <div class="text-xs text-slate-500">Target: ${kpiData.campus.target.toFixed(1)}%</div>
+            </div>
+            <span class="px-2 py-1 ${getStatusPill(kpiData.campus.status)} rounded text-xs font-medium">
+              ${getStatusText(kpiData.campus.status)}
+            </span>
+          </div>
+          <div class="text-sm text-slate-700 mb-2">
+            <span class="font-semibold text-slate-900">${kpiData.campus.issues} open issues</span>
+          </div>
+          <div class="text-xs text-slate-600 mb-2">
+            <span class="font-medium">Driver:</span> ${kpiData.campus.driver}
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <span class="text-xs text-slate-500">Owner: ${kpiData.campus.owner}</span>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium" onclick="toggleDetailSection('campus')">
+              View details →
+            </button>
+          </div>
+        </div>
+
+        <!-- Outcome Strip (full width, 6th card) -->
+        <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-300 p-5 lg:col-span-3">
+          <div class="text-xs font-semibold text-slate-600 mb-3">Week Outcome Summary</div>
+          <div class="grid grid-cols-5 gap-4">
+            <div class="text-center">
+              <div class="text-sm text-slate-600 mb-1">Production</div>
+              <div class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
+              <div class="text-xs ${kpiData.production.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.production.variance)}</div>
+            </div>
+            <div class="text-center border-l border-slate-300 pl-4">
+              <div class="text-sm text-slate-600 mb-1">Shipment</div>
+              <div class="text-lg font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
+              <div class="text-xs ${kpiData.shipment.variance < 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.shipment.variance)}</div>
+            </div>
+            <div class="text-center border-l border-slate-300 pl-4">
+              <div class="text-sm text-slate-600 mb-1">Labor</div>
+              <div class="text-lg font-bold text-slate-900">${kpiData.labor.fulfillmentRate}%</div>
+              <div class="text-xs text-slate-600">fulfilled</div>
+            </div>
+            <div class="text-center border-l border-slate-300 pl-4">
+              <div class="text-sm text-slate-600 mb-1">FV Cost</div>
+              <div class="text-lg font-bold text-slate-900">$${kpiData.fvCost.current.toFixed(1)}</div>
+              <div class="text-xs ${kpiData.fvCost.variance > 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.variance)}</div>
+            </div>
+            <div class="text-center border-l border-slate-300 pl-4">
+              <div class="text-sm text-slate-600 mb-1">Campus</div>
+              <div class="text-lg font-bold text-slate-900">${kpiData.campus.readiness.toFixed(1)}%</div>
+              <div class="text-xs text-amber-600">${kpiData.campus.issues} issues</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision List (instead of Action Items) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">Decision List</h3>
         <div class="space-y-3">
-          <div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4">
+          <div class="bg-white border-2 border-rose-200 rounded-lg p-4">
             <div class="flex items-start justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>
-                <span class="font-semibold text-slate-900">FV cost above target (+3.8%)</span>
+              <div class="flex-1">
+                <div class="font-semibold text-slate-900 mb-1">FV cost above target (+3.8%)</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  <span class="font-medium">Impact:</span> +$XXk weekly exposure |
+                  <span class="font-medium">Owner:</span> Finance / Operations |
+                  <span class="font-medium">SLA:</span> 48h
+                </div>
+                <div class="text-xs text-slate-600">Material premium freight +$8/u | Rework cost +$4/u</div>
               </div>
-              <span class="text-xs text-slate-500">48h</span>
+              <span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">HIGH</span>
             </div>
-            <div class="text-sm text-slate-600 mb-3">Impact: +$XXk weekly exposure | Owner: Finance | Confidence: ●●●●○</div>
-            <div class="text-xs text-slate-500">Material premium freight +$8k | Rework cost +$4k</div>
-            <div class="mt-3 flex gap-2">
-              <button class="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700">Open Analysis</button>
-              <button class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50">Request Plan</button>
+            <div class="flex gap-2 pt-2 border-t border-slate-200">
+              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Open FV Details</button>
+              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Request validation</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
-                <span class="text-sm font-semibold text-slate-900">Production gap (-8.4%)</span>
+          <div class="bg-white border-2 border-amber-200 rounded-lg p-4">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="font-semibold text-slate-900 mb-1">Production output below target (–8.4%)</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  <span class="font-medium">Impact:</span> –4.2k units vs plan |
+                  <span class="font-medium">Owner:</span> Operations |
+                  <span class="font-medium">SLA:</span> 24h
+                </div>
+                <div class="text-xs text-slate-600">Yield –3.3pp (WF) | CTB short 3 days (VN02)</div>
               </div>
-              <div class="text-xs text-slate-600 mb-2">–3.2k units vs plan | Operations | 24h</div>
-              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
+              <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">MEDIUM</span>
             </div>
-
-            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
-                <span class="text-sm font-semibold text-slate-900">Labor fulfillment (94.2%)</span>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">–150 HC gap | HR / Operations | 72h</div>
-              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
+            <div class="flex gap-2 pt-2 border-t border-slate-200">
+              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Check yield</button>
+              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Check capacity</button>
             </div>
           </div>
+
+          <div class="bg-white border-2 border-amber-200 rounded-lg p-4">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="font-semibold text-slate-900 mb-1">Labor fulfillment at 94.2%</div>
+                <div class="text-sm text-slate-600 mb-2">
+                  <span class="font-medium">Impact:</span> –150 HC gap, risk to W05 ramp |
+                  <span class="font-medium">Owner:</span> HR / Operations |
+                  <span class="font-medium">SLA:</span> 72h
+                </div>
+                <div class="text-xs text-slate-600">Fill rate 94.2% | Overtime +18% WoW | Absence 4.2%</div>
+              </div>
+              <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">MEDIUM</span>
+            </div>
+            <div class="flex gap-2 pt-2 border-t border-slate-200">
+              <button class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium">Hiring plan</button>
+              <button class="text-xs px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium">Shift re-balance</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drill-down sections (collapsed by default) -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">Details by Domain</h3>
+        <div class="space-y-3">
+          ${['production', 'shipment', 'labor', 'fvCost', 'campus'].map(domain => `
+            <div class="border border-slate-200 rounded-lg">
+              <button onclick="toggleDetailSection('${domain}')" class="w-full flex items-center justify-between p-4 hover:bg-slate-50">
+                <span class="font-semibold text-slate-900">${domain === 'fvCost' ? 'FV Cost' : domain.charAt(0).toUpperCase() + domain.slice(1)} Details</span>
+                <span id="${domain}-toggle" class="text-slate-400">▼</span>
+              </button>
+              <div id="${domain}-details" class="hidden p-4 border-t border-slate-200 bg-slate-50">
+                <div class="text-sm text-slate-600">Detailed breakdown coming soon...</div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
     </div>
   `;
 }
 
-// Helper function for tab switching
-function switchMOKpiTab(tabName) {
-  ['production', 'shipment', 'labor', 'fvCost', 'campus'].forEach(tab => {
-    const btn = document.getElementById(`tab-${tab}`);
-    const content = document.getElementById(`tab-content-${tab}`);
-    
-    if (tab === tabName) {
-      btn.className = 'px-4 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600';
-      content.classList.remove('hidden');
+// Helper function to toggle detail sections
+function toggleDetailSection(sectionId) {
+  const details = document.getElementById(`${sectionId}-details`);
+  const toggle = document.getElementById(`${sectionId}-toggle`);
+
+  if (details && toggle) {
+    if (details.classList.contains('hidden')) {
+      details.classList.remove('hidden');
+      toggle.textContent = '▲';
     } else {
-      btn.className = 'px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900';
-      content.classList.add('hidden');
+      details.classList.add('hidden');
+      toggle.textContent = '▼';
     }
-  });
+  }
 }
-
-
+/**
+ * Render Data Foundation page with three subpages:
+ * 1. Aligned Index - Metrics dictionary
+ * 2. Data Source - Data sources and integration
+ * 3. Production Plan Logic - Detailed calculation logic
+ */
 function renderDataFoundation() {
   console.log('[DataFoundation] renderDataFoundation called, subpage:', STATE.dataFoundationSubpage);
   const content = $("content");
@@ -9095,7 +7541,7 @@ function renderWhitePaper() {
                 <div class="text-blue-700">Site-level capacity planning, input/output modeling, ramp curve simulation, scenario analysis</div>
               </div>
               <div class="bg-blue-50 rounded p-3">
-                <div class="font-medium text-blue-900 mb-1">Decision Center Overview</div>
+                <div class="font-medium text-blue-900 mb-1">Portfolio Overview</div>
                 <div class="text-blue-700">Multi-program aggregation, cross-site visibility, executive summary dashboards</div>
               </div>
               <div class="bg-blue-50 rounded p-3">
