@@ -171,6 +171,11 @@ function initControls() {
     productFilterEl.addEventListener("click", () => {
       console.log('[Product Filter] ===== CLICK EVENT FIRED =====');
       console.log('[Product Filter] Current value on click:', productFilterEl.value);
+      console.log('[Product Filter] Current STATE.filters.product:', STATE.filters.product);
+      console.log('[Product Filter] All options:');
+      Array.from(productFilterEl.options).forEach((opt, idx) => {
+        console.log(`  [${idx}] value="${opt.value}" text="${opt.text}" selected=${opt.selected}`);
+      });
     });
 
     productFilterEl.addEventListener("change", (e) => {
