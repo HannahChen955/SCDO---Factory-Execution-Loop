@@ -97,6 +97,28 @@ function populateSelect(selectEl, options, value) {
   console.log(`[populateSelect] Populated ${selectEl.id} with ${options.length} options, selected: ${value}`);
 }
 
+function populateSelectWithOptions(selectEl, options, value) {
+  if (!selectEl) {
+    console.error('[populateSelectWithOptions] selectEl is null');
+    return;
+  }
+  if (!options || !Array.isArray(options)) {
+    console.error('[populateSelectWithOptions] options is not an array:', options);
+    return;
+  }
+
+  selectEl.innerHTML = "";
+  options.forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt.value;
+    o.textContent = opt.label;
+    if (opt.value === value) o.selected = true;
+    selectEl.appendChild(o);
+  });
+
+  console.log(`[populateSelectWithOptions] Populated ${selectEl.id} with ${options.length} options, selected: ${value}`);
+}
+
 function initControls() {
   console.log('[initControls] Starting initialization');
   console.log('[initControls] STATE.data:', STATE.data);
@@ -121,11 +143,19 @@ function initControls() {
   const { product, factorySite, week } = scenario.defaultFilters;
   console.log('[initControls] Default filters:', { product, factorySite, week });
 
-  STATE.filters = { product, factorySite, week };
+  // Initialize filters from URL if available, otherwise use defaults
+  if (!STATE.filters.product) {
+    STATE.filters = { product, factorySite, week };
+  }
 
-  populateSelect($("productFilter"), products, product);
-  populateSelect($("factorySiteFilter"), factorySites, factorySite);
-  populateSelect($("weekFilter"), weeks, week);
+  // For product filter, use simple values: A, B, C, D
+  const productValues = ['A', 'B', 'C', 'D'];
+  const productOptions = productValues.map(p => ({ value: p, label: `Product ${p}` }));
+
+  // Populate selects
+  populateSelectWithOptions($("productFilter"), productOptions, STATE.filters.product);
+  populateSelect($("factorySiteFilter"), factorySites, STATE.filters.factorySite);
+  populateSelect($("weekFilter"), weeks, STATE.filters.week);
 
   $("productFilter").addEventListener("change", (e) => {
     STATE.filters.product = e.target.value;
@@ -190,11 +220,15 @@ function applyFilters(filters) {
 }
 
 function getScenario() {
-  return STATE.data.scenarios.find(s => s.id === STATE.scenarioId);
+  // Use product from filters if available, otherwise use scenarioId
+  const productId = STATE.filters.product || STATE.scenarioId;
+  return STATE.data.scenarios.find(s => s.id === productId);
 }
 
 function getDemo() {
-  return STATE.data.demoData[STATE.scenarioId];
+  // Use product from filters if available, otherwise use scenarioId
+  const productId = STATE.filters.product || STATE.scenarioId;
+  return STATE.data.demoData[productId];
 }
 
 function enterProgram(productName, factorySite) {
