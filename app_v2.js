@@ -2238,7 +2238,16 @@ window.closeReportModal = closeReportModal;
       const weekFilter = $("weekFilter");
 
       if (productFilter && STATE.filters.product) {
+        console.log('[App] Syncing productFilter.value to:', STATE.filters.product);
         productFilter.value = STATE.filters.product;
+
+        // Force update selected state on all options
+        Array.from(productFilter.options).forEach(opt => {
+          opt.selected = (opt.value === STATE.filters.product);
+        });
+
+        console.log('[App] After sync, productFilter.value is:', productFilter.value);
+        console.log('[App] Selected option:', Array.from(productFilter.options).find(o => o.selected));
       }
       if (siteFilter && STATE.filters.factorySite) {
         siteFilter.value = STATE.filters.factorySite;
