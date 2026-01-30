@@ -3205,21 +3205,86 @@ function renderProductionPlan() {
       mode: 'unconstrained',
       planResults: null,
       engine: null,
-      activeSubpage: 'latest' // 'latest' or 'generate'
+      activeTab: 'generate' // 'generate' | 'library' | 'por' | 'history'
     };
   }
 
   const state = window.productionPlanState;
+  const content = $('content');
 
-  // Render based on active subpage
-  if (state.activeSubpage === 'generate') {
-    renderProductionPlanGenerate();
-    return;
+  // Render tab navigation
+  content.innerHTML = `
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Production Plan</h2>
+          <p class="text-sm text-gray-600 mt-1">Generate simulations, manage versions, and promote to POR</p>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            onclick="switchProductionPlanTab('generate')"
+            class="tab-button ${state.activeTab === 'generate' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            ⭐ Generate New Simulation
+          </button>
+          <button
+            onclick="switchProductionPlanTab('library')"
+            class="tab-button ${state.activeTab === 'library' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            📚 Simulation Library
+          </button>
+          <button
+            onclick="switchProductionPlanTab('por')"
+            class="tab-button ${state.activeTab === 'por' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            ✅ POR (Plan of Record)
+          </button>
+          <button
+            onclick="switchProductionPlanTab('history')"
+            class="tab-button ${state.activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            📜 POR Version History
+          </button>
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <div id="tabContent"></div>
+
+      <!-- Floating Ask AI Button -->
+      <button
+        onclick="openProductionPlanAIChat()"
+        class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50 no-print"
+        title="Ask AI about Production Planning">
+        <span class="text-2xl">💬</span>
+      </button>
+    </div>
+  `;
+
+  // Render active tab content
+  switch (state.activeTab) {
+    case 'generate':
+      renderProductionPlanGenerate();
+      break;
+    case 'library':
+      renderSimulationLibrary();
+      break;
+    case 'por':
+      renderCurrentPOR();
+      break;
+    case 'history':
+      renderPORHistory();
+      break;
+    default:
+      renderProductionPlanGenerate();
   }
-
-  // Default: render Latest Production Plan
-  renderProductionPlanLatest();
 }
+
+// Tab switching function
+window.switchProductionPlanTab = function(tabName) {
+  window.productionPlanState.activeTab = tabName;
+  renderProductionPlan();
+};
 
 // 2.1 Latest Production Plan (read-only view)
 function renderProductionPlanLatest() {
@@ -3747,6 +3812,30 @@ function renderProductionPlanGenerate() {
 
   const html = `
     <div class="space-y-4">
+      <!-- AI Assistant Tip -->
+      <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-5">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl">💡</span>
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-purple-900 mb-2">New to Production Planning?</h3>
+            <p class="text-sm text-purple-700 mb-3">
+              Not sure how to configure your plan? Use our <strong>AI Assistant</strong> to help you get started!
+              Just describe what you want in plain language.
+            </p>
+            <div class="flex gap-2">
+              <button
+                onclick="openProductionPlanAIChat()"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
+                💬 Open AI Assistant
+              </button>
+              <div class="text-xs text-purple-600 self-center italic">
+                Try: "Create a 90-day plan for SZ and WH sites with Sunday OT"
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Subpage Navigation -->
       <div class="bg-white border rounded-xl p-4">
         <div class="flex gap-2">
@@ -4002,6 +4091,46 @@ function renderProductionPlanGenerate() {
             </div>
           </div>
 
+          <!-- Configuration Summary (shown after loading demo data) -->
+          <div id="configSummaryCard" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-5 mt-6">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-4 flex-1">
+                <span id="configSummaryIcon" class="text-4xl">🚀</span>
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-lg font-bold text-slate-900" id="configSummaryName">Q4 Ramp-Up (Oct-Dec)</span>
+                    <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">DEMO LOADED</span>
+                  </div>
+                  <div class="text-sm text-slate-700 mb-3" id="configSummaryDescription">National Day holiday, new product ramp, year-end sprint</div>
+
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📅 Period:</span>
+                      <span class="text-slate-900 font-mono" id="configSummaryPeriod">2026-10-01 ~ 2026-12-27</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📊 Forecast:</span>
+                      <span class="text-slate-900" id="configSummaryForecast">13 weeks</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">🏭 Sites:</span>
+                      <span class="text-slate-900" id="configSummarySites">WF, VN02</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📦 CTB:</span>
+                      <span class="text-slate-900" id="configSummaryCTB">Variable constraints</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 flex flex-wrap gap-1" id="configSummaryHighlights">
+                    <!-- Highlights will be populated here -->
+                  </div>
+                </div>
+              </div>
+              <button onclick="clearConfigSummary()" class="text-slate-400 hover:text-slate-600 text-xl leading-none ml-4" title="Clear demo selection">✕</button>
+            </div>
+          </div>
+
           <!-- Generate Button -->
           <div class="flex items-center justify-between pt-4 border-t">
             <button onclick="loadDemoDataForProductionPlan()"
@@ -4015,7 +4144,7 @@ function renderProductionPlanGenerate() {
               </button>
               <button onclick="generatePlanFromConfig()"
                       class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-                🚀 Generate New Production Plan
+                🚀 Generate New Simulation
               </button>
             </div>
           </div>
@@ -4053,6 +4182,1032 @@ function switchProductionPlanSubpage(subpage) {
   window.productionPlanState.activeSubpage = subpage;
   renderProductionPlan();
 }
+
+// ==================== NEW: Simulation & POR Management Functions ====================
+
+/**
+ * Render Simulation Library Tab
+ */
+function renderSimulationLibrary() {
+  const tabContent = document.getElementById('tabContent');
+  if (!tabContent) return;
+
+  const simulations = SimulationManager.getSimulations();
+
+  // Sort by creation date (most recent first)
+  simulations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const formatNumber = (num) => num.toLocaleString('en-US');
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  tabContent.innerHTML = `
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">Simulation Library</h3>
+        <p class="text-sm text-gray-600 mt-1">Manage and compare production plan simulations</p>
+      </div>
+      <button
+        onclick="switchProductionPlanTab('generate')"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+        + Generate New Simulation
+      </button>
+    </div>
+
+    ${simulations.length === 0 ? `
+      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+        <div class="text-gray-400 text-5xl mb-4">📊</div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No Simulations Yet</h3>
+        <p class="text-gray-600 mb-6">Create your first production plan simulation to get started</p>
+        <button
+          onclick="switchProductionPlanTab('generate')"
+          class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          Generate New Simulation
+        </button>
+      </div>
+    ` : `
+      <!-- Simulation Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        ${simulations.map(sim => {
+          const summary = sim.results.summary;
+          const weeklyMetrics = sim.results.weeklyMetrics;
+          const weeksWithGap = weeklyMetrics.filter(w => w.gap < 0);
+
+          return `
+            <div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition">
+              <!-- Header -->
+              <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-800 mb-1">${sim.name}</h4>
+                    ${sim.description ? `<p class="text-xs text-gray-600">${sim.description}</p>` : ''}
+                  </div>
+                  <span class="text-2xl">📊</span>
+                </div>
+              </div>
+
+              <!-- Config Info -->
+              <div class="p-4 space-y-2 text-sm border-b border-gray-100">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Mode:</span>
+                  <span class="font-medium text-gray-800">${sim.config.mode}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Period:</span>
+                  <span class="font-medium text-gray-800">${formatDate(sim.config.dateRange.start)} - ${formatDate(sim.config.dateRange.end)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Created:</span>
+                  <span class="font-medium text-gray-800">${formatDate(sim.createdAt)}</span>
+                </div>
+              </div>
+
+              <!-- Summary -->
+              <div class="p-4 space-y-2">
+                <div class="text-xs font-semibold text-gray-700 mb-2">Gap Summary:</div>
+                ${weeksWithGap.length === 0 ? `
+                  <div class="flex items-center text-sm text-green-600">
+                    <span class="mr-2">✅</span>
+                    <span>All weeks meet demand</span>
+                  </div>
+                ` : `
+                  ${weeksWithGap.slice(0, 3).map(week => `
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">${week.week_id}:</span>
+                      <span class="text-red-600 font-medium">${week.gap > 0 ? '+' : ''}${formatNumber(week.gap)}</span>
+                    </div>
+                  `).join('')}
+                  ${weeksWithGap.length > 3 ? `<div class="text-xs text-gray-500">+${weeksWithGap.length - 3} more weeks</div>` : ''}
+                `}
+
+                <div class="pt-2 border-t border-gray-100 text-xs text-gray-600">
+                  <div>Output: ${formatNumber(summary.totalOutput)} units</div>
+                  <div>Attainment: ${summary.overallAttainment.toFixed(1)}%</div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="p-4 border-t border-gray-200 space-y-2">
+                <button
+                  onclick="viewSimulationReport('${sim.id}')"
+                  class="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                  View Report
+                </button>
+                <button
+                  onclick="ExcelExport.exportSimulation(SimulationManager.getSimulationById('${sim.id}'))"
+                  class="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium">
+                  📥 Export to Excel
+                </button>
+                <button
+                  onclick="promptPromoteSimulationToPOR('${sim.id}')"
+                  class="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium">
+                  → Convert to POR
+                </button>
+                <button
+                  onclick="deleteSimulation('${sim.id}')"
+                  class="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
+                  Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+  `;
+}
+
+/**
+ * Render Current POR Tab
+ */
+function renderCurrentPOR() {
+  const tabContent = document.getElementById('tabContent');
+  if (!tabContent) return;
+
+  const currentPOR = SimulationManager.getCurrentPOR();
+
+  if (!currentPOR) {
+    tabContent.innerHTML = `
+      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+        <div class="text-gray-400 text-5xl mb-4">✅</div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No POR Yet</h3>
+        <p class="text-gray-600 mb-6">Generate a simulation and promote it to create your first Plan of Record</p>
+        <button
+          onclick="switchProductionPlanTab('generate')"
+          class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          Generate New Simulation
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const formatNumber = (num) => num.toLocaleString('en-US');
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  tabContent.innerHTML = `
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">Current POR (Plan of Record)</h3>
+      <p class="text-sm text-gray-600 mt-1">Official production plan version</p>
+    </div>
+
+    <!-- POR Card -->
+    <div class="bg-white border-2 border-blue-200 rounded-xl shadow-md">
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center space-x-3">
+              <span class="text-3xl">✅</span>
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">POR ${currentPOR.version}</h3>
+                <p class="text-sm text-gray-600">${currentPOR.name}</p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-gray-600">Generated</div>
+            <div class="text-sm font-medium text-gray-800">${formatDate(currentPOR.createdAt)}</div>
+          </div>
+        </div>
+        ${currentPOR.promotedFrom ? `
+          <div class="mt-3 text-sm text-gray-600">
+            Promoted from: <span class="font-medium">"${currentPOR.name}" (Simulation)</span>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Configuration -->
+      <div class="p-6 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Configuration</h4>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div class="text-gray-600 mb-1">Mode</div>
+            <div class="font-medium text-gray-800">${currentPOR.config.mode}</div>
+          </div>
+          <div>
+            <div class="text-gray-600 mb-1">Period</div>
+            <div class="font-medium text-gray-800">${currentPOR.config.dateRange.start} to ${currentPOR.config.dateRange.end}</div>
+          </div>
+          <div>
+            <div class="text-gray-600 mb-1">Sites</div>
+            <div class="font-medium text-gray-800">${currentPOR.config.sites.join(', ')}</div>
+          </div>
+          <div>
+            <div class="text-gray-600 mb-1">Ramp Curve</div>
+            <div class="font-medium text-gray-800">${currentPOR.config.rampCurve}</div>
+          </div>
+          <div>
+            <div class="text-gray-600 mb-1">Sunday OT</div>
+            <div class="font-medium text-gray-800">${currentPOR.config.otEnabled ? '✅ Enabled' : '❌ Disabled'}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="p-6 border-b border-gray-200">
+        <h4 class="font-semibold text-gray-800 mb-3">Key Metrics</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="text-xs text-gray-600 mb-1">Total Output</div>
+            <div class="text-lg font-bold text-blue-600">${formatNumber(currentPOR.results.summary.totalOutput)}</div>
+          </div>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <div class="text-xs text-gray-600 mb-1">Total Shipment</div>
+            <div class="text-lg font-bold text-green-600">${formatNumber(currentPOR.results.summary.totalShipment)}</div>
+          </div>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <div class="text-xs text-gray-600 mb-1">Attainment</div>
+            <div class="text-lg font-bold text-purple-600">${currentPOR.results.summary.overallAttainment.toFixed(1)}%</div>
+          </div>
+          <div class="bg-${currentPOR.results.summary.weeksWithGap.length > 0 ? 'red' : 'green'}-50 p-4 rounded-lg">
+            <div class="text-xs text-gray-600 mb-1">Weeks with Gap</div>
+            <div class="text-lg font-bold text-${currentPOR.results.summary.weeksWithGap.length > 0 ? 'red' : 'green'}-600">${currentPOR.results.summary.weeksWithGap.length}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Changes from Previous POR -->
+      ${currentPOR.changesFromPrevious ? `
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold text-gray-800">Changes from Previous POR</h4>
+            <button
+              onclick="generatePORChangeSummary('${currentPOR.id}')"
+              class="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition">
+              🤖 AI Summary
+            </button>
+          </div>
+          <div id="porAISummary_${currentPOR.id}" class="mb-4 hidden"></div>
+
+          ${currentPOR.changesFromPrevious.configChanges.length > 0 ? `
+            <div class="mb-4">
+              <div class="text-sm font-medium text-gray-700 mb-2">Configuration Changes:</div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left text-gray-600">Parameter</th>
+                      <th class="px-3 py-2 text-left text-gray-600">Previous</th>
+                      <th class="px-3 py-2 text-left text-gray-600">Current</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${currentPOR.changesFromPrevious.configChanges.map(change => `
+                      <tr class="border-t border-gray-200">
+                        <td class="px-3 py-2 font-medium text-gray-800">${change.parameter}</td>
+                        <td class="px-3 py-2 text-gray-600">${change.oldValue}</td>
+                        <td class="px-3 py-2 text-blue-600 font-medium">${change.newValue} 🔄</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+
+          ${currentPOR.changesFromPrevious.summaryChanges.length > 0 ? `
+            <div>
+              <div class="text-sm font-medium text-gray-700 mb-2">Metrics Changes:</div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left text-gray-600">Metric</th>
+                      <th class="px-3 py-2 text-left text-gray-600">Previous</th>
+                      <th class="px-3 py-2 text-left text-gray-600">Current</th>
+                      <th class="px-3 py-2 text-left text-gray-600">Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${currentPOR.changesFromPrevious.summaryChanges.map(change => {
+                      const deltaStr = change.deltaPercent !== null
+                        ? `${change.deltaPercent > 0 ? '+' : ''}${change.deltaPercent.toFixed(1)}%`
+                        : `${change.delta > 0 ? '+' : ''}${change.delta}`;
+                      const color = change.delta > 0 ? 'green' : change.delta < 0 ? 'red' : 'gray';
+                      return `
+                        <tr class="border-t border-gray-200">
+                          <td class="px-3 py-2 font-medium text-gray-800">${change.metric}</td>
+                          <td class="px-3 py-2 text-gray-600">${formatNumber(change.oldValue)}</td>
+                          <td class="px-3 py-2 text-gray-800">${formatNumber(change.newValue)}</td>
+                          <td class="px-3 py-2 text-${color}-600 font-medium">${deltaStr} ${change.delta > 0 ? '📈' : change.delta < 0 ? '📉' : ''}</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- Actions -->
+      <div class="p-6 border-t border-gray-200 flex space-x-3">
+        <button
+          onclick="viewSimulationReport('${currentPOR.id}')"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+          📄 View Full Report
+        </button>
+        <button
+          onclick="ExcelExport.exportPOR(SimulationManager.getCurrentPOR())"
+          class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium">
+          📥 Export to Excel
+        </button>
+        <button
+          onclick="switchProductionPlanTab('history')"
+          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
+          📜 View Version History
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render POR History Tab
+ */
+function renderPORHistory() {
+  const tabContent = document.getElementById('tabContent');
+  if (!tabContent) return;
+
+  const history = SimulationManager.getPORHistory();
+  const currentPOR = SimulationManager.getCurrentPOR();
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  tabContent.innerHTML = `
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-800">POR Version History</h3>
+      <p class="text-sm text-gray-600 mt-1">Track changes across Plan of Record versions</p>
+    </div>
+
+    ${!currentPOR && history.length === 0 ? `
+      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+        <div class="text-gray-400 text-5xl mb-4">📜</div>
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">No POR History</h3>
+        <p class="text-gray-600">Version history will appear here after you create PORs</p>
+      </div>
+    ` : `
+      <div class="space-y-4">
+        ${currentPOR ? `
+          <div class="bg-white border-2 border-green-200 rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl">✅</span>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="font-bold text-gray-800">POR ${currentPOR.version}</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">Current</span>
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">${currentPOR.name}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-gray-600">Created</div>
+                <div class="text-sm font-medium text-gray-800">${formatDate(currentPOR.createdAt)}</div>
+              </div>
+            </div>
+            ${currentPOR.notes ? `
+              <div class="mt-3 text-sm text-gray-600">
+                <span class="font-medium">Notes:</span> ${currentPOR.notes}
+              </div>
+            ` : ''}
+            <div class="mt-4 flex space-x-2">
+              <button
+                onclick="viewSimulationReport('${currentPOR.id}')"
+                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                View Report
+              </button>
+            </div>
+          </div>
+        ` : ''}
+
+        ${history.map(por => `
+          <div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl">📋</span>
+                <div>
+                  <div class="font-bold text-gray-800">POR ${por.version}</div>
+                  <div class="text-sm text-gray-600 mt-1">${por.name}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-gray-600">Created</div>
+                <div class="text-sm font-medium text-gray-800">${formatDate(por.createdAt)}</div>
+              </div>
+            </div>
+            ${por.notes ? `
+              <div class="mt-3 text-sm text-gray-600">
+                <span class="font-medium">Notes:</span> ${por.notes}
+              </div>
+            ` : ''}
+            <div class="mt-4 flex space-x-2">
+              <button
+                onclick="viewSimulationReport('${por.id}')"
+                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                View Report
+              </button>
+              ${currentPOR ? `
+                <button
+                  onclick="comparePORVersions('${currentPOR.version}', '${por.version}')"
+                  class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
+                  Compare with Current
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+
+// ==================== Action Handlers ====================
+
+/**
+ * View simulation report in new window
+ */
+window.viewSimulationReport = function(simId) {
+  // Save to localStorage with temporary ID
+  const planId = 'temp_' + Date.now();
+
+  let planData;
+  if (simId.startsWith('POR_')) {
+    // It's a POR
+    const por = SimulationManager.getCurrentPOR();
+    if (por && por.id === simId) {
+      planData = { results: por.results, config: por.config };
+    } else {
+      const history = SimulationManager.getPORHistory();
+      const historicalPOR = history.find(p => p.id === simId);
+      if (historicalPOR) {
+        planData = { results: historicalPOR.results, config: historicalPOR.config };
+      }
+    }
+  } else {
+    // It's a simulation
+    const sim = SimulationManager.getSimulationById(simId);
+    if (sim) {
+      planData = { results: sim.results, config: sim.config };
+    }
+  }
+
+  if (planData) {
+    localStorage.setItem('productionPlan_' + planId, JSON.stringify(planData));
+
+    const reportWindow = window.open(
+      'production_plan_report.html?planId=' + planId,
+      '_blank',
+      'width=1200,height=800,scrollbars=yes,resizable=yes'
+    );
+
+    if (!reportWindow) {
+      alert('Please allow pop-ups for this site to view the report.');
+    }
+  } else {
+    alert('Simulation or POR not found.');
+  }
+};
+
+/**
+ * Delete a simulation
+ */
+window.deleteSimulation = function(simId) {
+  if (confirm('Are you sure you want to delete this simulation?')) {
+    const success = SimulationManager.deleteSimulation(simId);
+    if (success) {
+      renderProductionPlan(); // Refresh the view
+      console.log('[UI] Simulation deleted:', simId);
+    } else {
+      alert('Failed to delete simulation.');
+    }
+  }
+};
+
+/**
+ * Prompt to promote simulation to POR
+ */
+window.promptPromoteSimulationToPOR = function(simId) {
+  const simulation = SimulationManager.getSimulationById(simId);
+  if (!simulation) {
+    alert('Simulation not found.');
+    return;
+  }
+
+  const currentPOR = SimulationManager.getCurrentPOR();
+  const nextVersion = calculateNextVersionHelper(currentPOR, simulation.config);
+
+  // Show modal
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800">Promote to POR</h3>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-gray-600 mb-4">
+          Are you sure you want to promote:
+        </p>
+        <div class="bg-blue-50 p-3 rounded-lg mb-4">
+          <div class="font-medium text-gray-800">"${simulation.name}"</div>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+          to the new Plan of Record?
+        </p>
+        ${currentPOR ? `
+          <p class="text-sm text-gray-600 mb-4">
+            This will replace the current POR:<br>
+            <span class="font-medium">${currentPOR.version} → ${nextVersion}</span>
+          </p>
+        ` : ''}
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional):</label>
+          <textarea
+            id="porNotes"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Responding to Spring Festival demand peak, enabled Sunday OT"></textarea>
+        </div>
+      </div>
+      <div class="p-6 border-t border-gray-200 flex space-x-3">
+        <button
+          onclick="this.closest('.fixed').remove()"
+          class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+          Cancel
+        </button>
+        <button
+          onclick="confirmPromoteToPOR('${simId}')"
+          class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+          Confirm Promotion
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+};
+
+// Helper function for version calculation
+function calculateNextVersionHelper(currentPOR, newConfig) {
+  if (!currentPOR) return 'v1.0';
+
+  const currentVersion = currentPOR.version;
+  const [, major, minor] = currentVersion.match(/v(\d+)\.(\d+)/) || ['', '0', '0'];
+
+  const isMajorChange = (
+    currentPOR.config.mode !== newConfig.mode ||
+    JSON.stringify(currentPOR.config.sites) !== JSON.stringify(newConfig.sites)
+  );
+
+  if (isMajorChange) {
+    return `v${parseInt(major) + 1}.0`;
+  } else {
+    return `v${major}.${parseInt(minor) + 1}`;
+  }
+}
+
+/**
+ * Confirm promotion to POR
+ */
+window.confirmPromoteToPOR = function(simId) {
+  const notes = document.getElementById('porNotes').value;
+
+  const newPOR = SimulationManager.promoteSimulationToPOR(simId, notes);
+
+  if (newPOR) {
+    // Close modal
+    document.querySelector('.fixed.inset-0').remove();
+
+    // Show success message
+    alert(`✅ Simulation promoted to POR ${newPOR.version} successfully!`);
+
+    // Switch to POR tab
+    window.productionPlanState.activeTab = 'por';
+    renderProductionPlan();
+  } else {
+    alert('Failed to promote simulation to POR.');
+  }
+};
+
+// Note: processNaturalLanguageQuery and applyAIConfig functions removed
+// AI configuration is now handled through the unified openProductionPlanAIChat function
+
+/**
+ * Generate AI summary of POR changes
+ */
+window.generatePORChangeSummary = async function(porId) {
+  if (typeof window.AI_SYSTEM === 'undefined') {
+    alert('AI System not available.');
+    return;
+  }
+
+  const summaryDiv = document.getElementById(`porAISummary_${porId}`);
+  if (!summaryDiv) return;
+
+  const currentPOR = SimulationManager.getCurrentPOR();
+  if (!currentPOR || !currentPOR.changesFromPrevious) return;
+
+  // Show loading
+  summaryDiv.className = 'mb-4 p-4 bg-purple-50 border border-purple-300 rounded-lg';
+  summaryDiv.innerHTML = `
+    <div class="flex items-center gap-3">
+      <div class="animate-spin w-5 h-5 border-3 border-purple-600 border-t-transparent rounded-full"></div>
+      <span class="text-purple-900 text-sm">AI is analyzing version changes...</span>
+    </div>
+  `;
+  summaryDiv.classList.remove('hidden');
+
+  try {
+    const configChanges = currentPOR.changesFromPrevious.configChanges;
+    const summaryChanges = currentPOR.changesFromPrevious.summaryChanges;
+
+    const prompt = `You are analyzing changes between two versions of a production plan (Plan of Record).
+
+Previous Version: ${currentPOR.previousVersion || 'Unknown'}
+Current Version: ${currentPOR.version}
+
+Configuration Changes:
+${configChanges.map(c => `- ${c.parameter}: ${c.oldValue} → ${c.newValue}`).join('\n')}
+
+Metrics Changes:
+${summaryChanges.map(c => {
+  const delta = c.deltaPercent !== null
+    ? `${c.deltaPercent > 0 ? '+' : ''}${c.deltaPercent.toFixed(1)}%`
+    : `${c.delta > 0 ? '+' : ''}${c.delta}`;
+  return `- ${c.metric}: ${c.oldValue.toLocaleString()} → ${c.newValue.toLocaleString()} (${delta})`;
+}).join('\n')}
+
+Provide a 2-3 sentence executive summary:
+1. What changed and why it matters
+2. Key impact (positive/negative)
+3. Recommendation (approve/review/reject)
+
+Be concise and business-focused.`;
+
+    const response = await window.AI_SYSTEM.chat(prompt);
+
+    summaryDiv.className = 'mb-4 p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg';
+    summaryDiv.innerHTML = `
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">🤖</span>
+        <div class="flex-1">
+          <h5 class="font-bold text-purple-900 mb-2">AI Executive Summary</h5>
+          <div class="text-sm text-slate-800 whitespace-pre-wrap">${response}</div>
+          <div class="mt-3 text-xs text-purple-600 italic">
+            💡 AI-generated summary. Always validate with domain knowledge.
+          </div>
+        </div>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error('[POR AI Summary] Error:', error);
+    summaryDiv.className = 'mb-4 p-4 bg-red-50 border border-red-300 rounded-lg';
+    summaryDiv.innerHTML = `
+      <p class="text-sm text-red-900">Failed to generate AI summary: ${error.message}</p>
+    `;
+  }
+};
+
+/**
+ * Open Production Plan AI Assistant (Unified)
+ * Handles both configuration requests and analysis questions
+ */
+window.openProductionPlanAIChat = function() {
+  if (typeof window.AI_SYSTEM === 'undefined') {
+    alert('AI System not available. Please make sure the chatbot is initialized.');
+    return;
+  }
+
+  // Get context
+  const currentPOR = SimulationManager.getCurrentPOR();
+  const simulations = SimulationManager.getSimulations();
+  const state = window.productionPlanState;
+  const today = new Date().toISOString().split('T')[0];
+
+  // Enhanced context with configuration capabilities
+  const context = `
+**Production Plan AI Assistant**
+
+**Current Context**:
+- Today's date: ${today}
+- Current POR: ${currentPOR ? `${currentPOR.version} (${currentPOR.name})` : 'None'}
+- Available Simulations: ${simulations.length}
+- Active Tab: ${state.activeTab}
+
+**I can help you with**:
+
+1. **Configure New Plans** (Natural Language → Configuration)
+   - Example: "Create a 90-day constrained plan for SZ and WH sites with Sunday OT enabled"
+   - I'll extract the configuration and guide you to apply it
+
+2. **Analyze Existing Plans**
+   - Compare simulations
+   - Explain gaps and constraints
+   - Identify bottlenecks
+
+3. **Answer Questions**
+   - "Why is Week 23 showing a gap?"
+   - "What's the difference between constrained and unconstrained mode?"
+   - "How do I improve attainment?"
+
+4. **Suggest Optimizations**
+   - Recommend configuration changes
+   - Identify improvement opportunities
+
+**Configuration Options**:
+- Modes: constrained (respects limits), unconstrained (no limits), combined (both)
+- Sites: SZ, WH, CD, TJ, SH
+- OT Settings: Sunday OT enabled/disabled
+- Shift Hours: 8h, 16h, or 24h
+- Working Days: 5, 6, or 7 days/week
+
+How can I help you today?
+`;
+
+  // Open AI Drawer
+  if (typeof window.openAIDrawer === 'function') {
+    window.openAIDrawer(context);
+  } else {
+    alert('AI Drawer not available.');
+  }
+};
+
+/**
+ * Compare POR versions (placeholder)
+ */
+window.comparePORVersions = function(versionA, versionB) {
+  alert(`POR comparison feature coming soon!\nComparing ${versionA} vs ${versionB}`);
+  // TODO: Implement detailed comparison view
+};
+
+/**
+ * Show Save Simulation Modal after plan generation
+ */
+window.showSaveSimulationModal = function(planResults, config) {
+  // Extract summary for default name
+  const summary = planResults.mode === 'combined'
+    ? planResults.constrained.summary
+    : planResults.summary;
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const defaultName = `Production Plan - ${config.mode} - ${formatDate(config.startDate)}`;
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800">Save Simulation</h3>
+        <p class="text-sm text-gray-600 mt-1">Give this simulation a name for future reference</p>
+      </div>
+      <div class="p-6">
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Simulation Name <span class="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onclick="generateAINameAndDescription()"
+              class="px-3 py-1 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition">
+              ✨ AI Suggest
+            </button>
+          </div>
+          <input
+            type="text"
+            id="simName"
+            value="${defaultName}"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Spring Festival Peak Response Plan A">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Description (Optional)
+          </label>
+          <textarea
+            id="simDescription"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Assumes CTB is sufficient, Sunday OT enabled"></textarea>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="text-xs font-semibold text-gray-700 mb-2">Preview:</div>
+          <div class="text-sm space-y-1">
+            <div><span class="text-gray-600">Mode:</span> <span class="font-medium">${config.mode}</span></div>
+            <div><span class="text-gray-600">Period:</span> <span class="font-medium">${config.startDate} to ${config.endDate}</span></div>
+            <div><span class="text-gray-600">Total Output:</span> <span class="font-medium">${summary.totalOutput.toLocaleString()} units</span></div>
+            <div><span class="text-gray-600">Attainment:</span> <span class="font-medium">${summary.overallAttainment.toFixed(1)}%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 border-t border-gray-200 flex space-x-3">
+        <button
+          onclick="this.closest('.fixed').remove()"
+          class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+          Cancel
+        </button>
+        <button
+          onclick="confirmSaveSimulation()"
+          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          Save Simulation
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Store data temporarily
+  window._tempSimulationData = { planResults, config };
+};
+
+/**
+ * Generate AI-powered name and description for simulation
+ */
+window.generateAINameAndDescription = async function() {
+  if (typeof window.AI_SYSTEM === 'undefined') {
+    alert('AI System not available. Please make sure the chatbot is initialized.');
+    return;
+  }
+
+  const { planResults, config } = window._tempSimulationData;
+  const summary = planResults.mode === 'combined'
+    ? planResults.constrained.summary
+    : planResults.summary;
+
+  const nameInput = document.getElementById('simName');
+  const descInput = document.getElementById('simDescription');
+
+  // Save original values
+  const originalName = nameInput.value;
+  const originalDesc = descInput.value;
+
+  // Show loading
+  nameInput.value = 'Generating...';
+  nameInput.disabled = true;
+  descInput.value = 'AI is analyzing...';
+  descInput.disabled = true;
+
+  try {
+    const prompt = `Generate a concise name and description for a production plan simulation:
+
+Config:
+- Mode: ${config.mode}
+- Period: ${config.startDate} to ${config.endDate}
+- Sites: ${config.sites?.join(', ') || 'Multiple sites'}
+
+Results:
+- Total Output: ${summary.totalOutput.toLocaleString()} units
+- Attainment: ${summary.overallAttainment.toFixed(1)}%
+- Weeks with Gap: ${summary.weeksWithGap?.length || 0}
+
+Provide:
+1. **Name** (max 60 chars, descriptive and professional)
+2. **Description** (max 150 chars, summarize key assumptions and results)
+
+Format your response as:
+NAME: [your suggested name]
+DESCRIPTION: [your suggested description]`;
+
+    const response = await window.AI_SYSTEM.chat(prompt);
+
+    // Parse response
+    const nameMatch = response.match(/NAME:\s*(.+)/i);
+    const descMatch = response.match(/DESCRIPTION:\s*(.+)/i);
+
+    if (nameMatch && nameMatch[1]) {
+      nameInput.value = nameMatch[1].trim();
+    } else {
+      nameInput.value = originalName;
+    }
+
+    if (descMatch && descMatch[1]) {
+      descInput.value = descMatch[1].trim();
+    } else {
+      descInput.value = originalDesc;
+    }
+
+  } catch (error) {
+    console.error('[AI Name Generator] Error:', error);
+    nameInput.value = originalName;
+    descInput.value = originalDesc;
+    alert('Failed to generate AI suggestions: ' + error.message);
+  } finally {
+    nameInput.disabled = false;
+    descInput.disabled = false;
+  }
+};
+
+/**
+ * Confirm and save simulation
+ */
+window.confirmSaveSimulation = function() {
+  const name = document.getElementById('simName').value.trim();
+  if (!name) {
+    alert('Please enter a simulation name.');
+    return;
+  }
+
+  const description = document.getElementById('simDescription').value.trim();
+  const { planResults, config } = window._tempSimulationData;
+
+  // Calculate summary
+  const summary = planResults.mode === 'combined'
+    ? {
+        totalOutput: planResults.constrained.summary.totalOutput,
+        totalShipment: planResults.constrained.summary.totalShipment,
+        overallAttainment: planResults.constrained.summary.overallAttainment,
+        weeksWithGap: planResults.constrained.weeklyMetrics.filter(w => w.gap < 0).map(w => w.week_id)
+      }
+    : {
+        totalOutput: planResults.summary.totalOutput,
+        totalShipment: planResults.summary.totalShipment,
+        overallAttainment: planResults.summary.overallAttainment,
+        weeksWithGap: planResults.weeklyMetrics.filter(w => w.gap < 0).map(w => w.week_id)
+      };
+
+  // Prepare results
+  const results = planResults.mode === 'combined'
+    ? {
+        mode: 'combined',
+        unconstrained: {
+          programResults: planResults.unconstrained.programResults,
+          weeklyMetrics: planResults.unconstrained.weeklyMetrics,
+          siteResults: planResults.unconstrained.siteResults,
+          summary: planResults.unconstrained.summary
+        },
+        constrained: {
+          programResults: planResults.constrained.programResults,
+          weeklyMetrics: planResults.constrained.weeklyMetrics,
+          siteResults: planResults.constrained.siteResults,
+          summary: planResults.constrained.summary
+        }
+      }
+    : {
+        programResults: planResults.programResults,
+        weeklyMetrics: planResults.weeklyMetrics,
+        siteResults: planResults.siteResults,
+        summary: planResults.summary
+      };
+
+  results.summary = summary;
+
+  // Enhanced config
+  const seedData = PRODUCTION_PLAN_SEED_DATA;
+  const enhancedConfig = {
+    mode: config.mode,
+    dateRange: {
+      start: config.startDate,
+      end: config.endDate
+    },
+    sites: seedData.sites ? seedData.sites.map(s => s.site_id) : [],
+    rampCurve: 'standard', // TODO: Get from config
+    otEnabled: false, // TODO: Get from config
+    shiftHours: config.shiftHours,
+    workingDays: config.workingDays
+  };
+
+  // Create simulation
+  const simId = SimulationManager.createSimulation({
+    name,
+    description,
+    tags: [],
+    config: enhancedConfig,
+    results
+  });
+
+  console.log('[UI] Simulation saved:', simId);
+
+  // Close modal
+  document.querySelector('.fixed.inset-0').remove();
+
+  // Open report in new window
+  viewSimulationReport(simId);
+
+  // Switch to Library tab
+  window.productionPlanState.activeTab = 'library';
+  renderProductionPlan();
+
+  // Show success message
+  showNotification('✅ Simulation saved successfully!', 'success');
+
+  // Cleanup
+  delete window._tempSimulationData;
+};
 
 // Render capacity configuration with hierarchical structure (Site → Line → Shift)
 function renderCapacityUnitsConfig() {
@@ -4540,7 +5695,7 @@ function loadDemoDataForProductionPlan() {
     return `
       <button onclick="confirmLoadDemoData('${key}')" class="w-full text-left border-2 border-slate-200 rounded-lg p-5 hover:border-blue-500 hover:bg-blue-50 transition-all group">
         <div class="flex items-start gap-4">
-          <span class="text-3xl">${preset.icon}</span>
+          <span class="text-3xl">${preset.scenario.icon}</span>
           <div class="flex-1">
             <div class="font-bold text-slate-900 text-lg group-hover:text-blue-700 mb-1">${preset.name}</div>
             <div class="text-sm text-slate-600 mb-3">${preset.description}</div>
@@ -4555,7 +5710,7 @@ function loadDemoDataForProductionPlan() {
               </div>
             </div>
             <div class="mt-2 flex flex-wrap gap-1">
-              ${preset.highlights.map(h => `<span class="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded">${h}</span>`).join('')}
+              ${preset.scenario.highlights.map(h => `<span class="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded">${h}</span>`).join('')}
             </div>
           </div>
         </div>
@@ -4595,6 +5750,9 @@ function loadDemoDataForProductionPlan() {
   document.body.appendChild(presetModal);
 }
 
+// Global variable to store current configuration
+window.CURRENT_PLAN_CONFIG = null;
+
 function confirmLoadDemoData(presetKey) {
   // Close modal
   const modal = document.querySelector('.fixed.inset-0.bg-black\\/50');
@@ -4611,6 +5769,18 @@ function confirmLoadDemoData(presetKey) {
 
     const preset = PRODUCTION_PLAN_DEMO_PRESETS[presetKey];
 
+    // Store configuration globally for later use in report
+    window.CURRENT_PLAN_CONFIG = {
+      presetKey: presetKey,
+      name: preset.name,
+      description: preset.description,
+      icon: preset.scenario.icon,
+      dateRange: preset.dateRange,
+      highlights: preset.scenario.highlights,
+      weeklyDemand: preset.weeklyDemand,
+      ctbPattern: preset.ctbPattern
+    };
+
     // Auto-fill configuration fields with demo data
     const startDate = document.getElementById('configStartDate');
     const endDate = document.getElementById('configEndDate');
@@ -4618,11 +5788,14 @@ function confirmLoadDemoData(presetKey) {
     if (startDate) startDate.value = preset.dateRange.start;
     if (endDate) endDate.value = preset.dateRange.end;
 
+    // Update configuration summary card
+    updateConfigSummaryCard(preset);
+
     // Show success notification
     const notification = document.createElement('div');
     notification.className = 'fixed top-4 right-4 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 max-w-md';
     notification.innerHTML = `
-      <span class="text-2xl">${preset.icon}</span>
+      <span class="text-2xl">${preset.scenario.icon}</span>
       <div>
         <div class="font-bold">${preset.name} Loaded!</div>
         <div class="text-sm opacity-90">Date range: ${preset.dateRange.start} ~ ${preset.dateRange.end} (${preset.weeklyDemand.length} weeks)</div>
@@ -4630,8 +5803,8 @@ function confirmLoadDemoData(presetKey) {
     `;
     document.body.appendChild(notification);
 
-    // Auto-remove notification after 6 seconds
-    setTimeout(() => notification.remove(), 6000);
+    // Auto-remove notification after 3 seconds
+    setTimeout(() => notification.remove(), 3000);
 
     console.log(`✅ Demo preset loaded: ${preset.name}`);
     console.log(`  Start Date: ${preset.dateRange.start}`);
@@ -4643,6 +5816,40 @@ function confirmLoadDemoData(presetKey) {
     console.error('Error loading demo preset:', error);
     alert(`❌ Failed to load demo preset: ${error.message}`);
   }
+}
+
+function updateConfigSummaryCard(preset) {
+  const card = document.getElementById('configSummaryCard');
+  if (!card) return;
+
+  // Get unique sites from capacity units
+  const sites = [...new Set(PRODUCTION_PLAN_SEED_DATA.capacityUnits.map(u => u.site_id))];
+
+  // Update card content
+  document.getElementById('configSummaryIcon').textContent = preset.scenario.icon;
+  document.getElementById('configSummaryName').textContent = preset.name;
+  document.getElementById('configSummaryDescription').textContent = preset.description;
+  document.getElementById('configSummaryPeriod').textContent = `${preset.dateRange.start} ~ ${preset.dateRange.end}`;
+  document.getElementById('configSummaryForecast').textContent = `${preset.weeklyDemand.length} weeks`;
+  document.getElementById('configSummarySites').textContent = sites.join(', ').toUpperCase();
+  document.getElementById('configSummaryCTB').textContent = preset.ctbPattern.replace(/_/g, ' ');
+
+  // Update highlights
+  const highlightsContainer = document.getElementById('configSummaryHighlights');
+  highlightsContainer.innerHTML = preset.scenario.highlights.map(h =>
+    `<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded border border-green-300">${h}</span>`
+  ).join('');
+
+  // Show the card
+  card.classList.remove('hidden');
+}
+
+function clearConfigSummary() {
+  const card = document.getElementById('configSummaryCard');
+  if (card) {
+    card.classList.add('hidden');
+  }
+  window.CURRENT_PLAN_CONFIG = null;
 }
 
 function generatePlanFromConfig() {
@@ -4690,7 +5897,7 @@ function showPlanningModeModal() {
           Cancel
         </button>
         <button onclick="proceedWithPlanGeneration()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
-          🚀 Generate Plan
+          🚀 Generate Simulation
         </button>
       </div>
     </div>
@@ -4857,35 +6064,11 @@ function proceedWithPlanGeneration() {
         state.planResults = plan;
       }
 
-      // Save plan as versioned plan
-      if (typeof saveProductionPlanVersion === 'function') {
-        saveProductionPlanVersion(state.planResults, config);
-      }
-
-      // Save plan to localStorage for the report window
-      const planId = 'plan_' + Date.now();
-      localStorage.setItem('productionPlan_' + planId, JSON.stringify(state.planResults));
-      localStorage.setItem('productionPlan_latest', JSON.stringify(state.planResults)); // Also save as latest
-
-      // Try to open report in new window
-      const reportWindow = window.open(
-        'production_plan_report.html?planId=' + planId,
-        '_blank',
-        'width=1200,height=800,scrollbars=yes,resizable=yes'
-      );
-
-      // Switch to Latest Plan view (which will show the embedded report)
-      state.activeSubpage = 'latest';
-
+      // Close loading overlay
       loadingOverlay.remove();
-      renderProductionPlan();
 
-      if (!reportWindow) {
-        // If popup was blocked, show notification to view in Latest Plan tab
-        showNotification('✅ Plan Generated! View report in "Latest Production Plan" tab below (pop-up was blocked).', 'warning');
-      } else {
-        showNotification('✅ Production Plan Generated Successfully! Report opened in new window.', 'success');
-      }
+      // Show "Save Simulation" modal
+      showSaveSimulationModal(state.planResults, config);
     } catch (error) {
       console.error('[Generate] Error generating plan:', error);
       console.error('[Generate] Error stack:', error.stack);

@@ -4,6 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FDOS — Factory Delivery Orchestration System</title>
+
+  <!-- Google Analytics 4 (GA4) - Replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', {
+      // Optional: 更详细的配置
+      'send_page_view': true,  // 自动发送页面浏览
+      'anonymize_ip': true     // IP 匿名化（隐私保护）
+    });
+
+    // Custom event tracking function (可选)
+    window.trackEvent = function(eventName, params) {
+      if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, params);
+      }
+    };
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
@@ -421,6 +442,20 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="./decision_chain_widget.js"></script>
   <!-- Production Plan Demo Presets -->
   <script src="./production_plan_demo_presets.js"></script>
-  <script src="./app_v2.js?v=20260127-035"></script>
+  <!-- Simulation & POR Version Management -->
+  <script src="./simulation_manager.js"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="./excel_export.js"></script>
+  <!-- Rules Engine for Intelligent Recommendations -->
+  <script src="./production_plan_rules_engine.js"></script>
+  <script src="./app_v2.js?v=20260129-106-unified"></script>
+
+  <!-- Vercel Web Analytics (Hobby Plan) -->
+  <script>
+    // Vercel Analytics for static sites
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

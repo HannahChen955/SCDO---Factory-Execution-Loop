@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Production Plan Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./production_plan_seed_data.js"></script>
   <script src="./production_plan_engine.js"></script>
+  <script src="./simulation_manager.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="./excel_export.js"></script>
+  <script src="./production_plan_rules_engine.js"></script>
   <style>
     @media print {
       .no-print { display: none; }
@@ -41,8 +46,49 @@
       </div>
     </div>
 
+    <!-- Configuration Summary (if demo data was loaded) -->
+    <div id="configInfo" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-5 shadow-sm">
+      <div class="flex items-start gap-4">
+        <span id="reportConfigIcon" class="text-4xl">🚀</span>
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-lg font-bold text-slate-900" id="reportConfigName">Q4 Ramp-Up (Oct-Dec)</span>
+            <span class="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">DEMO SCENARIO</span>
+          </div>
+          <div class="text-sm text-slate-700 mb-3" id="reportConfigDescription">National Day holiday, new product ramp, year-end sprint</div>
+          <div class="flex flex-wrap gap-2" id="reportConfigHighlights">
+            <!-- Highlights will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Plan Summary -->
     <div id="planSummary" class="bg-white rounded-xl shadow-sm p-6"></div>
+
+    <!-- Visualizations -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-xl font-bold text-slate-900 mb-4">📊 Visual Analytics</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Weekly Trend Chart -->
+        <div>
+          <h3 class="text-md font-semibold text-slate-800 mb-3">Weekly Output vs Demand Trend</h3>
+          <canvas id="weeklyTrendChart" class="w-full" height="250"></canvas>
+        </div>
+        <!-- Gap Waterfall Chart -->
+        <div>
+          <h3 class="text-md font-semibold text-slate-800 mb-3">Weekly Gap Analysis</h3>
+          <canvas id="gapWaterfallChart" class="w-full" height="250"></canvas>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Daily Ramp Curve -->
+        <div>
+          <h3 class="text-md font-semibold text-slate-800 mb-3">Daily Output Ramp Curve</h3>
+          <canvas id="rampCurveChart" class="w-full" height="200"></canvas>
+        </div>
+      </div>
+    </div>
 
     <!-- Daily Results -->
     <div class="bg-white rounded-xl shadow-sm p-6">
@@ -86,6 +132,12 @@
       </div>
     </div>
 
+    <!-- Intelligent Recommendations -->
+    <div id="intelligentRecommendations" class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-xl font-bold text-slate-900 mb-4">🤖 Intelligent Analysis & Recommendations</h2>
+      <div id="recommendationsContent"></div>
+    </div>
+
     <!-- Site Breakdown (if combined mode) -->
     <div id="siteBreakdown" class="bg-white rounded-xl shadow-sm p-6 hidden">
       <h2 class="text-xl font-bold text-slate-900 mb-4">Site Breakdown</h2>
@@ -110,14 +162,22 @@
           if (planDataStr) {
             const planData = JSON.parse(planDataStr);
             console.log('[Report] Parsed plan data:', planData);
-            return planData;
+            // Handle both old format (direct results) and new format (with config)
+            if (planData.results) {
+              return planData; // New format
+            } else {
+              return { results: planData, config: null }; // Old format
+            }
           }
         }
 
         // Fallback: load from window.opener if available
         if (window.opener && window.opener.productionPlanState) {
           console.log('[Report] Loading from window.opener');
-          return window.opener.productionPlanState.planResults;
+          return {
+            results: window.opener.productionPlanState.planResults,
+            config: window.opener.CURRENT_PLAN_CONFIG || null
+          };
         }
 
         console.error('[Report] No plan data found');
@@ -156,31 +216,62 @@
         return;
       }
 
+      // Show configuration info if available
+      if (planData.config) {
+        renderConfigInfo(planData.config);
+      }
+
+      // Handle both old and new data structure
+      const results = planData.results || planData;
+
       // Determine if combined mode
-      const isCombined = planData.mode === 'combined';
-      const plan = isCombined ? planData.constrained : planData;
+      const isCombined = results.mode === 'combined';
+      const plan = isCombined ? results.constrained : results;
 
       // Render metadata
       const metadata = document.getElementById('reportMetadata');
+      const generatedAt = planData.generatedAt ? new Date(planData.generatedAt).toLocaleString() : new Date().toLocaleString();
       metadata.innerHTML = `
-        Generated: ${new Date().toLocaleString()} |
-        Mode: ${planData.mode || plan.mode} |
+        Generated: ${generatedAt} |
+        Mode: ${results.mode || plan.mode} ${isCombined ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded ml-2">COMBINED MODE</span>' : ''} |
         Period: ${plan.programResults[0].date} to ${plan.programResults[plan.programResults.length - 1].date}
       `;
 
-      // Render summary
-      renderSummary(plan, isCombined ? planData.unconstrained : null);
+      // Render summary (with comparison if combined mode)
+      renderSummary(plan, isCombined ? results.unconstrained : null);
 
-      // Render daily results
-      renderDailyResults(plan.programResults);
+      // Render daily results (with comparison if combined mode)
+      renderDailyResults(plan.programResults, isCombined ? results.unconstrained.programResults : null);
 
-      // Render weekly metrics
-      renderWeeklyMetrics(plan.weeklyMetrics);
+      // Render weekly metrics (with comparison if combined mode)
+      renderWeeklyMetrics(plan.weeklyMetrics, isCombined ? results.unconstrained.weeklyMetrics : null);
+
+      // Render visualizations
+      renderVisualizations(results, isCombined);
+
+      // Render intelligent recommendations
+      renderIntelligentRecommendations(results, planData.config);
 
       // Render site breakdown if available
       if (plan.siteResults) {
         renderSiteBreakdown(plan.siteResults);
       }
+    }
+
+    function renderConfigInfo(config) {
+      const card = document.getElementById('configInfo');
+      if (!card || !config) return;
+
+      document.getElementById('reportConfigIcon').textContent = config.icon;
+      document.getElementById('reportConfigName').textContent = config.name;
+      document.getElementById('reportConfigDescription').textContent = config.description;
+
+      const highlightsContainer = document.getElementById('reportConfigHighlights');
+      highlightsContainer.innerHTML = config.highlights.map(h =>
+        `<span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded border border-blue-300">${h}</span>`
+      ).join('');
+
+      card.classList.remove('hidden');
     }
 
     function renderSummary(plan, unconstrainedPlan) {
@@ -192,84 +283,291 @@
       const gap = totalShipment - totalDemand;
       const attainment = totalDemand > 0 ? (totalShipment / totalDemand * 100) : 0;
 
-      let html = `
-        <div class="grid grid-cols-4 gap-4 mb-6">
-          <div class="text-center p-4 bg-blue-50 rounded-lg">
-            <div class="text-2xl font-bold text-blue-900">${formatNumber(lastDay.cum_input)}</div>
-            <div class="text-sm text-blue-700 mt-1">Total Input</div>
-          </div>
-          <div class="text-center p-4 bg-green-50 rounded-lg">
-            <div class="text-2xl font-bold text-green-900">${formatNumber(lastDay.cum_output)}</div>
-            <div class="text-sm text-green-700 mt-1">Total Output</div>
-          </div>
-          <div class="text-center p-4 bg-purple-50 rounded-lg">
-            <div class="text-2xl font-bold text-purple-900">${formatNumber(totalShipment)}</div>
-            <div class="text-sm text-purple-700 mt-1">Total Shipment</div>
-          </div>
-          <div class="text-center p-4 bg-orange-50 rounded-lg">
-            <div class="text-2xl font-bold text-orange-900">${formatNumber(totalDemand)}</div>
-            <div class="text-sm text-orange-700 mt-1">Total Demand</div>
-          </div>
-        </div>
+      let html = '';
 
-        <div class="flex items-center justify-between p-4 ${gap >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border-2 rounded-lg">
-          <div>
-            <div class="font-semibold text-lg ${gap >= 0 ? 'text-green-900' : 'text-red-900'}">
-              ${gap >= 0 ? '✅' : '⚠️'} Plan vs Demand Gap: ${gap >= 0 ? '+' : ''}${formatNumber(gap)} units
+      // If Combined Mode, show side-by-side comparison
+      if (unconstrainedPlan) {
+        const unconstrainedLastDay = unconstrainedPlan.programResults[unconstrainedPlan.programResults.length - 1];
+        const unconstrainedTotalDemand = unconstrainedPlan.weeklyMetrics.reduce((sum, w) => sum + w.demand, 0);
+        const unconstrainedTotalShipment = unconstrainedLastDay.cum_shipment;
+        const unconstrainedGap = unconstrainedTotalShipment - unconstrainedTotalDemand;
+        const unconstrainedAttainment = unconstrainedTotalDemand > 0 ? (unconstrainedTotalShipment / unconstrainedTotalDemand * 100) : 0;
+
+        html = `
+          <h2 class="text-xl font-bold text-slate-900 mb-4">Summary Comparison</h2>
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Unconstrained Column -->
+            <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+              <h3 class="text-lg font-bold text-blue-900 mb-3 text-center">🔓 Unconstrained</h3>
+              <div class="space-y-3">
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Input</div>
+                  <div class="text-xl font-bold text-blue-900">${formatNumber(unconstrainedLastDay.cum_input)}</div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Output</div>
+                  <div class="text-xl font-bold text-green-900">${formatNumber(unconstrainedLastDay.cum_output)}</div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Shipment</div>
+                  <div class="text-xl font-bold text-purple-900">${formatNumber(unconstrainedTotalShipment)}</div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Attainment</div>
+                  <div class="text-xl font-bold ${unconstrainedAttainment >= 100 ? 'text-green-600' : 'text-orange-600'}">${unconstrainedAttainment.toFixed(1)}%</div>
+                </div>
+                <div class="bg-white p-3 rounded-lg ${unconstrainedGap >= 0 ? 'border-2 border-green-300' : 'border-2 border-red-300'}">
+                  <div class="text-xs text-slate-600 mb-1">Gap vs Demand</div>
+                  <div class="text-xl font-bold ${unconstrainedGap >= 0 ? 'text-green-700' : 'text-red-700'}">
+                    ${unconstrainedGap >= 0 ? '✅ +' : '⚠️ '}${formatNumber(unconstrainedGap)}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="text-sm ${gap >= 0 ? 'text-green-700' : 'text-red-700'} mt-1">
-              Attainment: ${attainment.toFixed(1)}%
+
+            <!-- Constrained Column -->
+            <div class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
+              <h3 class="text-lg font-bold text-orange-900 mb-3 text-center">🔒 Constrained</h3>
+              <div class="space-y-3">
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Input</div>
+                  <div class="text-xl font-bold text-blue-900">${formatNumber(lastDay.cum_input)}</div>
+                  <div class="text-xs mt-1 ${lastDay.cum_input < unconstrainedLastDay.cum_input ? 'text-red-600' : 'text-green-600'}">
+                    ${lastDay.cum_input < unconstrainedLastDay.cum_input ? '↓' : '='} ${formatNumber(lastDay.cum_input - unconstrainedLastDay.cum_input)}
+                  </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Output</div>
+                  <div class="text-xl font-bold text-green-900">${formatNumber(lastDay.cum_output)}</div>
+                  <div class="text-xs mt-1 ${lastDay.cum_output < unconstrainedLastDay.cum_output ? 'text-red-600' : 'text-green-600'}">
+                    ${lastDay.cum_output < unconstrainedLastDay.cum_output ? '↓' : '='} ${formatNumber(lastDay.cum_output - unconstrainedLastDay.cum_output)}
+                  </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Total Shipment</div>
+                  <div class="text-xl font-bold text-purple-900">${formatNumber(totalShipment)}</div>
+                  <div class="text-xs mt-1 ${totalShipment < unconstrainedTotalShipment ? 'text-red-600' : 'text-green-600'}">
+                    ${totalShipment < unconstrainedTotalShipment ? '↓' : '='} ${formatNumber(totalShipment - unconstrainedTotalShipment)}
+                  </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg">
+                  <div class="text-xs text-slate-600 mb-1">Attainment</div>
+                  <div class="text-xl font-bold ${attainment >= 100 ? 'text-green-600' : 'text-orange-600'}">${attainment.toFixed(1)}%</div>
+                  <div class="text-xs mt-1 ${attainment < unconstrainedAttainment ? 'text-red-600' : 'text-green-600'}">
+                    ${attainment < unconstrainedAttainment ? '↓' : '='} ${(attainment - unconstrainedAttainment).toFixed(1)}%
+                  </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg ${gap >= 0 ? 'border-2 border-green-300' : 'border-2 border-red-300'}">
+                  <div class="text-xs text-slate-600 mb-1">Gap vs Demand</div>
+                  <div class="text-xl font-bold ${gap >= 0 ? 'text-green-700' : 'text-red-700'}">
+                    ${gap >= 0 ? '✅ +' : '⚠️ '}${formatNumber(gap)}
+                  </div>
+                  <div class="text-xs mt-1 ${gap < unconstrainedGap ? 'text-red-600' : 'text-green-600'}">
+                    ${gap < unconstrainedGap ? '↓' : '='} ${formatNumber(gap - unconstrainedGap)}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+
+          <!-- Impact Summary -->
+          <div class="mt-4 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+            <div class="font-semibold text-yellow-900 mb-2">⚡ Constraint Impact:</div>
+            <div class="text-sm text-yellow-800">
+              Constraints reduced total output by <strong>${formatNumber(unconstrainedLastDay.cum_output - lastDay.cum_output)}</strong> units
+              (${((1 - lastDay.cum_output / unconstrainedLastDay.cum_output) * 100).toFixed(1)}% reduction),
+              resulting in a ${formatNumber(unconstrainedGap - gap)} units worse gap vs demand.
+            </div>
+          </div>
+        `;
+      } else {
+        // Standard single-mode summary
+        html = `
+          <h2 class="text-xl font-bold text-slate-900 mb-4">Plan Summary</h2>
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+              <div class="text-2xl font-bold text-blue-900">${formatNumber(lastDay.cum_input)}</div>
+              <div class="text-sm text-blue-700 mt-1">Total Input</div>
+            </div>
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+              <div class="text-2xl font-bold text-green-900">${formatNumber(lastDay.cum_output)}</div>
+              <div class="text-sm text-green-700 mt-1">Total Output</div>
+            </div>
+            <div class="text-center p-4 bg-purple-50 rounded-lg">
+              <div class="text-2xl font-bold text-purple-900">${formatNumber(totalShipment)}</div>
+              <div class="text-sm text-purple-700 mt-1">Total Shipment</div>
+            </div>
+            <div class="text-center p-4 bg-orange-50 rounded-lg">
+              <div class="text-2xl font-bold text-orange-900">${formatNumber(totalDemand)}</div>
+              <div class="text-sm text-orange-700 mt-1">Total Demand</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between p-4 ${gap >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border-2 rounded-lg">
+            <div>
+              <div class="font-semibold text-lg ${gap >= 0 ? 'text-green-900' : 'text-red-900'}">
+                ${gap >= 0 ? '✅' : '⚠️'} Plan vs Demand Gap: ${gap >= 0 ? '+' : ''}${formatNumber(gap)} units
+              </div>
+              <div class="text-sm ${gap >= 0 ? 'text-green-700' : 'text-red-700'} mt-1">
+                Attainment: ${attainment.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       container.innerHTML = html;
     }
 
-    function renderDailyResults(programResults) {
+    function renderDailyResults(programResults, unconstrainedResults) {
       const tbody = document.getElementById('dailyResultsBody');
+      const thead = document.getElementById('dailyResultsTable').querySelector('thead tr');
+
+      // Update header if Combined Mode
+      if (unconstrainedResults) {
+        thead.innerHTML = `
+          <th class="px-4 py-3 text-left sticky left-0 bg-slate-100">Date</th>
+          <th class="px-2 py-3 text-right text-xs bg-blue-50 border-l-2 border-blue-300" colspan="3">🔓 Unconstrained</th>
+          <th class="px-2 py-3 text-right text-xs bg-orange-50 border-l-2 border-orange-300" colspan="3">🔒 Constrained</th>
+        `;
+      } else {
+        thead.innerHTML = `
+          <th class="px-4 py-3 text-left">Date</th>
+          <th class="px-4 py-3 text-right">Input</th>
+          <th class="px-4 py-3 text-right">Output</th>
+          <th class="px-4 py-3 text-right">Shipment</th>
+          <th class="px-4 py-3 text-right">Cum Input</th>
+          <th class="px-4 py-3 text-right">Cum Output</th>
+          <th class="px-4 py-3 text-right">Cum Shipment</th>
+        `;
+      }
 
       let html = '';
-      programResults.forEach(day => {
-        html += `
-          <tr class="border-t hover:bg-slate-50">
-            <td class="px-4 py-3">${formatDate(day.date)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(day.input_final)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(day.output_final)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(day.shipment_final)}</td>
-            <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_input)}</td>
-            <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_output)}</td>
-            <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_shipment)}</td>
-          </tr>
-        `;
-      });
+
+      if (unconstrainedResults) {
+        // Combined mode: show side-by-side comparison
+        programResults.forEach((day, idx) => {
+          const uncDay = unconstrainedResults[idx];
+          const hasDiff = uncDay && (
+            day.output_final !== uncDay.output_final ||
+            day.cum_output !== uncDay.cum_output
+          );
+
+          html += `
+            <tr class="border-t hover:bg-slate-50 ${hasDiff ? 'bg-yellow-50' : ''}">
+              <td class="px-4 py-3 sticky left-0 bg-white font-medium">${formatDate(day.date)}</td>
+              <!-- Unconstrained -->
+              <td class="px-2 py-2 text-right text-xs bg-blue-50 border-l-2 border-blue-200">${uncDay ? formatNumber(uncDay.output_final) : '-'}</td>
+              <td class="px-2 py-2 text-right text-xs bg-blue-50">${uncDay ? formatNumber(uncDay.shipment_final) : '-'}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-blue-50">${uncDay ? formatNumber(uncDay.cum_output) : '-'}</td>
+              <!-- Constrained -->
+              <td class="px-2 py-2 text-right text-xs bg-orange-50 border-l-2 border-orange-200 ${hasDiff ? 'text-red-600 font-bold' : ''}">${formatNumber(day.output_final)}</td>
+              <td class="px-2 py-2 text-right text-xs bg-orange-50">${formatNumber(day.shipment_final)}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-orange-50 ${hasDiff ? 'text-red-600 font-bold' : ''}">${formatNumber(day.cum_output)}</td>
+            </tr>
+          `;
+        });
+      } else {
+        // Standard mode
+        programResults.forEach(day => {
+          html += `
+            <tr class="border-t hover:bg-slate-50">
+              <td class="px-4 py-3">${formatDate(day.date)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(day.input_final)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(day.output_final)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(day.shipment_final)}</td>
+              <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_input)}</td>
+              <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_output)}</td>
+              <td class="px-4 py-3 text-right font-semibold">${formatNumber(day.cum_shipment)}</td>
+            </tr>
+          `;
+        });
+      }
 
       tbody.innerHTML = html;
     }
 
-    function renderWeeklyMetrics(weeklyMetrics) {
+    function renderWeeklyMetrics(weeklyMetrics, unconstrainedMetrics) {
       const tbody = document.getElementById('weeklyMetricsBody');
+      const thead = document.getElementById('weeklyMetricsTable').querySelector('thead tr');
+
+      // Update header if Combined Mode
+      if (unconstrainedMetrics) {
+        thead.innerHTML = `
+          <th class="px-3 py-3 text-left sticky left-0 bg-slate-100">Week</th>
+          <th class="px-2 py-3 text-right text-xs bg-slate-100">Demand</th>
+          <th class="px-2 py-3 text-right text-xs bg-blue-50 border-l-2 border-blue-300" colspan="3">🔓 Unconstrained</th>
+          <th class="px-2 py-3 text-right text-xs bg-orange-50 border-l-2 border-orange-300" colspan="3">🔒 Constrained</th>
+        `;
+      } else {
+        thead.innerHTML = `
+          <th class="px-4 py-3 text-left">Week</th>
+          <th class="px-4 py-3 text-right">Input</th>
+          <th class="px-4 py-3 text-right">Output</th>
+          <th class="px-4 py-3 text-right">Shipment</th>
+          <th class="px-4 py-3 text-right">Demand</th>
+          <th class="px-4 py-3 text-right">Gap</th>
+          <th class="px-4 py-3 text-right">Attainment %</th>
+        `;
+      }
 
       let html = '';
-      weeklyMetrics.forEach(week => {
-        const gap = week.gap || (week.shipments - week.demand);
-        const attainment = week.demand > 0 ? (week.shipments / week.demand * 100) : 0;
-        const gapClass = gap >= 0 ? 'text-green-700' : 'text-red-700';
-        const attainmentClass = attainment >= 100 ? 'text-green-700' : attainment >= 90 ? 'text-orange-700' : 'text-red-700';
 
-        html += `
-          <tr class="border-t hover:bg-slate-50">
-            <td class="px-4 py-3 font-semibold">${week.week_id}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(week.input)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(week.output)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(week.shipments)}</td>
-            <td class="px-4 py-3 text-right">${formatNumber(week.demand)}</td>
-            <td class="px-4 py-3 text-right font-semibold ${gapClass}">${gap >= 0 ? '+' : ''}${formatNumber(gap)}</td>
-            <td class="px-4 py-3 text-right font-semibold ${attainmentClass}">${attainment.toFixed(1)}%</td>
-          </tr>
-        `;
-      });
+      if (unconstrainedMetrics) {
+        // Combined mode: side-by-side comparison
+        weeklyMetrics.forEach((week, idx) => {
+          const uncWeek = unconstrainedMetrics[idx];
+
+          const gap = week.gap || (week.shipments - week.demand);
+          const attainment = week.demand > 0 ? (week.shipments / week.demand * 100) : 0;
+          const gapClass = gap >= 0 ? 'text-green-700' : 'text-red-700';
+          const attainmentClass = attainment >= 100 ? 'text-green-700' : attainment >= 90 ? 'text-orange-700' : 'text-red-700';
+
+          const uncGap = uncWeek ? (uncWeek.gap || (uncWeek.shipments - uncWeek.demand)) : 0;
+          const uncAttainment = uncWeek && uncWeek.demand > 0 ? (uncWeek.shipments / uncWeek.demand * 100) : 0;
+          const uncGapClass = uncGap >= 0 ? 'text-green-700' : 'text-red-700';
+          const uncAttainmentClass = uncAttainment >= 100 ? 'text-green-700' : uncAttainment >= 90 ? 'text-orange-700' : 'text-red-700';
+
+          const hasDiff = uncWeek && (week.output !== uncWeek.output || week.shipments !== uncWeek.shipments);
+
+          html += `
+            <tr class="border-t hover:bg-slate-50 ${hasDiff ? 'bg-yellow-50' : ''}">
+              <td class="px-3 py-3 font-semibold sticky left-0 bg-white">${week.week_id}</td>
+              <td class="px-2 py-2 text-right text-sm bg-slate-100">${formatNumber(week.demand)}</td>
+
+              <!-- Unconstrained -->
+              <td class="px-2 py-2 text-right text-xs bg-blue-50 border-l-2 border-blue-200">${uncWeek ? formatNumber(uncWeek.shipments) : '-'}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-blue-50 ${uncGapClass}">${uncWeek ? (uncGap >= 0 ? '+' : '') + formatNumber(uncGap) : '-'}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-blue-50 ${uncAttainmentClass}">${uncWeek ? uncAttainment.toFixed(1) + '%' : '-'}</td>
+
+              <!-- Constrained -->
+              <td class="px-2 py-2 text-right text-xs bg-orange-50 border-l-2 border-orange-200 ${hasDiff ? 'text-red-600 font-bold' : ''}">${formatNumber(week.shipments)}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-orange-50 ${gapClass} ${hasDiff ? 'font-bold' : ''}">${gap >= 0 ? '+' : ''}${formatNumber(gap)}</td>
+              <td class="px-2 py-2 text-right text-xs font-semibold bg-orange-50 ${attainmentClass} ${hasDiff ? 'font-bold' : ''}">${attainment.toFixed(1)}%</td>
+            </tr>
+          `;
+        });
+      } else {
+        // Standard mode
+        weeklyMetrics.forEach(week => {
+          const gap = week.gap || (week.shipments - week.demand);
+          const attainment = week.demand > 0 ? (week.shipments / week.demand * 100) : 0;
+          const gapClass = gap >= 0 ? 'text-green-700' : 'text-red-700';
+          const attainmentClass = attainment >= 100 ? 'text-green-700' : attainment >= 90 ? 'text-orange-700' : 'text-red-700';
+
+          html += `
+            <tr class="border-t hover:bg-slate-50">
+              <td class="px-4 py-3 font-semibold">${week.week_id}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(week.input)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(week.output)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(week.shipments)}</td>
+              <td class="px-4 py-3 text-right">${formatNumber(week.demand)}</td>
+              <td class="px-4 py-3 text-right font-semibold ${gapClass}">${gap >= 0 ? '+' : ''}${formatNumber(gap)}</td>
+              <td class="px-4 py-3 text-right font-semibold ${attainmentClass}">${attainment.toFixed(1)}%</td>
+            </tr>
+          `;
+        });
+      }
 
       tbody.innerHTML = html;
     }
@@ -335,8 +633,556 @@
       content.innerHTML = html;
     }
 
+    function renderVisualizations(results, isCombined) {
+      // Check if Chart.js is available
+      if (typeof Chart === 'undefined') {
+        console.error('[Visualizations] Chart.js not loaded');
+        return;
+      }
+
+      const plan = isCombined ? results.constrained : results;
+      const unconstrainedPlan = isCombined ? results.unconstrained : null;
+
+      // 1. Weekly Trend Chart
+      renderWeeklyTrendChart(plan.weeklyMetrics, unconstrainedPlan?.weeklyMetrics);
+
+      // 2. Gap Waterfall Chart
+      renderGapWaterfallChart(plan.weeklyMetrics);
+
+      // 3. Ramp Curve Chart
+      renderRampCurveChart(plan.programResults, unconstrainedPlan?.programResults);
+    }
+
+    function renderWeeklyTrendChart(weeklyMetrics, unconstrainedMetrics) {
+      const ctx = document.getElementById('weeklyTrendChart');
+      if (!ctx) return;
+
+      const labels = weeklyMetrics.map(w => w.week_id);
+      const shipments = weeklyMetrics.map(w => w.shipments);
+      const demand = weeklyMetrics.map(w => w.demand);
+
+      const datasets = [
+        {
+          label: 'Shipment',
+          data: shipments,
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Demand',
+          data: demand,
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          tension: 0.3,
+          fill: false
+        }
+      ];
+
+      // Add unconstrained if available
+      if (unconstrainedMetrics) {
+        datasets.push({
+          label: 'Unconstrained Shipment',
+          data: unconstrainedMetrics.map(w => w.shipments),
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          borderDash: [2, 2],
+          tension: 0.3,
+          fill: false
+        });
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderGapWaterfallChart(weeklyMetrics) {
+      const ctx = document.getElementById('gapWaterfallChart');
+      if (!ctx) return;
+
+      const labels = weeklyMetrics.map(w => w.week_id);
+      const gaps = weeklyMetrics.map(w => w.gap || (w.shipments - w.demand));
+
+      const backgroundColors = gaps.map(gap => gap >= 0 ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)');
+      const borderColors = gaps.map(gap => gap >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)');
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Gap (Shipment - Demand)',
+            data: gaps,
+            backgroundColor: backgroundColors,
+            borderColor: borderColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: false }
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return (value >= 0 ? '+' : '') + value.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderRampCurveChart(programResults, unconstrainedResults) {
+      const ctx = document.getElementById('rampCurveChart');
+      if (!ctx) return;
+
+      const labels = programResults.map(d => {
+        const date = new Date(d.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      });
+      const output = programResults.map(d => d.output_final);
+      const cumOutput = programResults.map(d => d.cum_output);
+
+      const datasets = [
+        {
+          label: 'Daily Output',
+          data: output,
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          yAxisID: 'y',
+          fill: true
+        },
+        {
+          label: 'Cumulative Output',
+          data: cumOutput,
+          borderColor: 'rgb(34, 197, 94)',
+          backgroundColor: 'rgba(34, 197, 94, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          yAxisID: 'y1',
+          fill: false
+        }
+      ];
+
+      // Add unconstrained comparison if available
+      if (unconstrainedResults) {
+        datasets.push({
+          label: 'Unconstrained Daily Output',
+          data: unconstrainedResults.map(d => d.output_final),
+          borderColor: 'rgb(168, 85, 247)',
+          backgroundColor: 'rgba(168, 85, 247, 0.1)',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          tension: 0.3,
+          yAxisID: 'y',
+          fill: false
+        });
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Daily Output (units)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Cumulative Output (units)'
+              },
+              grid: {
+                drawOnChartArea: false
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderIntelligentRecommendations(results, config) {
+      const container = document.getElementById('recommendationsContent');
+
+      // Check if Rules Engine is available
+      if (typeof ProductionPlanRulesEngine === 'undefined') {
+        container.innerHTML = `
+          <div class="text-center text-slate-600 py-8">
+            <p>Rules Engine not loaded. Please refresh the page.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Run analysis
+      const analysis = ProductionPlanRulesEngine.analyzePlan(results, config || {});
+
+      // Health status colors
+      const healthColors = {
+        excellent: { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-900', icon: '✅' },
+        good: { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-900', icon: '👍' },
+        fair: { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-900', icon: '⚠️' },
+        poor: { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-900', icon: '🔴' },
+        critical: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900', icon: '🚨' }
+      };
+
+      const healthStyle = healthColors[analysis.summary.overallHealth] || healthColors.fair;
+
+      let html = `
+        <!-- Health Summary Card -->
+        <div class="mb-6 p-5 ${healthStyle.bg} border-2 ${healthStyle.border} rounded-lg">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">${healthStyle.icon}</span>
+                <div>
+                  <h3 class="text-lg font-bold ${healthStyle.text}">Overall Health: ${analysis.summary.overallHealth.toUpperCase()}</h3>
+                  <p class="text-sm ${healthStyle.text} opacity-75">Plan Score: ${analysis.scores.overall.toFixed(1)}/100</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold ${healthStyle.text}">${analysis.summary.totalIssues}</div>
+              <div class="text-xs ${healthStyle.text} opacity-75">Total Issues</div>
+            </div>
+          </div>
+
+          <!-- Score Breakdown -->
+          <div class="grid grid-cols-4 gap-3 mt-4">
+            <div class="bg-white p-3 rounded-lg">
+              <div class="text-xs text-slate-600 mb-1">Gap Score</div>
+              <div class="text-lg font-bold ${analysis.scores.gapScore >= 75 ? 'text-green-600' : analysis.scores.gapScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.gapScore.toFixed(0)}</div>
+            </div>
+            <div class="bg-white p-3 rounded-lg">
+              <div class="text-xs text-slate-600 mb-1">CTB Score</div>
+              <div class="text-lg font-bold ${analysis.scores.ctbScore >= 75 ? 'text-green-600' : analysis.scores.ctbScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.ctbScore.toFixed(0)}</div>
+            </div>
+            <div class="bg-white p-3 rounded-lg">
+              <div class="text-xs text-slate-600 mb-1">Stability</div>
+              <div class="text-lg font-bold ${analysis.scores.stabilityScore >= 75 ? 'text-green-600' : analysis.scores.stabilityScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.stabilityScore.toFixed(0)}</div>
+            </div>
+            <div class="bg-white p-3 rounded-lg">
+              <div class="text-xs text-slate-600 mb-1">Ramp Score</div>
+              <div class="text-lg font-bold ${analysis.scores.rampScore >= 75 ? 'text-green-600' : analysis.scores.rampScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.rampScore.toFixed(0)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        ${analysis.recommendations.length > 0 ? `
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-slate-900 mb-3">💡 Recommended Actions</h3>
+            <div class="space-y-3">
+              ${analysis.recommendations.map((rec, idx) => {
+                const priorityColors = {
+                  high: { bg: 'bg-red-50', border: 'border-red-300', badge: 'bg-red-600', text: 'text-red-900' },
+                  medium: { bg: 'bg-yellow-50', border: 'border-yellow-300', badge: 'bg-yellow-600', text: 'text-yellow-900' },
+                  low: { bg: 'bg-blue-50', border: 'border-blue-300', badge: 'bg-blue-600', text: 'text-blue-900' }
+                };
+                const style = priorityColors[rec.priority] || priorityColors.low;
+
+                return `
+                  <div class="p-4 ${style.bg} border ${style.border} rounded-lg">
+                    <div class="flex items-start gap-3">
+                      <span class="px-2 py-1 ${style.badge} text-white text-xs font-bold rounded">${rec.priority.toUpperCase()}</span>
+                      <div class="flex-1">
+                        <div class="font-semibold ${style.text} mb-1">${rec.title}</div>
+                        <div class="text-sm text-slate-700 mb-2">📌 ${rec.action}</div>
+                        <div class="text-xs text-slate-600 italic">💎 ${rec.expectedImpact}</div>
+                        ${rec.affectedWeeks ? `<div class="text-xs text-slate-500 mt-2">Affects weeks: ${rec.affectedWeeks.join(', ')}</div>` : ''}
+                        ${rec.affectedDays ? `<div class="text-xs text-slate-500 mt-2">Affects ${rec.affectedDays} days</div>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : `
+          <div class="mb-6 p-4 bg-green-50 border border-green-300 rounded-lg">
+            <div class="flex items-center gap-2 text-green-900">
+              <span class="text-xl">✅</span>
+              <span class="font-semibold">No critical issues detected. Plan looks healthy!</span>
+            </div>
+          </div>
+        `}
+
+        <!-- AI Insights (placeholder, will be loaded async) -->
+        <div id="aiInsightsContainer" class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-slate-900">🤖 AI Insights</h3>
+            <button
+              onclick="loadAIInsights()"
+              id="loadAIInsightsBtn"
+              class="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition">
+              Generate AI Analysis
+            </button>
+          </div>
+          <div id="aiInsightsContent" class="text-center text-slate-500 py-6 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+            Click "Generate AI Analysis" to get AI-powered insights
+          </div>
+        </div>
+
+        <!-- Issues Breakdown -->
+        ${analysis.issues.length > 0 ? `
+          <details class="mb-4">
+            <summary class="cursor-pointer text-slate-700 font-semibold hover:text-blue-600 mb-2">
+              🔍 View Detailed Issues (${analysis.issues.length})
+            </summary>
+            <div class="space-y-2 mt-3">
+              ${analysis.issues.map(issue => {
+                const severityColors = {
+                  critical: 'bg-red-100 border-red-400 text-red-900',
+                  warning: 'bg-yellow-100 border-yellow-400 text-yellow-900',
+                  info: 'bg-blue-100 border-blue-400 text-blue-900'
+                };
+                const color = severityColors[issue.severity] || severityColors.info;
+
+                return `
+                  <div class="p-3 border ${color} rounded text-sm">
+                    <div class="flex items-start gap-2">
+                      <span class="font-bold text-xs uppercase">[${issue.severity}]</span>
+                      <span>${issue.message}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </details>
+        ` : ''}
+
+        <!-- Analysis Details -->
+        <details class="text-sm">
+          <summary class="cursor-pointer text-slate-600 hover:text-blue-600 font-semibold">
+            📊 View Full Analysis Report
+          </summary>
+          <div class="mt-3 p-4 bg-slate-50 rounded-lg">
+            <pre class="text-xs overflow-x-auto">${JSON.stringify(analysis, null, 2)}</pre>
+          </div>
+        </details>
+      `;
+
+      container.innerHTML = html;
+
+      // Store analysis globally for AI insights
+      window._currentAnalysis = analysis;
+      window._currentResults = results;
+    }
+
+    /**
+     * Load AI Insights
+     */
+    window.loadAIInsights = async function() {
+      const btn = document.getElementById('loadAIInsightsBtn');
+      const content = document.getElementById('aiInsightsContent');
+
+      if (!window._currentAnalysis) {
+        content.innerHTML = `
+          <div class="text-red-600 py-4">
+            <p>Analysis data not available. Please refresh the page.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Show loading
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+      content.innerHTML = `
+        <div class="py-8">
+          <div class="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+          <p class="text-slate-600">AI is analyzing your production plan...</p>
+        </div>
+      `;
+
+      try {
+        // Generate AI insights
+        const insights = await ProductionPlanRulesEngine.generateAIInsights(window._currentAnalysis);
+
+        // Also get anomaly detection
+        const plan = window._currentResults.mode === 'combined'
+          ? window._currentResults.constrained
+          : window._currentResults;
+        const anomalies = await ProductionPlanRulesEngine.detectAnomaliesWithAI(plan.programResults);
+
+        if (!insights.available) {
+          content.innerHTML = `
+            <div class="p-4 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-900">
+              <p class="font-semibold mb-2">⚠️ AI System Not Available</p>
+              <p class="text-sm">${insights.error || 'AI_SYSTEM not loaded. Make sure the chatbot is initialized.'}</p>
+            </div>
+          `;
+          btn.textContent = 'Retry';
+          btn.disabled = false;
+          return;
+        }
+
+        // Parse AI response (expecting markdown-like format)
+        const responseText = insights.response;
+
+        // Display insights
+        content.innerHTML = `
+          <div class="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg p-5 text-left">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="text-3xl">🤖</span>
+              <div class="flex-1">
+                <h4 class="font-bold text-purple-900 mb-1">AI-Powered Analysis</h4>
+                <p class="text-xs text-purple-700">Generated at ${new Date(insights.timestamp).toLocaleTimeString()}</p>
+              </div>
+            </div>
+
+            <div class="prose prose-sm max-w-none">
+              <div class="bg-white rounded-lg p-4 text-slate-800 whitespace-pre-wrap">${responseText}</div>
+            </div>
+
+            ${anomalies.available ? `
+              <div class="mt-4 p-4 bg-white rounded-lg">
+                <h5 class="font-semibold text-slate-900 mb-2">🔍 Anomaly Detection:</h5>
+                <div class="text-sm text-slate-700 whitespace-pre-wrap">${anomalies.response}</div>
+              </div>
+            ` : ''}
+
+            <div class="mt-4 text-xs text-purple-600 italic">
+              💡 Tip: AI insights are suggestions based on pattern analysis. Always validate with domain knowledge.
+            </div>
+          </div>
+        `;
+
+        btn.textContent = 'Refresh Analysis';
+        btn.disabled = false;
+
+      } catch (error) {
+        console.error('[AI Insights] Error:', error);
+        content.innerHTML = `
+          <div class="p-4 bg-red-50 border border-red-300 rounded-lg text-red-900">
+            <p class="font-semibold mb-2">❌ Error Loading AI Insights</p>
+            <p class="text-sm">${error.message}</p>
+          </div>
+        `;
+        btn.textContent = 'Retry';
+        btn.disabled = false;
+      }
+    };
+
     function exportToExcel() {
-      alert('Excel export functionality will be implemented here.\n\nThe report will be downloaded as an .xlsx file with multiple sheets:\n- Summary\n- Daily Results\n- Weekly Metrics\n- Site Breakdown');
+      try {
+        // Get plan ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('planId');
+
+        if (!planId) {
+          alert('Cannot export: No plan ID found.');
+          return;
+        }
+
+        // Try to get simulation from SimulationManager
+        if (typeof SimulationManager !== 'undefined') {
+          const simulation = SimulationManager.getSimulationById(planId);
+          if (simulation) {
+            // Use ExcelExport module
+            if (typeof ExcelExport !== 'undefined' && ExcelExport.exportSimulation) {
+              ExcelExport.exportSimulation(simulation);
+              return;
+            }
+          }
+
+          // Try to get POR if it matches the planId
+          const currentPOR = SimulationManager.getCurrentPOR();
+          if (currentPOR && currentPOR.id === planId) {
+            if (typeof ExcelExport !== 'undefined' && ExcelExport.exportPOR) {
+              ExcelExport.exportPOR(currentPOR);
+              return;
+            }
+          }
+        }
+
+        // Fallback: export directly from localStorage data
+        const planDataStr = localStorage.getItem('productionPlan_' + planId);
+        if (planDataStr) {
+          const planData = JSON.parse(planDataStr);
+
+          // Create a temporary simulation object for export
+          const tempSimulation = {
+            id: planId,
+            name: 'Production Plan Report',
+            createdAt: planData.generatedAt || new Date().toISOString(),
+            config: planData.config || {},
+            results: planData.results || planData
+          };
+
+          if (typeof ExcelExport !== 'undefined' && ExcelExport.exportSimulation) {
+            ExcelExport.exportSimulation(tempSimulation);
+            return;
+          }
+        }
+
+        // If all else fails
+        alert('Excel export module not available. Please make sure the page loaded correctly.');
+      } catch (error) {
+        console.error('[Report] Excel export error:', error);
+        alert('Failed to export Excel file: ' + error.message);
+      }
     }
 
     // Initialize report on page load
