@@ -5,8 +5,11 @@
 
 // Helper to get data for current product
 function getCurrentCommandCenterData() {
+  console.log('[getCurrentCommandCenterData] window.STATE:', window.STATE);
+  console.log('[getCurrentCommandCenterData] window.STATE.filters:', window.STATE?.filters);
   const currentProduct = window.STATE?.filters?.product || 'A';
   console.log('[getCurrentCommandCenterData] Current product:', currentProduct);
+  console.log('[getCurrentCommandCenterData] typeof currentProduct:', typeof currentProduct);
   console.log('[getCurrentCommandCenterData] window.getCommandCenterData exists?', !!window.getCommandCenterData);
   const data = window.getCommandCenterData ? window.getCommandCenterData(currentProduct) : window.COMMAND_CENTER_DATA;
   console.log('[getCurrentCommandCenterData] Returning data for:', data.program_timeline.program_name);
