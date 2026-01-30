@@ -3392,7 +3392,8 @@ function renderProductionPlan() {
       mode: 'unconstrained',
       planResults: null,
       engine: null,
-      activeTab: 'generate' // 'generate' | 'library' | 'por' | 'history'
+      activeTab: 'generate', // 'generate' | 'library' | 'por' | 'history'
+      activeSubpage: 'latest' // 'latest' | 'generate' (subpage within generate tab)
     };
   }
 
@@ -3451,7 +3452,12 @@ function renderProductionPlan() {
   // Render active tab content
   switch (state.activeTab) {
     case 'generate':
-      renderProductionPlanGenerate();
+      // Within generate tab, check activeSubpage
+      if (state.activeSubpage === 'latest') {
+        renderProductionPlanLatest();
+      } else {
+        renderProductionPlanGenerate();
+      }
       break;
     case 'library':
       renderSimulationLibrary();
@@ -3463,7 +3469,8 @@ function renderProductionPlan() {
       renderPORHistory();
       break;
     default:
-      renderProductionPlanGenerate();
+      // Default to latest production plan
+      renderProductionPlanLatest();
   }
 }
 
@@ -4367,8 +4374,17 @@ function renderProductionPlanGenerate() {
 // Switch between subpages
 function switchProductionPlanSubpage(subpage) {
   window.productionPlanState.activeSubpage = subpage;
-  renderProductionPlan();
+
+  // Render the appropriate subpage
+  if (subpage === 'latest') {
+    renderProductionPlanLatest();
+  } else if (subpage === 'generate') {
+    renderProductionPlanGenerate();
+  }
 }
+
+// Export to window for onclick handlers
+window.switchProductionPlanSubpage = switchProductionPlanSubpage;
 
 // ==================== NEW: Simulation & POR Management Functions ====================
 
