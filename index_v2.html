@@ -61,27 +61,27 @@
   <div class="no-print bg-white border-b">
     <div class="max-w-7xl mx-auto px-4 py-2">
       <div class="flex items-center gap-1">
-        <button onclick="STATE.activeView = 'overview'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="overview">
+        <button onclick="navigateTo('overview');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="overview">
           Overview
         </button>
         <span class="text-slate-300">|</span>
-        <button onclick="STATE.activeView = 'portfolio'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="portfolio">
+        <button onclick="navigateTo('portfolio');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="portfolio">
           Decision Center
         </button>
         <span class="text-slate-300">|</span>
-        <button onclick="STATE.activeView = 'home'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="program">
+        <button onclick="navigateTo('home');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="program">
           <span id="programNavText" class="font-semibold">MO Operations Dashboard</span>
         </button>
         <span class="text-slate-300">|</span>
-        <button onclick="STATE.activeView = 'moKpis'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="moKpis">
+        <button onclick="navigateTo('moKpis');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="moKpis">
           MO KPIs
         </button>
         <span class="text-slate-300">|</span>
-        <button onclick="STATE.activeView = 'dataFoundation'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="dataFoundation">
+        <button onclick="navigateTo('dataFoundation');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="dataFoundation">
           Data Foundation
         </button>
         <span class="text-slate-300">|</span>
-        <button onclick="STATE.activeView = 'whitePaper'; render();" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="whitePaper">
+        <button onclick="navigateTo('whitePaper');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="whitePaper">
           White Paper
         </button>
       </div>
@@ -167,7 +167,7 @@
 
         <!-- Back to Decision Center -->
         <div class="mt-4 pt-3 border-t">
-          <button onclick="STATE.activeView = 'portfolio'; render();" class="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100 text-blue-600">
+          <button onclick="navigateTo('portfolio');" class="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-slate-100 text-blue-600">
             <div class="font-semibold">← Back to Decision Center</div>
             <div class="text-xs text-slate-500">View all programs</div>
           </button>
@@ -414,6 +414,7 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="./router.js"></script>
   <script src="./ai_system.js"></script>
   <script src="./data_update_system.js"></script>
   <script src="./chatbot_system.js"></script>

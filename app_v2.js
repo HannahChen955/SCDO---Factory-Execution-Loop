@@ -19,6 +19,23 @@ let STATE = {
 
 const $ = (id) => document.getElementById(id);
 
+// ========================================
+// Navigation Helper
+// ========================================
+function navigateTo(view, updateUrl = true) {
+  STATE.activeView = view;
+  if (updateUrl && window.Router) {
+    window.Router.navigate(
+      view,
+      STATE.filters.product,
+      STATE.filters.factorySite,
+      STATE.filters.week
+    );
+  } else {
+    render();
+  }
+}
+
 // Route icons
 const ROUTE_ICONS = {
   "AUTO_ACTION": "✅",
@@ -112,17 +129,47 @@ function initControls() {
 
   $("productFilter").addEventListener("change", (e) => {
     STATE.filters.product = e.target.value;
-    render();
+    // Update URL with new product
+    if (window.Router) {
+      window.Router.navigate(
+        STATE.activeView,
+        STATE.filters.product,
+        STATE.filters.factorySite,
+        STATE.filters.week
+      );
+    } else {
+      render();
+    }
   });
 
   $("factorySiteFilter").addEventListener("change", (e) => {
     STATE.filters.factorySite = e.target.value;
-    render();
+    // Update URL with new site
+    if (window.Router) {
+      window.Router.navigate(
+        STATE.activeView,
+        STATE.filters.product,
+        STATE.filters.factorySite,
+        STATE.filters.week
+      );
+    } else {
+      render();
+    }
   });
 
   $("weekFilter").addEventListener("change", (e) => {
     STATE.filters.week = e.target.value;
-    render();
+    // Update URL with new week
+    if (window.Router) {
+      window.Router.navigate(
+        STATE.activeView,
+        STATE.filters.product,
+        STATE.filters.factorySite,
+        STATE.filters.week
+      );
+    } else {
+      render();
+    }
   });
 
   // Navigation
@@ -130,8 +177,7 @@ function initControls() {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       const view = btn.getAttribute("data-view");
-      STATE.activeView = view;
-      render();
+      navigateTo(view);
     });
   });
 }
@@ -372,7 +418,7 @@ function updateBreadcrumb() {
 
   breadcrumb.innerHTML = `
     <div class="flex items-center gap-1 flex-wrap">
-      <a href="#" onclick="STATE.activeView = 'portfolio'; render(); return false;" class="hover:text-blue-600">Decision Center</a>
+      <a href="#" onclick="navigateTo('portfolio'); return false;" class="hover:text-blue-600">Decision Center</a>
       <span>›</span>
       <span class="font-semibold">${product} / ${factorySite}</span>
       <span>›</span>
@@ -2092,7 +2138,34 @@ window.closeReportModal = closeReportModal;
   await loadData();
   setMeta();
   initControls();
-  render();
+
+  // Initialize router
+  if (window.Router) {
+    window.Router.init((route) => {
+      console.log('[App] Route changed:', route);
+
+      // Update STATE from route
+      STATE.activeView = route.view;
+
+      // Update filters if provided in URL
+      if (route.product) {
+        STATE.filters.product = route.product;
+      }
+      if (route.site) {
+        STATE.filters.factorySite = route.site;
+      }
+      if (route.week) {
+        STATE.filters.week = route.week;
+      }
+
+      // Render the view
+      render();
+    });
+  } else {
+    // Fallback if router not loaded
+    console.warn('[App] Router not loaded, using default initialization');
+    render();
+  }
 })();
 // Home v3 - Delivery Command Center
 // This is the new renderHome function with v3 architecture
