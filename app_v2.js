@@ -27,7 +27,17 @@ const $ = (id) => document.getElementById(id);
 // ========================================
 function navigateTo(view, updateUrl = true) {
   STATE.activeView = view;
-  if (updateUrl && window.Router) {
+
+  // Program workspace sub-views share the same URL (/mo-dashboard)
+  // So we don't update URL for these, just render the new view
+  const programWorkspaceSubViews = ['production-plan', 'mfg-leadtime', 'bto-cto-leadtime',
+                                     'fv-management', 'labor-fulfillment', 'campus-readiness'];
+
+  if (programWorkspaceSubViews.includes(view)) {
+    // For sub-views, just render without changing URL
+    render();
+  } else if (updateUrl && window.Router) {
+    // For main views (overview, moKpis, etc), update URL
     window.Router.navigate(
       view,
       STATE.filters.product,
