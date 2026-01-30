@@ -3,9 +3,17 @@
 // Weekly Commit Brief - Facts, drivers, decisions
 // ========================================
 
+// Helper to get data for current product
+function getCurrentCommandCenterData() {
+  const currentProduct = window.STATE?.filters?.product || 'A';
+  return window.getCommandCenterData ? window.getCommandCenterData(currentProduct) : window.COMMAND_CENTER_DATA;
+}
+
 // Main render function
 function renderDeliveryCommandCenter() {
-  const data = window.COMMAND_CENTER_DATA;
+  // Get current product from STATE
+  const currentProduct = window.STATE?.filters?.product || 'A';
+  const data = getCurrentCommandCenterData();
   const snapshot = data.weekly_snapshot;
   const timeline = data.program_timeline;
   const timelineSummary = timeline.getCurrentSummary();
@@ -20,7 +28,7 @@ function renderDeliveryCommandCenter() {
         </div>
         <div class="text-right">
           <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Scope</div>
-          <div class="text-base font-bold text-slate-900 mt-1">Product A · ${snapshot.week_id}</div>
+          <div class="text-base font-bold text-slate-900 mt-1">Product ${currentProduct} · ${snapshot.week_id}</div>
           <div class="text-xs text-slate-500 mt-1.5">Cut-off: ${snapshot.cut_off_time}</div>
         </div>
       </div>
@@ -39,7 +47,7 @@ function renderDeliveryCommandCenter() {
 
 // A. Program Timeline
 function renderProgramTimeline() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const timeline = data.program_timeline;
   const summary = timeline.getCurrentSummary();
 
@@ -109,7 +117,7 @@ function renderProgramTimeline() {
 
 // A. Weekly Commit Snapshot
 function renderWeeklyCommitSnapshot() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const snapshot = data.weekly_snapshot;
 
   // Determine primary limiter label
@@ -192,7 +200,7 @@ function renderWeeklyCommitSnapshot() {
 
 // B. Site Execution Snapshot
 function renderSiteExecutionSnapshot() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const sites = data.site_snapshots;
 
   const sitesHTML = sites.map(site => `
@@ -252,7 +260,7 @@ function renderSiteExecutionSnapshot() {
 
 // C. Gap Decomposition
 function renderGapDecomposition() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const decomp = data.gap_decomposition;
   const snapshot = data.weekly_snapshot;
 
@@ -296,7 +304,7 @@ function renderGapDecomposition() {
 
 // D. Decisions Needed
 function renderDecisionsNeeded() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const decisions = data.decision_queue.slice(0, 3); // Max 3
 
   if (decisions.length === 0) {
@@ -371,7 +379,7 @@ function renderDecisionsNeeded() {
 
 // E. Evidence Links
 function renderEvidenceLinks() {
-  const data = window.COMMAND_CENTER_DATA;
+  const data = getCurrentCommandCenterData();
   const links = data.evidence_links;
 
   const linksHTML = links.map(link => `
@@ -394,7 +402,7 @@ function renderEvidenceLinks() {
 
 // Helper functions
 function getTimelineStageStatus(stage, currentPhaseId) {
-  const timeline = window.COMMAND_CENTER_DATA.program_timeline;
+  const timeline = getCurrentCommandCenterData().program_timeline;
   const currentStage = timeline.stages.find(s => s.id === currentPhaseId);
 
   if (!currentStage) return 'planned';
@@ -421,7 +429,7 @@ function getTimelineStageStatus(stage, currentPhaseId) {
 }
 
 function showStageDetails(stageId) {
-  const timeline = window.COMMAND_CENTER_DATA.program_timeline;
+  const timeline = getCurrentCommandCenterData().program_timeline;
   const stage = timeline.stages.find(s => s.id === stageId);
   if (!stage) return;
 
