@@ -158,9 +158,12 @@ function initControls() {
   populateSelect($("weekFilter"), weeks, STATE.filters.week);
 
   $("productFilter").addEventListener("change", (e) => {
+    console.log('[Product Filter] Changed to:', e.target.value);
     STATE.filters.product = e.target.value;
+    console.log('[Product Filter] STATE.filters.product is now:', STATE.filters.product);
     // Update URL with new product
     if (window.Router) {
+      console.log('[Product Filter] Navigating to:', STATE.activeView, STATE.filters.product);
       window.Router.navigate(
         STATE.activeView,
         STATE.filters.product,
@@ -2177,12 +2180,14 @@ window.closeReportModal = closeReportModal;
   if (window.Router) {
     window.Router.init((route) => {
       console.log('[App] Route changed:', route);
+      console.log('[App] Before update - STATE.filters.product:', STATE.filters.product);
 
       // Update STATE from route
       STATE.activeView = route.view;
 
       // Update filters if provided in URL
       if (route.product) {
+        console.log('[App] Updating STATE.filters.product from route:', route.product);
         STATE.filters.product = route.product;
       }
       if (route.site) {
@@ -2191,6 +2196,8 @@ window.closeReportModal = closeReportModal;
       if (route.week) {
         STATE.filters.week = route.week;
       }
+
+      console.log('[App] After update - STATE.filters.product:', STATE.filters.product);
 
       // Sync filter dropdowns with STATE
       const productFilter = $("productFilter");
