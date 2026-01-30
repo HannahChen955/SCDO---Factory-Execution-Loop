@@ -164,32 +164,36 @@ function initControls() {
   console.log('[initControls] Product filter options count:', productFilterEl?.options?.length);
   console.log('[initControls] Product filter current value:', productFilterEl?.value);
 
-  // Add click listener to verify element is interactive
-  productFilterEl.addEventListener("click", () => {
-    console.log('[Product Filter] ===== CLICK EVENT FIRED =====');
-    console.log('[Product Filter] Current value on click:', productFilterEl.value);
-  });
+  if (!productFilterEl) {
+    console.error('[initControls] ERROR: Product filter element not found!');
+  } else {
+    // Add click listener to verify element is interactive
+    productFilterEl.addEventListener("click", () => {
+      console.log('[Product Filter] ===== CLICK EVENT FIRED =====');
+      console.log('[Product Filter] Current value on click:', productFilterEl.value);
+    });
 
-  productFilterEl.addEventListener("change", (e) => {
-    console.log('[Product Filter] ===== CHANGE EVENT FIRED =====');
-    console.log('[Product Filter] Changed to:', e.target.value);
-    console.log('[Product Filter] e.target:', e.target);
-    console.log('[Product Filter] e.target.selectedIndex:', e.target.selectedIndex);
-    STATE.filters.product = e.target.value;
-    console.log('[Product Filter] STATE.filters.product is now:', STATE.filters.product);
-    // Update URL with new product
-    if (window.Router) {
-      console.log('[Product Filter] Navigating to:', STATE.activeView, STATE.filters.product);
-      window.Router.navigate(
-        STATE.activeView,
-        STATE.filters.product,
-        STATE.filters.factorySite,
-        STATE.filters.week
-      );
-    } else {
-      render();
-    }
-  });
+    productFilterEl.addEventListener("change", (e) => {
+      console.log('[Product Filter] ===== CHANGE EVENT FIRED =====');
+      console.log('[Product Filter] Changed to:', e.target.value);
+      console.log('[Product Filter] e.target:', e.target);
+      console.log('[Product Filter] e.target.selectedIndex:', e.target.selectedIndex);
+      STATE.filters.product = e.target.value;
+      console.log('[Product Filter] STATE.filters.product is now:', STATE.filters.product);
+      // Update URL with new product
+      if (window.Router) {
+        console.log('[Product Filter] Navigating to:', STATE.activeView, STATE.filters.product);
+        window.Router.navigate(
+          STATE.activeView,
+          STATE.filters.product,
+          STATE.filters.factorySite,
+          STATE.filters.week
+        );
+      } else {
+        render();
+      }
+    });
+  }
 
   $("factorySiteFilter").addEventListener("change", (e) => {
     STATE.filters.factorySite = e.target.value;
@@ -2188,8 +2192,16 @@ window.closeReportModal = closeReportModal;
 
 // Initialize
 (async function() {
+  console.log('[App Init] Starting initialization...');
+  console.log('[App Init] document.readyState:', document.readyState);
+  console.log('[App Init] productFilter element exists at start?', !!document.getElementById('productFilter'));
+
   await loadData();
   setMeta();
+
+  console.log('[App Init] About to call initControls()');
+  console.log('[App Init] productFilter element exists before initControls?', !!document.getElementById('productFilter'));
+
   initControls();
 
   // Initialize router
