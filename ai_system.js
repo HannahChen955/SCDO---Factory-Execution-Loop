@@ -610,6 +610,85 @@ function copyToClipboard(text) {
   });
 }
 
+// Create AI_SYSTEM object with chat method
+window.AI_SYSTEM = {
+  // Chat method for natural language queries
+  async chat(prompt, context = {}) {
+    try {
+      // Use real API or mock based on configuration
+      if (AI_CONFIG.useRealAPI) {
+        return await callRealAI('chat', { prompt, ...context });
+      } else {
+        // Mock response for demo purposes
+        return this.mockChat(prompt, context);
+      }
+    } catch (error) {
+      console.error('[AI_SYSTEM.chat] Error:', error);
+      return `I apologize, but I encountered an error processing your request. Please try again.`;
+    }
+  },
+
+  // Mock chat for demo
+  mockChat(prompt, context = {}) {
+    // Simple keyword-based responses for demo
+    const lowerPrompt = prompt.toLowerCase();
+
+    if (lowerPrompt.includes('create') && lowerPrompt.includes('plan')) {
+      return `I understand you want to create a production plan. Based on your request, I recommend:
+
+**Configuration Suggestions:**
+- Mode: Constrained (respects capacity limits)
+- Duration: 90 days
+- Sites: SZ, WH (as mentioned)
+- Sunday OT: Enabled
+
+Would you like me to apply these settings to the Production Plan configuration?`;
+    }
+
+    if (lowerPrompt.includes('gap') || lowerPrompt.includes('why')) {
+      return `Let me analyze the gap for you:
+
+**Key Drivers:**
+1. **Material Constraints**: CTB availability limiting input
+2. **Capacity Utilization**: Running at 87% (below 90% target)
+3. **Yield Performance**: Current yield at 94.2% vs 97.5% target
+
+**Recommendations:**
+- Expedite material delivery to increase input
+- Optimize shift scheduling to improve capacity utilization
+- Address yield issues through quality improvements`;
+    }
+
+    if (lowerPrompt.includes('difference') || lowerPrompt.includes('constrained')) {
+      return `**Constrained vs Unconstrained Modes:**
+
+**Constrained Mode:**
+- Respects all capacity, material, and resource limits
+- Provides realistic, achievable plan
+- Shows actual bottlenecks and constraints
+
+**Unconstrained Mode:**
+- Ignores limits to show theoretical maximum
+- Useful for identifying true demand vs supply gaps
+- Helps determine where to invest capacity
+
+**Combined Mode:**
+- Runs both and shows the difference
+- Highlights exactly what constraints are limiting output`;
+    }
+
+    // Default response
+    return `I can help you with Production Planning! I can:
+
+1. **Configure new plans** - Describe what you want in plain language
+2. **Analyze gaps** - Explain why targets aren't being met
+3. **Compare scenarios** - Understand trade-offs between options
+4. **Suggest optimizations** - Recommend improvements
+
+What would you like to know?`;
+  }
+};
+
 // Global exports for AI functions
 window.openAIDrawer = openAIDrawer;
 window.closeAIDrawer = closeAIDrawer;
