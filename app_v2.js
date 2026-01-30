@@ -5,7 +5,7 @@ let STATE = {
   data: null,
   scenarioId: "A",
   filters: { product: null, factorySite: null, week: null },
-  activeView: "overview", // overview | portfolio | home | signals | radar | actions | reports | dataFoundation
+  activeView: "overview", // overview | portfolio (Decision Center) | home | signals | radar | actions | reports | dataFoundation
   currentProgram: null, // Current program context { product, factorySite, week }
   selectedRiskId: null,
   prdMode: false,
@@ -244,7 +244,7 @@ function runSimulation() {
 
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
-  // Portfolio and Data Foundation are global pages - no sidebar filters
+  // Decision Center and Data Foundation are global pages - no sidebar filters
   const isProgramWorkspace = ["home", "delivery", "production-plan", "command-center", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
@@ -282,7 +282,7 @@ function render() {
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
   if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
-    // Hide filters on global pages (Overview, Portfolio, MO KPIs, Data Foundation, White Paper)
+    // Hide filters on global pages (Overview, Decision Center, MO KPIs, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -372,7 +372,7 @@ function updateBreadcrumb() {
 
   breadcrumb.innerHTML = `
     <div class="flex items-center gap-1 flex-wrap">
-      <a href="#" onclick="STATE.activeView = 'portfolio'; render(); return false;" class="hover:text-blue-600">Portfolio</a>
+      <a href="#" onclick="STATE.activeView = 'portfolio'; render(); return false;" class="hover:text-blue-600">Decision Center</a>
       <span>›</span>
       <span class="font-semibold">${product} / ${factorySite}</span>
       <span>›</span>
@@ -712,7 +712,7 @@ function renderOverview() {
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Portfolio & Program Workspace UI</span></li>
+                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Decision Center & Program Workspace UI</span></li>
                   <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Delivery Command Center module</span></li>
                   <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Manufacturing & BTO/CTO Lead-time tracking</span></li>
                   <li class="flex items-start gap-2"><span class="text-yellow-600">⏳</span><span>Basic data ingestion pipeline</span></li>
@@ -861,7 +861,7 @@ function renderOverview() {
               <div class="font-semibold mb-2">Data & Interactions</div>
               <ul class="space-y-1">
                 <li>• All data is mocked for demonstration purposes</li>
-                <li>• Click <strong>Portfolio</strong> to explore program-level details</li>
+                <li>• Click <strong>Decision Center</strong> to explore program-level details</li>
                 <li>• Try the chatbot and data update features</li>
               </ul>
             </div>
@@ -880,10 +880,10 @@ function renderOverview() {
 }
 
 // ========================================
-// PORTFOLIO - All Programs
+// DECISION CENTER - All Programs
 // ========================================
 // ========================================
-// Portfolio Helper Functions
+// Decision Center Helper Functions
 // ========================================
 
 function calculateDriverBreakdown(programs) {
@@ -958,44 +958,44 @@ function generateTopFocusCards(programs) {
 
 // Placeholder functions for card click handlers
 function filterPrograms(filter) {
-  console.log(`[Portfolio] Filter programs by: ${filter}`);
+  console.log(`[Decision Center] Filter programs by: ${filter}`);
   // TODO: Implement filtering logic
 }
 
 function openDecisionInbox() {
-  console.log('[Portfolio] Opening Decision Inbox');
+  console.log('[Decision Center] Opening Decision Inbox');
   // TODO: Implement decision inbox
 }
 
 function openAtRiskBreakdown() {
-  console.log('[Portfolio] Opening At-risk breakdown');
+  console.log('[Decision Center] Opening At-risk breakdown');
   // TODO: Implement at-risk breakdown
 }
 
 function openInventoryDrilldown() {
-  console.log('[Portfolio] Opening Inventory drilldown');
+  console.log('[Decision Center] Opening Inventory drilldown');
   // TODO: Implement inventory drilldown
 }
 
 function assignOrEscalate(program) {
-  console.log(`[Portfolio] Assign/Escalate for program: ${program}`);
+  console.log(`[Decision Center] Assign/Escalate for program: ${program}`);
   // TODO: Implement assign/escalate flow
 }
 
 function openException(program, issue) {
-  console.log(`[Portfolio] Opening exception: ${program} - ${issue}`);
+  console.log(`[Decision Center] Opening exception: ${program} - ${issue}`);
   // TODO: Implement exception detail view
 }
 
 // ========================================
-// Portfolio Rendering
+// Decision Center Rendering
 // ========================================
 
 function renderPortfolio() {
   const portfolio = STATE.data.portfolio;
 
   if (!portfolio) {
-    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Portfolio data not available</div>`;
+    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Decision Center data not available</div>`;
     return;
   }
 
@@ -1009,7 +1009,7 @@ function renderPortfolio() {
     <div class="bg-white border-2 border-slate-300 rounded-xl p-6 mb-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex-1">
-          <div class="text-xl font-bold mb-2">Portfolio — Weekly Decision Triage</div>
+          <div class="text-xl font-bold mb-2">Decision Center — Weekly Decision Triage</div>
           <div class="text-sm text-slate-700 mb-3">Highlights where attention changes outcomes (not a performance ranking).</div>
           <div class="grid grid-cols-3 gap-4 text-xs text-slate-600">
             <div><span class="font-semibold text-slate-900">1.</span> What needs a decision this week / within 48h</div>
@@ -8936,7 +8936,7 @@ function renderWhitePaper() {
                 <div class="text-blue-700">Site-level capacity planning, input/output modeling, ramp curve simulation, scenario analysis</div>
               </div>
               <div class="bg-blue-50 rounded p-3">
-                <div class="font-medium text-blue-900 mb-1">Portfolio Overview</div>
+                <div class="font-medium text-blue-900 mb-1">Decision Center Overview</div>
                 <div class="text-blue-700">Multi-program aggregation, cross-site visibility, executive summary dashboards</div>
               </div>
               <div class="bg-blue-50 rounded p-3">

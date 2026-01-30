@@ -66,7 +66,7 @@ function formatOpenAIResponse(text, action) {
 // Unified AI response format - Mock version
 function mockAI(context, action, params = {}) {
   const responses = {
-    // Portfolio AI responses
+    // Decision Center AI responses
     'portfolio_exec_summary': {
       summary: [
         "2 programs at YELLOW health due to material constraints + test yield drift (38.6k units at risk)",
