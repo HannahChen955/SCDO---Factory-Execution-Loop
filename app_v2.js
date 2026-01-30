@@ -17,6 +17,9 @@ let STATE = {
   dataFoundationSubpage: "alignedIndex" // alignedIndex | dataSource | productionPlanLogic
 };
 
+// Export STATE to window so other scripts (like command_center_new.js) can access it
+window.STATE = STATE;
+
 const $ = (id) => document.getElementById(id);
 
 // ========================================
@@ -35,6 +38,9 @@ function navigateTo(view, updateUrl = true) {
     render();
   }
 }
+
+// Export navigateTo globally for onclick handlers in HTML
+window.navigateTo = navigateTo;
 
 // Route icons
 const ROUTE_ICONS = {
@@ -879,13 +885,13 @@ function renderOverview() {
           </div>
         </div>
 
-        <!-- Phase 3: Optimization -->
+        <!-- Phase 3: Integration Expansion -->
         <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
           <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">3</div>
               <div>
-                <div class="font-bold text-slate-900">Phase 3: Advanced Analytics & Predictive Intelligence</div>
+                <div class="font-bold text-slate-900">Phase 3: Integration Expansion</div>
                 <div class="text-xs text-slate-600">Q3 2026 (Jul - Sep) · 12 weeks</div>
               </div>
             </div>
@@ -895,31 +901,31 @@ function renderOverview() {
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Predictive risk modeling (ML-based)</li>
-                  <li>• Production Plan optimization engine</li>
-                  <li>• Campus Readiness capacity planning</li>
-                  <li>• Automated anomaly detection</li>
+                  <li>• Scale integrations across all major suppliers</li>
+                  <li>• Expand data connectivity to additional factories</li>
+                  <li>• Standardize data pipelines across regions</li>
+                  <li>• Complete supplier onboarding workflows</li>
                 </ul>
               </div>
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Predict 70% of delays 5+ days early</li>
-                  <li>• Reduce manual planning time by 40%</li>
-                  <li>• Detect anomalies within 2 hours</li>
+                  <li>• Connect to 10+ major suppliers</li>
+                  <li>• 95%+ data coverage across supply chain</li>
+                  <li>• Real-time sync across all factories</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Phase 4: Scale -->
+        <!-- Phase 4: Advanced Analytics & AI Intelligence -->
         <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
           <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">4</div>
               <div>
-                <div class="font-bold text-slate-900">Phase 4: Enterprise Scale & Closed-Loop Automation</div>
+                <div class="font-bold text-slate-900">Phase 4: Advanced Analytics & AI Intelligence</div>
                 <div class="text-xs text-slate-600">Q4 2026 (Oct - Dec) · 12 weeks</div>
               </div>
             </div>
@@ -929,18 +935,18 @@ function renderOverview() {
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Multi-region deployment (APAC, Americas, EMEA)</li>
-                  <li>• Closed-loop action routing & tracking</li>
-                  <li>• Mobile app for factory floor visibility</li>
-                  <li>• Executive dashboard & automated reporting</li>
+                  <li>• AI chatbot with natural language queries</li>
+                  <li>• Predictive risk modeling & analytics</li>
+                  <li>• Automated anomaly detection</li>
+                  <li>• Production Plan optimization engine</li>
                 </ul>
               </div>
               <div>
                 <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
                 <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• 20+ factories onboarded globally</li>
-                  <li>• 50% reduction in commit misses</li>
-                  <li>• <2 second average query response time</li>
+                  <li>• AI response accuracy >85%</li>
+                  <li>• Predict 70% of delays 5+ days early</li>
+                  <li>• Reduce manual planning time by 40%</li>
                 </ul>
               </div>
             </div>
@@ -7630,19 +7636,8 @@ function renderCampusReadiness() {
 // NAVIGATION HELPER (v3.0)
 // ========================================
 
-/**
- * Navigate to a specific view
- * @param {string} view - View name
- */
-function navigateTo(view) {
-  STATE.activeView = view;
-  render();
-}
-
-// Export navigateTo globally
-if (typeof window !== 'undefined') {
-  window.navigateTo = navigateTo;
-}
+// Note: navigateTo function is defined at the top of this file (line 28)
+// and exported to window below
 
 // ========================================
 // PRODUCTION PLAN HELPERS (v2.0)
@@ -9254,7 +9249,7 @@ function renderWhitePaper() {
               </div>
               <div class="flex-grow pt-2">
                 <h3 class="font-semibold text-slate-900 mb-1">Q3 2026: Integration Expansion</h3>
-                <p class="text-sm text-slate-600 mb-2">Scale Phase 2 integrations across all major suppliers and logistics partners</p>
+                <p class="text-sm text-slate-600 mb-2">Scale Phase 2 integrations across all major suppliers</p>
                 <div class="text-xs text-green-700 bg-green-50 rounded px-2 py-1 inline-block">Jul - Sep 2026</div>
               </div>
             </div>
