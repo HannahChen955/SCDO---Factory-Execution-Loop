@@ -7991,7 +7991,7 @@ function renderMOKpis() {
     <div class="space-y-6">
       <!-- Header with gradient -->
       <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold mb-2">Manufacturing Operations KPIs</h1>
             <p class="text-blue-200 text-sm">Real-time operational metrics and insights</p>
@@ -8000,30 +8000,6 @@ function renderMOKpis() {
             <div class="text-sm text-blue-200 mb-1">Overall Health</div>
             <div class="text-5xl font-bold">${healthScore}</div>
             <div class="text-xs text-blue-300 mt-1">${healthScore >= 80 ? 'GOOD' : healthScore >= 60 ? 'FAIR' : 'AT RISK'}</div>
-          </div>
-        </div>
-        
-        <!-- Quick Stats Row -->
-        <div class="grid grid-cols-4 gap-4">
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <div class="text-blue-200 text-xs mb-1">Production</div>
-            <div class="text-2xl font-bold">${formatNumber(kpiData.production.current)}</div>
-            <div class="text-xs text-blue-300 mt-1">${kpiData.production.variance.toFixed(1)}% vs target</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <div class="text-blue-200 text-xs mb-1">Shipment</div>
-            <div class="text-2xl font-bold">${formatNumber(kpiData.shipment.current)}</div>
-            <div class="text-xs text-blue-300 mt-1">${kpiData.shipment.variance.toFixed(1)}% vs target</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <div class="text-blue-200 text-xs mb-1">Labor Fill</div>
-            <div class="text-2xl font-bold">${kpiData.labor.fulfillmentRate}%</div>
-            <div class="text-xs text-blue-300 mt-1">${formatNumber(kpiData.labor.current)} headcount</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-            <div class="text-blue-200 text-xs mb-1">Campus</div>
-            <div class="text-2xl font-bold">${kpiData.campus.readiness}%</div>
-            <div class="text-xs text-blue-300 mt-1">${kpiData.campus.issues} open issues</div>
           </div>
         </div>
       </div>
