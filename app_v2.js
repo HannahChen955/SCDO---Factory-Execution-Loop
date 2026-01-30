@@ -7852,86 +7852,320 @@ function toggleFiscalCalendar() {
 // ========================================
 
 /**
+ * Get KPI data by product
+ * Each product has different performance characteristics
+ */
+function getKPIDataByProduct(productId) {
+  const dataByProduct = {
+    'A': { // Product A: Strong performer, exceeding targets
+      production: {
+        current: 52300,
+        target: 50000,
+        weeklyTrend: [48000, 49500, 51000, 52300],
+        variance: 4.6,
+        delta: 2300,
+        wow: 2.5,
+        mom: 8.9,
+        trend: 'up',
+        driver: "Yield +2.1pp (WF)",
+        owner: "Operations",
+        wf: { current: 33500, target: 32000, yield: 96.8 },
+        vn02: { current: 18800, target: 18000, yield: 97.2 }
+      },
+      shipment: {
+        current: 50100,
+        target: 48000,
+        weeklyTrend: [46500, 47800, 49200, 50100],
+        variance: 4.4,
+        delta: 2100,
+        wow: 1.8,
+        mom: 7.7,
+        trend: 'up',
+        driver: "On-time delivery 98%",
+        owner: "Logistics",
+        wf: { current: 31000, shipped: 30800 },
+        vn02: { current: 19100, shipped: 19000 }
+      },
+      labor: {
+        current: 2580,
+        target: 2600,
+        weeklyTrend: [2520, 2550, 2570, 2580],
+        variance: -0.8,
+        delta: -20,
+        wow: 0.4,
+        mom: 2.4,
+        trend: 'up',
+        fulfillmentRate: 99.2,
+        driver: "Fill 99.2%, OT +5%",
+        owner: "HR / Operations",
+        wf: { current: 1680, target: 1700, fill: 98.8 },
+        vn02: { current: 900, target: 900, fill: 100.0 }
+      },
+      fvCost: {
+        current: 268.0,
+        target: 275.0,
+        weeklyTrend: [272.5, 270.2, 269.1, 268.0],
+        variance: -2.5,
+        delta: -7.0,
+        wow: -0.4,
+        mom: -1.6,
+        trend: 'down',
+        driver: "Process improvement –$5",
+        owner: "Finance",
+        breakdown: { material: 185.0, labor: 46.0, overhead: 30.0, rework: 7.0 }
+      },
+      campus: {
+        readiness: 98.2,
+        target: 98.0,
+        weeklyTrend: [97.5, 97.8, 98.0, 98.2],
+        variance: 0.2,
+        delta: 0.2,
+        wow: 0.2,
+        mom: 0.7,
+        trend: 'up',
+        issues: 1,
+        driver: "1 issue: Minor maintenance",
+        owner: "Facilities",
+        wf: { readiness: 98.5, issues: 0 },
+        vn02: { readiness: 97.9, issues: 1 }
+      }
+    },
+    'B': { // Product B: Struggling, below targets
+      production: {
+        current: 38200,
+        target: 50000,
+        weeklyTrend: [42000, 40500, 39000, 38200],
+        variance: -23.6,
+        delta: -11800,
+        wow: -2.1,
+        mom: -9.1,
+        trend: 'down',
+        driver: "Yield –5.8pp (VN02)",
+        owner: "Operations",
+        wf: { current: 24500, target: 32000, yield: 88.2 },
+        vn02: { current: 13700, target: 18000, yield: 85.5 }
+      },
+      shipment: {
+        current: 35800,
+        target: 48000,
+        weeklyTrend: [40000, 38500, 37000, 35800],
+        variance: -25.4,
+        delta: -12200,
+        wow: -3.2,
+        mom: -10.5,
+        trend: 'down',
+        driver: "Backlog +28%, Quality holds",
+        owner: "Logistics",
+        wf: { current: 22000, shipped: 21500 },
+        vn02: { current: 13800, shipped: 13500 }
+      },
+      labor: {
+        current: 2180,
+        target: 2600,
+        weeklyTrend: [2350, 2280, 2230, 2180],
+        variance: -16.2,
+        delta: -420,
+        wow: -2.2,
+        mom: -7.2,
+        trend: 'down',
+        fulfillmentRate: 83.8,
+        driver: "Fill 83.8%, High attrition",
+        owner: "HR / Operations",
+        wf: { current: 1420, target: 1700, fill: 83.5 },
+        vn02: { current: 760, target: 900, fill: 84.4 }
+      },
+      fvCost: {
+        current: 312.5,
+        target: 275.0,
+        weeklyTrend: [305.2, 308.8, 310.5, 312.5],
+        variance: 13.6,
+        delta: 37.5,
+        wow: 0.6,
+        mom: 2.4,
+        trend: 'up',
+        driver: "Rework +$18, Expedite +$12",
+        owner: "Finance",
+        breakdown: { material: 205.0, labor: 52.5, overhead: 36.0, rework: 19.0 }
+      },
+      campus: {
+        readiness: 91.2,
+        target: 98.0,
+        weeklyTrend: [93.5, 92.8, 92.0, 91.2],
+        variance: -6.9,
+        delta: -6.8,
+        wow: -0.9,
+        mom: -2.5,
+        trend: 'down',
+        issues: 8,
+        driver: "8 issues: Equipment (3 critical)",
+        owner: "Facilities",
+        wf: { readiness: 92.5, issues: 4 },
+        vn02: { readiness: 89.9, issues: 4 }
+      }
+    },
+    'C': { // Product C: Cost challenges, decent production
+      production: {
+        current: 47500,
+        target: 50000,
+        weeklyTrend: [46200, 46800, 47200, 47500],
+        variance: -5.0,
+        delta: -2500,
+        wow: 0.6,
+        mom: 2.8,
+        trend: 'stable',
+        driver: "Yield –1.2pp (both sites)",
+        owner: "Operations",
+        wf: { current: 30200, target: 32000, yield: 93.5 },
+        vn02: { current: 17300, target: 18000, yield: 94.1 }
+      },
+      shipment: {
+        current: 46200,
+        target: 48000,
+        weeklyTrend: [44800, 45500, 45900, 46200],
+        variance: -3.8,
+        delta: -1800,
+        wow: 0.7,
+        mom: 3.1,
+        trend: 'stable',
+        driver: "Backlog +8%",
+        owner: "Logistics",
+        wf: { current: 29000, shipped: 28700 },
+        vn02: { current: 17200, shipped: 17100 }
+      },
+      labor: {
+        current: 2620,
+        target: 2600,
+        weeklyTrend: [2550, 2590, 2610, 2620],
+        variance: 0.8,
+        delta: 20,
+        wow: 0.4,
+        mom: 2.7,
+        trend: 'stable',
+        fulfillmentRate: 100.8,
+        driver: "Fill 100.8%, OT +32%",
+        owner: "HR / Operations",
+        wf: { current: 1720, target: 1700, fill: 101.2 },
+        vn02: { current: 900, target: 900, fill: 100.0 }
+      },
+      fvCost: {
+        current: 298.0,
+        target: 275.0,
+        weeklyTrend: [302.5, 300.8, 299.2, 298.0],
+        variance: 8.4,
+        delta: 23.0,
+        wow: -0.4,
+        mom: -1.5,
+        trend: 'down',
+        driver: "Material +$15, Freight +$8",
+        owner: "Finance",
+        breakdown: { material: 210.0, labor: 51.0, overhead: 32.0, rework: 5.0 }
+      },
+      campus: {
+        readiness: 95.8,
+        target: 98.0,
+        weeklyTrend: [95.0, 95.4, 95.6, 95.8],
+        variance: -2.2,
+        delta: -2.2,
+        wow: 0.2,
+        mom: 0.8,
+        trend: 'up',
+        issues: 4,
+        driver: "4 issues: HVAC (1 critical)",
+        owner: "Facilities",
+        wf: { readiness: 96.8, issues: 2 },
+        vn02: { readiness: 94.8, issues: 2 }
+      }
+    },
+    'D': { // Product D: Labor shortage impacting output
+      production: {
+        current: 41200,
+        target: 50000,
+        weeklyTrend: [43500, 42800, 42000, 41200],
+        variance: -17.6,
+        delta: -8800,
+        wow: -1.9,
+        mom: -5.3,
+        trend: 'down',
+        driver: "Capacity limited by HC",
+        owner: "Operations",
+        wf: { current: 26000, target: 32000, yield: 94.2 },
+        vn02: { current: 15200, target: 18000, yield: 93.8 }
+      },
+      shipment: {
+        current: 40800,
+        target: 48000,
+        weeklyTrend: [42800, 42000, 41500, 40800],
+        variance: -15.0,
+        delta: -7200,
+        wow: -1.7,
+        mom: -4.7,
+        trend: 'down',
+        driver: "Production constrained",
+        owner: "Logistics",
+        wf: { current: 25800, shipped: 25500 },
+        vn02: { current: 15000, shipped: 14900 }
+      },
+      labor: {
+        current: 2120,
+        target: 2600,
+        weeklyTrend: [2280, 2220, 2170, 2120],
+        variance: -18.5,
+        delta: -480,
+        wow: -2.3,
+        mom: -7.0,
+        trend: 'down',
+        fulfillmentRate: 81.5,
+        driver: "Fill 81.5%, Hiring freeze",
+        owner: "HR / Operations",
+        wf: { current: 1380, target: 1700, fill: 81.2 },
+        vn02: { current: 740, target: 900, fill: 82.2 }
+      },
+      fvCost: {
+        current: 279.5,
+        target: 275.0,
+        weeklyTrend: [283.0, 281.2, 280.5, 279.5],
+        variance: 1.6,
+        delta: 4.5,
+        wow: -0.4,
+        mom: -1.2,
+        trend: 'down',
+        driver: "Lower volume, fixed costs",
+        owner: "Finance",
+        breakdown: { material: 192.0, labor: 48.0, overhead: 34.5, rework: 5.0 }
+      },
+      campus: {
+        readiness: 97.5,
+        target: 98.0,
+        weeklyTrend: [97.0, 97.2, 97.4, 97.5],
+        variance: -0.5,
+        delta: -0.5,
+        wow: 0.1,
+        mom: 0.5,
+        trend: 'up',
+        issues: 2,
+        driver: "2 issues: Safety inspection pending",
+        owner: "Facilities",
+        wf: { readiness: 98.0, issues: 1 },
+        vn02: { readiness: 97.0, issues: 1 }
+      }
+    }
+  };
+
+  return dataByProduct[productId] || dataByProduct['A']; // Default to Product A
+}
+
+/**
  * Render MO KPIs page V4
  * Tech-style Executive Dashboard with modern visuals
  */
 function renderMOKpis() {
   const content = $("content");
 
-  // Mock data with enhanced metrics
-  const kpiData = {
-    production: {
-      current: 45800,
-      target: 50000,
-      weeklyTrend: [42000, 43500, 44200, 45800],
-      variance: -8.4,
-      delta: -4200,
-      wow: 2.4,
-      mom: 8.1,
-      trend: 'up',
-      driver: "Yield –3.3pp (WF)",
-      owner: "Operations",
-      wf: { current: 28500, target: 32000, yield: 91.2 },
-      vn02: { current: 17300, target: 18000, yield: 95.5 }
-    },
-    shipment: {
-      current: 44200,
-      target: 48000,
-      weeklyTrend: [41000, 42800, 43500, 44200],
-      variance: -7.9,
-      delta: -3800,
-      wow: 1.6,
-      mom: 7.8,
-      trend: 'stable',
-      driver: "Backlog +12%",
-      owner: "Logistics",
-      wf: { current: 27200, shipped: 26800 },
-      vn02: { current: 17000, shipped: 16900 }
-    },
-    labor: {
-      current: 2450,
-      target: 2600,
-      weeklyTrend: [2380, 2420, 2440, 2450],
-      variance: -5.8,
-      delta: -150,
-      wow: 0.4,
-      mom: 2.9,
-      trend: 'up',
-      fulfillmentRate: 94.2,
-      driver: "Fill 94.2%, OT +18%",
-      owner: "HR / Operations",
-      wf: { current: 1620, target: 1700, fill: 95.3 },
-      vn02: { current: 830, target: 900, fill: 92.2 }
-    },
-    fvCost: {
-      current: 285.5,
-      target: 275.0,
-      weeklyTrend: [288.2, 286.8, 286.0, 285.5],
-      variance: 3.8,
-      delta: 10.5,
-      wow: -0.2,
-      mom: -0.9,
-      trend: 'down',
-      driver: "Freight +$8, Rework +$4",
-      owner: "Finance",
-      breakdown: { material: 195.2, labor: 48.5, overhead: 32.8, rework: 9.0 }
-    },
-    campus: {
-      readiness: 96.5,
-      target: 98.0,
-      weeklyTrend: [95.8, 96.0, 96.2, 96.5],
-      variance: -1.5,
-      delta: -1.5,
-      wow: 0.3,
-      mom: 0.7,
-      trend: 'stable',
-      issues: 3,
-      driver: "3 issues: Utility (critical)",
-      owner: "Facilities",
-      wf: { readiness: 97.2, issues: 1 },
-      vn02: { readiness: 95.8, issues: 2 }
-    }
-  };
+  // Get current product from state (default to A)
+  const currentProduct = STATE.selectedProduct || 'A';
+
+  // Get KPI data for selected product
+  const kpiData = getKPIDataByProduct(currentProduct);
 
   // Calculate Overall Health Score
   const healthScore = Math.round(
