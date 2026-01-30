@@ -2158,6 +2158,21 @@ window.closeReportModal = closeReportModal;
         STATE.filters.week = route.week;
       }
 
+      // Sync filter dropdowns with STATE
+      const productFilter = $("productFilter");
+      const siteFilter = $("factorySiteFilter");
+      const weekFilter = $("weekFilter");
+
+      if (productFilter && STATE.filters.product) {
+        productFilter.value = STATE.filters.product;
+      }
+      if (siteFilter && STATE.filters.factorySite) {
+        siteFilter.value = STATE.filters.factorySite;
+      }
+      if (weekFilter && STATE.filters.week) {
+        weekFilter.value = STATE.filters.week;
+      }
+
       // Render the view
       render();
     });
@@ -8234,8 +8249,8 @@ function getKPIDataByProduct(productId) {
 function renderMOKpis() {
   const content = $("content");
 
-  // Get current product from state (default to A)
-  const currentProduct = STATE.selectedProduct || 'A';
+  // Get current product from filters (default to A)
+  const currentProduct = STATE.filters.product || 'A';
 
   // Get KPI data for selected product
   const kpiData = getKPIDataByProduct(currentProduct);
@@ -8298,7 +8313,7 @@ function renderMOKpis() {
     <div class="space-y-6">
       <!-- Header with gradient -->
       <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
           <div>
             <h1 class="text-3xl font-bold mb-2">Manufacturing Operations KPIs</h1>
             <p class="text-blue-200 text-sm">Real-time operational metrics and insights</p>
@@ -8308,6 +8323,20 @@ function renderMOKpis() {
             <div class="text-5xl font-bold">${healthScore}</div>
             <div class="text-xs text-blue-300 mt-1">${healthScore >= 80 ? 'GOOD' : healthScore >= 60 ? 'FAIR' : 'AT RISK'}</div>
           </div>
+        </div>
+        <div class="flex items-center gap-3 pt-4 border-t border-white/20">
+          <label class="text-blue-200 text-sm">Product:</label>
+          <select
+            id="moKpisProductSelect"
+            class="bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onchange="STATE.filters.product = this.value; window.Router ? window.Router.navigate('moKpis', this.value) : render();"
+          >
+            <option value="A" ${currentProduct === 'A' ? 'selected' : ''}>Product A</option>
+            <option value="B" ${currentProduct === 'B' ? 'selected' : ''}>Product B</option>
+            <option value="C" ${currentProduct === 'C' ? 'selected' : ''}>Product C</option>
+            <option value="D" ${currentProduct === 'D' ? 'selected' : ''}>Product D</option>
+          </select>
+          <div class="text-blue-200 text-xs ml-auto">Viewing: <span class="font-semibold text-white">Product ${currentProduct}</span></div>
         </div>
       </div>
 
