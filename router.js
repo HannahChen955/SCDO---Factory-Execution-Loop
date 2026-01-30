@@ -116,19 +116,39 @@ const Router = {
 
   // Navigate to a new route
   navigate(view, product = null, site = null, week = null) {
+    console.log('[Router.navigate] Called with:', { view, product, site, week });
     const hash = this.buildHash(view, product, site, week);
+    console.log('[Router.navigate] Built hash:', hash);
+    const oldHash = window.location.hash;
+    console.log('[Router.navigate] Old hash:', oldHash);
     window.location.hash = hash;
+    console.log('[Router.navigate] New hash set:', window.location.hash);
+
+    // Force trigger route change if hash didn't actually change
+    // (e.g., if we're already on the same view but with different product)
+    if (oldHash === window.location.hash) {
+      console.log('[Router.navigate] Hash unchanged, manually triggering route change');
+      if (this.onRouteChangeCallback) {
+        const newRoute = this.parseHash();
+        this.onRouteChangeCallback(newRoute);
+      }
+    }
   },
 
   // Initialize router - load state from URL and setup listeners
   init(onRouteChange) {
+    // Store callback for manual triggering
+    this.onRouteChangeCallback = onRouteChange;
+
     // Load initial route from URL
     const route = this.parseHash();
     onRouteChange(route);
 
     // Listen for hash changes (back/forward buttons)
     window.addEventListener('hashchange', () => {
+      console.log('[Router] hashchange event fired');
       const newRoute = this.parseHash();
+      console.log('[Router] Parsed new route:', newRoute);
       onRouteChange(newRoute);
     });
 
