@@ -3529,6 +3529,10 @@ function renderProductionPlanLatest() {
           throw new Error('Constrained plan generation failed');
         }
 
+        // Calculate summary for both plans
+        unconstrainedPlan.summary = calculatePlanSummaryMetrics(unconstrainedPlan);
+        constrainedPlan.summary = calculatePlanSummaryMetrics(constrainedPlan);
+
         state.planResults = {
           unconstrained: unconstrainedPlan,
           constrained: constrainedPlan,
@@ -3548,6 +3552,9 @@ function renderProductionPlanLatest() {
           programResultsLength: plan.programResults.length,
           weeklyMetricsLength: plan.weeklyMetrics.length
         });
+
+        // Calculate summary metrics
+        plan.summary = calculatePlanSummaryMetrics(plan);
 
         state.planResults = plan;
       }
@@ -3584,33 +3591,63 @@ function renderProductionPlanLatest() {
 
   console.log('[Render] Display month:', planStartMonth, 'from startDate:', state.startDate);
 
-  // Get data based on granularity and filter to plan start month
+  // Get data based on granularity with smart filtering
   let currentData = [];
+  let hasMoreData = false; // Track if there's more data to show
+
   if (results && results.programResults) {
+    const today = new Date();
+    const currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
+
     if (granularity === 'weekly') {
-      // For weekly view, filter weeks that fall within the plan start month
-      currentData = planStartMonth
-        ? weeklyMetrics.filter(w => w.week_id && w.week_id.substring(0, 7) === planStartMonth)
-        : weeklyMetrics;
+      // Weekly view: Show current week + next 3 weeks (total 4 weeks)
+      const fourWeeksLater = new Date(currentWeekStart);
+      fourWeeksLater.setDate(currentWeekStart.getDate() + 28); // 4 weeks
+
+      currentData = weeklyMetrics.slice(0, 4); // Show first 4 weeks
+      hasMoreData = weeklyMetrics.length > 4;
+
     } else if (granularity === 'monthly') {
-      // For monthly view, filter months matching the plan start month
+      // Monthly view: Show from current month to December
       const monthlyData = aggregateByMonth(results.programResults);
-      currentData = planStartMonth
-        ? monthlyData.filter(m => m.month_id === planStartMonth)
-        : monthlyData;
+      const currentMonth = today.getMonth() + 1; // 1-12
+      const currentYear = today.getFullYear();
+
+      currentData = monthlyData.filter(m => {
+        if (!m.month_id) return false;
+        const [year, month] = m.month_id.split('-').map(Number);
+        // Show from current month to December of current year
+        return year === currentYear && month >= currentMonth;
+      });
+
+      hasMoreData = monthlyData.length > currentData.length;
+
     } else {
-      // Daily view - show only plan start month
-      currentData = planStartMonth
-        ? results.programResults.filter(d => d.date && d.date.substring(0, 7) === planStartMonth)
-        : results.programResults;
+      // Daily view: Show current week + next week (14 days)
+      const twoWeeksLater = new Date(currentWeekStart);
+      twoWeeksLater.setDate(currentWeekStart.getDate() + 14);
+
+      const twoWeeksLaterStr = twoWeeksLater.toISOString().split('T')[0];
+      const currentWeekStartStr = currentWeekStart.toISOString().split('T')[0];
+
+      currentData = results.programResults.filter(d => {
+        return d.date >= currentWeekStartStr && d.date < twoWeeksLaterStr;
+      });
+
+      hasMoreData = results.programResults.length > currentData.length;
     }
 
     console.log('[Render] Filtered data:', {
       granularity,
       totalResults: results.programResults.length,
-      filteredCount: currentData.length
+      filteredCount: currentData.length,
+      hasMoreData
     });
   }
+
+  // Store hasMoreData in state for button rendering
+  state.hasMoreData = hasMoreData;
 
   // Calculate summary metrics for two cutoff dates
   const thisWeekSaturday = '2026-01-25'; // This week Saturday (W04)
@@ -3792,21 +3829,34 @@ function renderProductionPlanLatest() {
         </div>
       </div>
 
-      <!-- Granularity Toggle -->
-      <div class="flex items-center gap-3">
-        <span class="text-sm font-semibold text-slate-700">View:</span>
+      <!-- Granularity Toggle & Actions -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-semibold text-slate-700">View:</span>
+          <div class="flex gap-2">
+            <button onclick="switchPlanGranularity('daily')"
+                    class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'daily' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+              Daily
+            </button>
+            <button onclick="switchPlanGranularity('weekly')"
+                    class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'weekly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+              Weekly
+            </button>
+            <button onclick="switchPlanGranularity('monthly')"
+                    class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'monthly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
+              Monthly
+            </button>
+          </div>
+        </div>
         <div class="flex gap-2">
-          <button onclick="switchPlanGranularity('daily')"
-                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'daily' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
-            Daily
+          <button onclick="switchProductionPlanTab('library')" class="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg text-sm font-semibold hover:bg-purple-200 transition">
+            📚 Simulation Library
           </button>
-          <button onclick="switchPlanGranularity('weekly')"
-                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'weekly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
-            Weekly
+          <button onclick="switchProductionPlanTab('por')" class="px-4 py-2 bg-green-100 text-green-700 border border-green-300 rounded-lg text-sm font-semibold hover:bg-green-200 transition">
+            ✅ POR Library
           </button>
-          <button onclick="switchPlanGranularity('monthly')"
-                  class="px-4 py-2 rounded-lg text-sm font-semibold ${granularity === 'monthly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700'}">
-            Monthly
+          <button onclick="viewLatestPlanFullReport()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-purple-700 transition">
+            📊 View Full Report
           </button>
         </div>
       </div>
@@ -3938,6 +3988,131 @@ function renderProductionPlanLatest() {
           </table>
         </div>
       </div>
+
+      <!-- Simulations Library Section -->
+      ${(function() {
+        const simulations = SimulationManager.getSimulations();
+
+      if (simulations.length === 0) {
+        return '';
+      }
+
+      // Sort by creation date (most recent first)
+      simulations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      const formatNumber = (num) => num.toLocaleString('en-US');
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+
+      // Split simulations into recent (first 2) and older (rest)
+      const recentSimulations = simulations.slice(0, 2);
+      const olderSimulations = simulations.slice(2);
+
+      const renderSimulationCard = (sim) => {
+        const summary = sim.results.mode === 'combined' ? sim.results.constrained.summary : sim.results.summary;
+        const weeksWithGap = summary.weeksWithGap || [];
+        const modeLabel = sim.config.mode === 'unconstrained' ? 'Capacity Only' :
+                         sim.config.mode === 'constrained' ? 'CTB Applied' :
+                         'Side-by-Side';
+
+        return `
+          <div class="bg-white border-2 border-slate-300 rounded-xl p-5 hover:shadow-lg transition-shadow">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <div class="font-bold text-slate-900 mb-1">${sim.name}</div>
+                <div class="text-xs text-slate-600">${sim.description || 'No description'}</div>
+              </div>
+              <div class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-semibold">${modeLabel}</div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-3 gap-3 mb-3">
+              <div class="bg-blue-50 p-3 rounded-lg">
+                <div class="text-xs text-gray-600 mb-1">Total Output</div>
+                <div class="text-sm font-bold text-blue-600">${formatNumber(summary.totalOutput)}</div>
+              </div>
+              <div class="bg-green-50 p-3 rounded-lg">
+                <div class="text-xs text-gray-600 mb-1">Attainment</div>
+                <div class="text-sm font-bold text-green-600">${summary.overallAttainment.toFixed(1)}%</div>
+              </div>
+              <div class="bg-${weeksWithGap.length > 0 ? 'red' : 'green'}-50 p-3 rounded-lg">
+                <div class="text-xs text-gray-600 mb-1">Weeks w/ Gap</div>
+                <div class="text-sm font-bold text-${weeksWithGap.length > 0 ? 'red' : 'green'}-600">${weeksWithGap.length}</div>
+              </div>
+            </div>
+
+            <!-- Info -->
+            <div class="text-xs text-gray-600 mb-3">
+              <div>Created: ${formatDate(sim.createdAt)}</div>
+              <div>Period: ${sim.config.dateRange.start} to ${sim.config.dateRange.end}</div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+              <button
+                onclick="viewSimulationReport('${sim.id}')"
+                class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                📊 View Report
+              </button>
+              <button
+                onclick="promptPromoteSimulationToPOR('${sim.id}')"
+                class="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+                ⬆️ Promote to POR
+              </button>
+              <button
+                onclick="confirmDeleteSimulation('${sim.id}')"
+                class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-medium"
+                title="Delete simulation">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      };
+
+      const recentHtml = recentSimulations.map(renderSimulationCard).join('');
+      const olderHtml = olderSimulations.map(renderSimulationCard).join('');
+
+      return `
+        <div class="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 mt-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-lg font-bold text-slate-900">📂 Simulation Library</div>
+              <div class="text-sm text-slate-600 mt-1">Saved simulations ready to promote to POR</div>
+            </div>
+            <button
+              onclick="switchProductionPlanSubpage('generate')"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-semibold">
+              + New Simulation
+            </button>
+          </div>
+
+          <!-- Recent Simulations (Always Visible) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${recentHtml}
+          </div>
+
+          <!-- Older Simulations (Collapsible) -->
+          ${olderSimulations.length > 0 ? `
+            <div class="mt-4">
+              <button
+                id="toggleOlderSimulations"
+                onclick="toggleOlderSimulations()"
+                class="w-full px-4 py-2 bg-white border-2 border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition text-sm font-semibold flex items-center justify-center gap-2">
+                <span id="olderSimulationsToggleIcon">▼</span>
+                <span id="olderSimulationsToggleText">Show ${olderSimulations.length} Older Simulation${olderSimulations.length > 1 ? 's' : ''}</span>
+              </button>
+              <div id="olderSimulations" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                ${olderHtml}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    })()}
 
       <!-- Fiscal Calendar Reference (Collapsible) -->
       <div class="bg-white border-2 rounded-xl shadow-sm">
@@ -4883,18 +5058,89 @@ window.viewSimulationReport = function(simId) {
 };
 
 /**
- * Delete a simulation
+ * View full report for latest production plan
  */
-window.deleteSimulation = function(simId) {
-  if (confirm('Are you sure you want to delete this simulation?')) {
+window.viewLatestPlanFullReport = function() {
+  const state = window.productionPlanState;
+
+  if (!state.planResults) {
+    alert('No plan data available.');
+    return;
+  }
+
+  // Save to localStorage with temporary ID
+  const planId = 'temp_' + Date.now();
+  const planData = {
+    results: state.planResults,
+    config: {
+      mode: state.mode,
+      dateRange: {
+        start: state.startDate,
+        end: state.endDate
+      }
+    },
+    generatedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem('productionPlan_' + planId, JSON.stringify(planData));
+
+  const reportWindow = window.open(
+    'production_plan_report.html?planId=' + planId,
+    '_blank',
+    'width=1200,height=800,scrollbars=yes,resizable=yes'
+  );
+
+  if (!reportWindow) {
+    alert('Please allow pop-ups for this site to view the report.');
+  }
+};
+
+/**
+ * Toggle older simulations visibility
+ */
+window.toggleOlderSimulations = function() {
+  const olderSimsContainer = document.getElementById('olderSimulations');
+  const toggleIcon = document.getElementById('olderSimulationsToggleIcon');
+  const toggleText = document.getElementById('olderSimulationsToggleText');
+
+  if (olderSimsContainer.style.display === 'none') {
+    olderSimsContainer.style.display = 'grid';
+    toggleIcon.textContent = '▲';
+    const count = olderSimsContainer.children.length;
+    toggleText.textContent = `Hide ${count} Older Simulation${count > 1 ? 's' : ''}`;
+  } else {
+    olderSimsContainer.style.display = 'none';
+    toggleIcon.textContent = '▼';
+    const count = olderSimsContainer.children.length;
+    toggleText.textContent = `Show ${count} Older Simulation${count > 1 ? 's' : ''}`;
+  }
+};
+
+/**
+ * Confirm and delete a simulation
+ */
+window.confirmDeleteSimulation = function(simId) {
+  // Find the simulation to get its name
+  const sim = SimulationManager.getSimulationById(simId);
+  const simName = sim ? sim.name : 'this simulation';
+
+  if (confirm(`Are you sure you want to delete "${simName}"?\n\nThis action cannot be undone.`)) {
     const success = SimulationManager.deleteSimulation(simId);
     if (success) {
+      showNotification('✅ Simulation deleted successfully', 'success');
       renderProductionPlan(); // Refresh the view
       console.log('[UI] Simulation deleted:', simId);
     } else {
       alert('Failed to delete simulation.');
     }
   }
+};
+
+/**
+ * Delete a simulation (kept for backwards compatibility)
+ */
+window.deleteSimulation = function(simId) {
+  confirmDeleteSimulation(simId);
 };
 
 /**
@@ -5395,21 +5641,28 @@ window.confirmSaveSimulation = function() {
 
   console.log('[UI] Simulation saved:', simId);
 
-  // Close modal
-  document.querySelector('.fixed.inset-0').remove();
+  // Close modal immediately - remove ALL fixed overlays to be absolutely sure
+  const allModals = document.querySelectorAll('.fixed.inset-0');
+  console.log('[UI] Found modals to remove:', allModals.length);
+  allModals.forEach((modal, index) => {
+    console.log('[UI] Removing modal #' + index);
+    modal.remove();
+  });
 
-  // Open report in new window
-  viewSimulationReport(simId);
+  // Cleanup temp data immediately
+  delete window._tempSimulationData;
 
-  // Switch to Library tab
+  // Switch to Library tab and re-render
   window.productionPlanState.activeTab = 'library';
   renderProductionPlan();
 
   // Show success message
   showNotification('✅ Simulation saved successfully!', 'success');
 
-  // Cleanup
-  delete window._tempSimulationData;
+  // Open report in new window after a short delay to ensure modal is fully closed
+  setTimeout(() => {
+    viewSimulationReport(simId);
+  }, 100);
 };
 
 // Render capacity configuration with hierarchical structure (Site → Line → Shift)
@@ -6055,6 +6308,35 @@ function clearConfigSummary() {
   window.CURRENT_PLAN_CONFIG = null;
 }
 
+// Calculate summary metrics from plan results
+function calculatePlanSummaryMetrics(plan) {
+  // Validate input
+  if (!plan || !plan.weeklyMetrics || !Array.isArray(plan.weeklyMetrics)) {
+    console.error('[calculatePlanSummaryMetrics] Invalid plan structure:', plan);
+    return {
+      totalOutput: 0,
+      totalShipment: 0,
+      totalDemand: 0,
+      overallAttainment: 0,
+      weeksWithGap: []
+    };
+  }
+
+  const totalOutput = plan.weeklyMetrics.reduce((sum, w) => sum + (w.output || 0), 0);
+  const totalShipment = plan.weeklyMetrics.reduce((sum, w) => sum + (w.shipments || 0), 0);
+  const totalDemand = plan.weeklyMetrics.reduce((sum, w) => sum + (w.demand || 0), 0);
+  const overallAttainment = totalDemand > 0 ? (totalShipment / totalDemand) * 100 : 100;
+  const weeksWithGap = plan.weeklyMetrics.filter(w => (w.gap || 0) < 0).map(w => w.week_id);
+
+  return {
+    totalOutput,
+    totalShipment,
+    totalDemand,
+    overallAttainment,
+    weeksWithGap
+  };
+}
+
 function generatePlanFromConfig() {
   // Show planning mode selection modal
   showPlanningModeModal();
@@ -6242,6 +6524,10 @@ function proceedWithPlanGeneration() {
           throw new Error('Constrained plan generation failed - missing required data');
         }
 
+        // Calculate summary for both plans
+        unconstrainedPlan.summary = calculatePlanSummaryMetrics(unconstrainedPlan);
+        constrainedPlan.summary = calculatePlanSummaryMetrics(constrainedPlan);
+
         state.planResults = {
           unconstrained: unconstrainedPlan,
           constrained: constrainedPlan,
@@ -6263,6 +6549,9 @@ function proceedWithPlanGeneration() {
           programResultsLength: plan.programResults.length,
           weeklyMetricsLength: plan.weeklyMetrics.length
         });
+
+        // Calculate summary metrics
+        plan.summary = calculatePlanSummaryMetrics(plan);
 
         state.planResults = plan;
       }
