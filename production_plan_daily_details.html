@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Production Plan Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      .no-print { display: none; }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    table {
+      font-variant-numeric: tabular-nums;
+      border-collapse: collapse;
+    }
+    table th,
+    table td {
+      border: 1px solid #e2e8f0;
+    }
+    .sticky {
+      position: sticky;
+      background: inherit;
+    }
+  </style>
+</head>
+<body class="bg-slate-50">
+  <div class="max-w-7xl mx-auto p-6 space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-sm p-6 no-print">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900">📅 Daily Production Plan Details</h1>
+          <div id="reportMetadata" class="text-sm text-slate-600 mt-2"></div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="window.close()" class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 flex items-center gap-2">
+            <span>←</span>
+            <span>Back to Summary</span>
+          </button>
+          <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2">
+            <span>🖨️</span>
+            <span>Print</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Results Table -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-slate-900">Daily Production Plan</h2>
+        <div class="flex gap-3 text-xs">
+          <div class="flex items-center gap-1">
+            <div class="w-4 h-4 bg-orange-100 border border-orange-300 rounded"></div>
+            <span class="text-slate-600">🏖️ Holiday</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
+            <span class="text-slate-600">Sunday</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-500 mb-3">
+        💡 Scroll horizontally to view all dates. Cumulative metrics highlighted in blue.
+      </div>
+      <div class="overflow-x-auto border rounded-lg">
+        <table id="dailyResultsTable" class="text-sm border-collapse">
+          <thead>
+            <tr></tr>
+          </thead>
+          <tbody id="dailyResultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function formatNumber(num) {
+      return Math.round(num).toLocaleString();
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function getDayOfWeek(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00');
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return days[date.getDay()];
+    }
+
+    function getHolidays() {
+      try {
+        // Try to get holidays from localStorage seed data
+        const savedHolidays = localStorage.getItem('productionPlan_country_holidays');
+        if (savedHolidays) {
+          return JSON.parse(savedHolidays);
+        }
+
+        // Fallback: try to get from window.opener
+        if (window.opener && window.opener.PRODUCTION_PLAN_SEED_DATA) {
+          return window.opener.PRODUCTION_PLAN_SEED_DATA.countryHolidays || {};
+        }
+
+        return {};
+      } catch (error) {
+        console.error('[Daily Plan] Error getting holidays:', error);
+        return {};
+      }
+    }
+
+    function isHoliday(dateStr, holidays) {
+      if (!holidays) return null;
+
+      // Check all countries' holidays
+      for (const country in holidays) {
+        const countryHolidays = holidays[country];
+        for (const holiday of countryHolidays) {
+          if (dateStr >= holiday.start && dateStr <= holiday.end) {
+            return holiday;
+          }
+        }
+      }
+      return null;
+    }
+
+    function getDailyPlanData() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('planId');
+
+        if (planId) {
+          const planDataStr = localStorage.getItem('productionPlan_' + planId);
+          if (planDataStr) {
+            const planData = JSON.parse(planDataStr);
+            const results = planData.results || planData;
+            const plan = results.mode === 'combined' ? results.constrained : results;
+            return { plan, config: planData.config };
+          }
+        }
+
+        // Fallback: window.opener
+        if (window.opener && window.opener.productionPlanState) {
+          const results = window.opener.productionPlanState.planResults;
+          const plan = results.mode === 'combined' ? results.constrained : results;
+          return { plan, config: null };
+        }
+
+        return null;
+      } catch (error) {
+        console.error('[Daily Plan] Error getting data:', error);
+        return null;
+      }
+    }
+
+    function renderDailyPlan() {
+      console.log('[Daily Plan] Starting render...');
+      const data = getDailyPlanData();
+
+      if (!data) {
+        console.error('[Daily Plan] No data found!');
+        document.body.innerHTML = `
+          <div class="min-h-screen flex items-center justify-center">
+            <div class="text-center">
+              <div class="text-6xl mb-4">❌</div>
+              <div class="text-xl font-bold text-slate-900">No Data Found</div>
+              <div class="text-slate-600 mt-2">Please generate a production plan first.</div>
+              <button onclick="window.close()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold">
+                Close Window
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const { plan } = data;
+      console.log('[Daily Plan] Plan data loaded:', plan.programResults.length, 'days');
+
+      // Render metadata
+      const metadata = document.getElementById('reportMetadata');
+      const firstDay = plan.programResults[0].date;
+      const lastDay = plan.programResults[plan.programResults.length - 1].date;
+      metadata.innerHTML = `Period: ${firstDay} to ${lastDay} | Total Days: ${plan.programResults.length}`;
+
+      // Render table info - removed this line as we have the tip below
+      // const tableInfo = document.getElementById('dailyTableInfo');
+      // tableInfo.innerHTML = `Showing ${plan.programResults.length} days of production data from ${firstDay} to ${lastDay}`;
+
+      // Get holidays data
+      const holidays = getHolidays();
+      console.log('[Daily Plan] Building transposed table...');
+
+      // Build transposed table (dates as columns, metrics as rows)
+      const tbody = document.getElementById('dailyResultsBody');
+      const thead = document.getElementById('dailyResultsTable').querySelector('thead tr');
+
+      // Build header row (dates)
+      let headerHtml = '<th class="px-3 py-2 text-left bg-slate-200 sticky left-0 z-10">Metric</th>';
+      plan.programResults.forEach(day => {
+        const dayOfWeek = getDayOfWeek(day.date);
+        const holiday = isHoliday(day.date, holidays);
+        const isSunday = dayOfWeek === 'Sun';
+
+        // Format date (e.g., "Sep 3, 2026" -> "Sep 3, '26")
+        const dateFormatted = formatDate(day.date).replace(/, 20(\d{2})/, ", '$1");
+
+        let headerClass = 'px-3 py-2 text-center text-xs bg-slate-100 min-w-[80px]';
+        let headerContent = '';
+
+        if (holiday) {
+          headerClass = 'px-3 py-2 text-center text-xs bg-orange-100 min-w-[80px]';
+          headerContent = `<div class="font-semibold">${dateFormatted}</div><div class="text-orange-700 font-semibold">${dayOfWeek} 🏖️</div>`;
+        } else if (isSunday) {
+          headerClass = 'px-3 py-2 text-center text-xs bg-blue-100 min-w-[80px]';
+          headerContent = `<div class="font-semibold">${dateFormatted}</div><div class="text-blue-700 font-semibold">${dayOfWeek}</div>`;
+        } else {
+          headerContent = `<div class="font-semibold">${dateFormatted}</div><div class="text-slate-600">${dayOfWeek}</div>`;
+        }
+
+        headerHtml += `<th class="${headerClass}">${headerContent}</th>`;
+      });
+      thead.innerHTML = headerHtml;
+
+      // Build metric rows
+      const metrics = [
+        { label: 'Input', key: 'input_final', isCumulative: false },
+        { label: 'Cum Input', key: 'cum_input', isCumulative: true, bold: true },
+        { label: 'Output', key: 'output_final', isCumulative: false },
+        { label: 'Cum Output', key: 'cum_output', isCumulative: true, bold: true },
+        { label: 'Shipment', key: 'shipment_final', isCumulative: false },
+        { label: 'Cum Shipment', key: 'cum_shipment', isCumulative: true, bold: true }
+      ];
+
+      let bodyHtml = '';
+      metrics.forEach(metric => {
+        const rowClass = metric.isCumulative ? 'bg-blue-50' : '';
+        const labelClass = metric.bold ? 'font-bold' : '';
+
+        bodyHtml += `<tr class="border-t hover:bg-slate-100 ${rowClass}">`;
+        bodyHtml += `<td class="px-3 py-2 text-left bg-slate-100 sticky left-0 z-10 ${labelClass}">${metric.label}</td>`;
+
+        plan.programResults.forEach(day => {
+          const dayOfWeek = getDayOfWeek(day.date);
+          const holiday = isHoliday(day.date, holidays);
+          const isSunday = dayOfWeek === 'Sun';
+
+          const value = day[metric.key] || 0;
+          let cellClass = 'px-3 py-2 text-right text-sm';
+
+          if (metric.bold) cellClass += ' font-semibold';
+
+          // Add background color for holidays/sundays
+          if (holiday) {
+            cellClass += ' bg-orange-50';
+          } else if (isSunday) {
+            cellClass += ' bg-blue-50';
+          }
+
+          bodyHtml += `<td class="${cellClass}">${formatNumber(value)}</td>`;
+        });
+
+        bodyHtml += '</tr>';
+      });
+
+      tbody.innerHTML = bodyHtml;
+
+      console.log('[Daily Plan] ✅ Table rendered successfully!');
+      console.log('[Daily Plan]   - Header columns:', plan.programResults.length + 1);
+      console.log('[Daily Plan]   - Metric rows:', metrics.length);
+    }
+
+    // Render on page load
+    try {
+      renderDailyPlan();
+    } catch (error) {
+      console.error('[Daily Plan] ❌ Render error:', error);
+      alert('Error rendering daily plan: ' + error.message);
+    }
+  </script>
+</body>
+</html>

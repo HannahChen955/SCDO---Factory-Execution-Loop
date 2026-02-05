@@ -28,14 +28,35 @@ const DateUtils = {
     return this.formatDate(date);
   },
 
-  // Get ISO week ID (YYYY-Www)
+  // Subtract days from a date
+  subtractDays(dateStr, days) {
+    const date = this.parseDate(dateStr);
+    date.setDate(date.getDate() - days);
+    return this.formatDate(date);
+  },
+
+  // Get week ID as Saturday date (yyyy/mm/dd)
+  // User preference: Use the Saturday date to represent the week
   getWeekId(dateStr) {
     const date = this.parseDate(dateStr);
-    const year = date.getFullYear();
-    const startOfYear = new Date(year, 0, 1);
-    const days = Math.floor((date - startOfYear) / (24 * 60 * 60 * 1000));
-    const weekNum = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-    return `${year}-W${String(weekNum).padStart(2, '0')}`;
+    const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+    // Calculate days to next Saturday
+    // If today is Sunday (0), next Saturday is in 6 days
+    // If today is Monday (1), next Saturday is in 5 days
+    // ...
+    // If today is Saturday (6), it's 0 days (already Saturday)
+    const daysToSaturday = (6 - dayOfWeek + 7) % 7;
+
+    // Get the Saturday of this week
+    const saturday = new Date(date);
+    saturday.setDate(date.getDate() + daysToSaturday);
+
+    // Format as yyyy/mm/dd
+    const year = saturday.getFullYear();
+    const month = String(saturday.getMonth() + 1).padStart(2, '0');
+    const day = String(saturday.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
   },
 
   // Get day of week (0=Sun, 1=Mon, ..., 6=Sat)
@@ -95,20 +116,21 @@ class CalendarSystem {
 
   // Check if a date is a working day for a specific site
   isWorkingDay(siteId, siteCountry, date) {
-    // Priority 1: Site override
+    // Priority 1: Country statutory holiday (HIGHEST PRIORITY - cannot be overridden)
+    // 法定节假日优先级最高，site override不能覆盖
+    const holidays = this.countryHolidays[siteCountry] || [];
+    for (const holiday of holidays) {
+      if (DateUtils.isDateInRange(date, holiday.start, holiday.end)) {
+        return false; // Statutory holiday = non-working (cannot be overridden)
+      }
+    }
+
+    // Priority 2: Site override (can override normal days and Sundays, but NOT statutory holidays)
     const siteOverride = this.siteOverrides.find(s => s.site_id === siteId);
     if (siteOverride) {
       const dateOverride = siteOverride.overrides.find(o => o.date === date);
       if (dateOverride && dateOverride.is_working_day !== undefined) {
         return dateOverride.is_working_day;
-      }
-    }
-
-    // Priority 2: Country holiday
-    const holidays = this.countryHolidays[siteCountry] || [];
-    for (const holiday of holidays) {
-      if (DateUtils.isDateInRange(date, holiday.start, holiday.end)) {
-        return false; // Holiday = non-working
       }
     }
 
@@ -154,6 +176,32 @@ class CalendarSystem {
     }
 
     return current;
+  }
+
+  // Subtract N working days from a date (for calculating shipment lag cutoff)
+  subtractWorkingDays(siteId, siteCountry, startDate, numDays) {
+    let current = startDate;
+    let remaining = numDays;
+
+    while (remaining > 0) {
+      current = DateUtils.subtractDays(current, 1);
+      if (this.isWorkingDay(siteId, siteCountry, current)) {
+        remaining--;
+      }
+    }
+
+    return current;
+  }
+
+  // Check if a date is a statutory holiday (法定节假日)
+  isStatutoryHoliday(siteCountry, date) {
+    const holidays = this.countryHolidays[siteCountry] || [];
+    for (const holiday of holidays) {
+      if (DateUtils.isDateInRange(date, holiday.start, holiday.end)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Get workday index for a unit on a specific date
@@ -231,6 +279,10 @@ class ProductionPlanEngine {
 
       const uphCurveLength = unit.uph_ramp_curve.length_workdays;
       const yieldCurveLength = unit.yield_ramp_curve.length_workdays;
+
+      // 🔍 DEBUG: Log UPH curve being used for this unit
+      console.log(`[Engine] ${unit.unit_id} UPH Curve (first 10 days):`, unit.uph_ramp_curve.factors.slice(0, 10));
+      console.log(`[Engine] ${unit.unit_id} Preset:`, unit.uph_ramp_curve_preset || 'not set');
 
       for (const date of dates) {
         // Check if working day
@@ -428,7 +480,7 @@ class ProductionPlanEngine {
     return siteFinal;
   }
 
-  // Calculate shipments with +2 working day lag per site
+  // Calculate shipments with new logic (5 rules from SHIPMENT_LOGIC_WITH_LEAD_TIME.md)
   calculateShipments(siteFinal, dates) {
     const siteShipments = {};
 
@@ -436,38 +488,91 @@ class ProductionPlanEngine {
       const site = this.sites.find(s => s.site_id === siteId);
       if (!site) continue;
 
-      const shipmentMap = {};
+      const shipmentData = [];
+      let cumulativeShipment = 0;
 
-      // Initialize all dates to 0
-      for (const date of dates) {
-        shipmentMap[date] = 0;
+      // Get shipment configuration
+      const maxDailyShipment = this.programConfig.max_daily_shipment || 30000;
+      const shipmentLagWorkdays = this.programConfig.shipment_lag_workdays || 2;
+      const palletSize = this.programConfig.shipment_pallet_size || 1;
+
+      // Determine shipment start date (Rule 1)
+      // Use config value if provided, otherwise use first date in forecast/timeline
+      const shipmentStartDate = this.programConfig.shipment_start_date || dates[0];
+
+      // Create a map of date -> output for easy lookup
+      const outputByDate = {};
+      for (const dayData of siteFinal[siteId]) {
+        outputByDate[dayData.date] = dayData.output_final || 0;
       }
 
-      // Map outputs to shipment dates
-      for (const dayData of siteFinal[siteId]) {
-        const outputDate = dayData.date;
-        const outputQty = dayData.output_final;
+      // Process each date
+      for (const date of dates) {
+        let dailyShipment = 0;
 
-        if (outputQty > 0) {
-          const shipDate = this.calendar.addWorkingDays(
+        // ========================================
+        // Rule 0: No shipment on non-working days (highest priority)
+        // This includes: statutory holidays, Sundays, and any site-specific non-working days
+        // ========================================
+        if (!this.calendar.isWorkingDay(siteId, site.country, date)) {
+          // Non-working day - no shipment allowed
+          dailyShipment = 0;
+        }
+        // ========================================
+        // Rule 1: No early shipment before shipment start date
+        // ========================================
+        else if (DateUtils.isDateBefore(date, shipmentStartDate)) {
+          // Before shipment start date - no shipment allowed
+          dailyShipment = 0;
+        }
+        // ========================================
+        // Rules 2, 3, 4: Calculate shipment based on eligible output
+        // ========================================
+        else {
+          // Rule 2: Calculate eligible output (output from dates >= shipment_lag working days before)
+          const outputCutoffDate = this.calendar.subtractWorkingDays(
             siteId,
             site.country,
-            outputDate,
-            this.programConfig.shipment_lag_workdays
+            date,
+            shipmentLagWorkdays
           );
 
-          // Only count shipment if it's within our date range
-          if (dates.includes(shipDate)) {
-            shipmentMap[shipDate] += outputQty;
+          // Sum all output up to and including the cutoff date
+          let eligibleOutput = 0;
+          for (const [outputDate, qty] of Object.entries(outputByDate)) {
+            if (!DateUtils.isDateAfter(outputDate, outputCutoffDate)) {
+              eligibleOutput += qty;
+            }
+          }
+
+          // Calculate available inventory
+          const availableInventory = eligibleOutput - cumulativeShipment;
+
+          if (availableInventory > 0) {
+            // Rule 3 & 4: Ship as much as possible, but not exceeding max daily shipment
+            dailyShipment = Math.min(availableInventory, maxDailyShipment);
+
+            // Rule 5: Round down to pallet multiples (整板出货)
+            // Only ship complete pallets - no partial pallets
+            if (palletSize > 1) {
+              dailyShipment = Math.floor(dailyShipment / palletSize) * palletSize;
+            }
+          } else {
+            dailyShipment = 0;
           }
         }
+
+        // Update cumulative shipment
+        cumulativeShipment += dailyShipment;
+
+        shipmentData.push({
+          date,
+          site_id: siteId,
+          shipment: dailyShipment
+        });
       }
 
-      siteShipments[siteId] = Object.keys(shipmentMap).map(date => ({
-        date,
-        site_id: siteId,
-        shipment: shipmentMap[date]
-      }));
+      siteShipments[siteId] = shipmentData;
     }
 
     return siteShipments;

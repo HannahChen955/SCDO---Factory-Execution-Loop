@@ -11,6 +11,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
     default_shift_hours: { DAY: 10, NIGHT: 10 },
     output_factors: { day1: 0.5, day2: 1.0, day3_plus: 1.0 },
     shipment_lag_workdays: 2,
+    shipment_pallet_size: 480, // Units per pallet - shipment will be rounded to multiples of this
     weekly_window: 'MON_SAT'
   },
 
@@ -107,18 +108,16 @@ const PRODUCTION_PLAN_SEED_DATA = {
   },
 
   // Site calendar overrides
+  // Note: Site overrides CANNOT override statutory holidays
+  // Statutory holidays always take highest priority
   siteOverrides: [
     {
       site_id: 'WF',
       overrides: [
         {
-          date: '2026-10-03',
-          is_working_day: true,
-          shift_hours_override: { DAY: 12, NIGHT: 10 }
-        },
-        {
           date: '2026-10-08',
-          is_working_day: true  // Work on Saturday after holiday
+          is_working_day: true,  // Work on Saturday after holiday
+          shift_hours_override: { DAY: 12, NIGHT: 10 }
         }
       ]
     }
@@ -319,42 +318,43 @@ const PRODUCTION_PLAN_SEED_DATA = {
 
   // Weekly demand (Mon-Sat aggregation)
   // 说明:
-  // - Week 定义: Sunday 到 Saturday (ISO Week, 但周日-周六聚合)
-  // - 2026-W40: Sep 28 (Sun) - Oct 4 (Sat) - 包含 Oct 1-4
-  // - 2026-W41: Oct 5 (Sun) - Oct 11 (Sat) - 国庆后第一周，需求低
-  // - 2026-W42: Oct 12 (Sun) - Oct 18 (Sat) - 爬坡中，需求增加
-  // - 2026-W43: Oct 19 (Sun) - Oct 25 (Sat) - 高峰需求
-  // - 2026-W44: Oct 26 (Sun) - Nov 1 (Sat) - 包含 Oct 26-31，高峰需求
+  // - Week 定义: Monday 到 Saturday (6 working days)
+  // - Week ID 用周六日期表示 (yyyy/mm/dd format)
+  // - 2026/10/03: Week ending Oct 3 (Sat) - 包含 Sep 28-Oct 3
+  // - 2026/10/10: Week ending Oct 10 (Sat) - 国庆后第一周，需求低
+  // - 2026/10/17: Week ending Oct 17 (Sat) - 爬坡中，需求增加
+  // - 2026/10/24: Week ending Oct 24 (Sat) - 高峰需求
+  // - 2026/10/31: Week ending Oct 31 (Sat) - 高峰需求
   weeklyDemand: [
     {
-      week_id: '2026-W40',
+      week_id: '2026/10/03',
       program_id: 'product_a',
       demand_qty: 8000,
-      notes: 'Week of Sep 28, partial Oct (only Oct 1-4 working days for VN02)'
+      notes: 'Week ending Oct 3, partial Oct (only Oct 1-3 working days for VN02)'
     },
     {
-      week_id: '2026-W41',
+      week_id: '2026/10/10',
       program_id: 'product_a',
       demand_qty: 12000,
-      notes: 'Week of Oct 5 (国庆假期后第一周，WF Oct 8-11 开始爬坡)'
+      notes: 'Week ending Oct 10 (国庆假期后第一周，WF Oct 8-10 开始爬坡)'
     },
     {
-      week_id: '2026-W42',
+      week_id: '2026/10/17',
       program_id: 'product_a',
       demand_qty: 16000,
-      notes: 'Week of Oct 12 (WF Night shift 启动，CTB 约束周)'
+      notes: 'Week ending Oct 17 (WF Night shift 启动，CTB 约束周)'
     },
     {
-      week_id: '2026-W43',
+      week_id: '2026/10/24',
       program_id: 'product_a',
       demand_qty: 20000,
-      notes: 'Week of Oct 19 (高峰需求，产能逐渐爬升)'
+      notes: 'Week ending Oct 24 (高峰需求，产能逐渐爬升)'
     },
     {
-      week_id: '2026-W44',
+      week_id: '2026/10/31',
       program_id: 'product_a',
       demand_qty: 22000,
-      notes: 'Week of Oct 26 (包含 Oct 26-31，持续高需求)'
+      notes: 'Week ending Oct 31 (持续高需求)'
     }
   ]
 };
@@ -362,4 +362,40 @@ const PRODUCTION_PLAN_SEED_DATA = {
 // Export for use
 if (typeof window !== 'undefined') {
   window.PRODUCTION_PLAN_SEED_DATA = PRODUCTION_PLAN_SEED_DATA;
+
+  // Immediately load saved configuration from localStorage if available
+  try {
+    const savedSites = localStorage.getItem('productionPlan_sites_config');
+    const savedUnits = localStorage.getItem('productionPlan_capacity_units_config');
+    const savedProgramConfig = localStorage.getItem('productionPlan_program_config');
+    const savedCountryHolidays = localStorage.getItem('productionPlan_country_holidays');
+    const savedSiteOverrides = localStorage.getItem('productionPlan_site_overrides');
+
+    if (savedSites) {
+      PRODUCTION_PLAN_SEED_DATA.sites = JSON.parse(savedSites);
+      console.log('[Seed Data] Loaded saved sites from localStorage:', PRODUCTION_PLAN_SEED_DATA.sites.length, 'sites');
+    }
+
+    if (savedUnits) {
+      PRODUCTION_PLAN_SEED_DATA.capacityUnits = JSON.parse(savedUnits);
+      console.log('[Seed Data] Loaded saved capacity units from localStorage:', PRODUCTION_PLAN_SEED_DATA.capacityUnits.length, 'units');
+    }
+
+    if (savedProgramConfig) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig = JSON.parse(savedProgramConfig);
+      console.log('[Seed Data] Loaded saved program config from localStorage');
+    }
+
+    if (savedCountryHolidays) {
+      PRODUCTION_PLAN_SEED_DATA.countryHolidays = JSON.parse(savedCountryHolidays);
+      console.log('[Seed Data] Loaded saved country holidays from localStorage');
+    }
+
+    if (savedSiteOverrides) {
+      PRODUCTION_PLAN_SEED_DATA.siteOverrides = JSON.parse(savedSiteOverrides);
+      console.log('[Seed Data] Loaded saved site overrides from localStorage:', PRODUCTION_PLAN_SEED_DATA.siteOverrides.length, 'overrides');
+    }
+  } catch (error) {
+    console.error('[Seed Data] Error loading saved configuration:', error);
+  }
 }

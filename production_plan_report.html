@@ -70,48 +70,25 @@
     <!-- Plan Summary -->
     <div id="planSummary" class="bg-white rounded-xl shadow-sm p-6"></div>
 
-    <!-- Visual Analytics (Simplified - Numbers Only) -->
-    <div id="visualAnalytics" class="bg-white rounded-xl shadow-sm p-6">
-      <h2 class="text-xl font-bold text-slate-900 mb-4">📊 Visual Analytics</h2>
-      <!-- Content will be rendered by renderVisualAnalytics() -->
-    </div>
-
-    <!-- Daily Results -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-      <h2 class="text-xl font-bold text-slate-900 mb-4">Daily Production Plan</h2>
-      <div class="overflow-x-auto">
-        <table id="dailyResultsTable" class="w-full text-sm">
-          <thead class="bg-slate-100 sticky top-0">
-            <tr>
-              <th class="px-4 py-3 text-left">Date</th>
-              <th class="px-4 py-3 text-right">Input</th>
-              <th class="px-4 py-3 text-right">Output</th>
-              <th class="px-4 py-3 text-right">Shipment</th>
-              <th class="px-4 py-3 text-right">Cum Input</th>
-              <th class="px-4 py-3 text-right">Cum Output</th>
-              <th class="px-4 py-3 text-right">Cum Shipment</th>
-            </tr>
-          </thead>
-          <tbody id="dailyResultsBody"></tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Weekly Metrics -->
     <div class="bg-white rounded-xl shadow-sm p-6">
-      <h2 class="text-xl font-bold text-slate-900 mb-4">Weekly Metrics</h2>
-      <div class="overflow-x-auto">
-        <table id="weeklyMetricsTable" class="w-full text-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="px-4 py-3 text-left">Week</th>
-              <th class="px-4 py-3 text-right">Input</th>
-              <th class="px-4 py-3 text-right">Output</th>
-              <th class="px-4 py-3 text-right">Shipment</th>
-              <th class="px-4 py-3 text-right">Demand</th>
-              <th class="px-4 py-3 text-right">Gap</th>
-              <th class="px-4 py-3 text-right">Attainment %</th>
-            </tr>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-slate-900">📊 Weekly Metrics</h2>
+        <button onclick="openDailyPlanPage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+          <span>📅</span>
+          <span>View Daily Plan Details</span>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-500 mb-3">
+        💡 Scroll horizontally to view all weeks. Cumulative metrics highlighted in blue.
+      </div>
+
+      <!-- Weekly Metrics Table (Transposed: Weeks as columns) -->
+      <div class="overflow-x-auto border rounded-lg">
+        <table id="weeklyMetricsTable" class="text-sm border-collapse">
+          <thead>
+            <tr></tr>
           </thead>
           <tbody id="weeklyMetricsBody"></tbody>
         </table>
@@ -183,6 +160,21 @@
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
+    function openDailyPlanPage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const planId = urlParams.get('planId');
+
+      if (planId) {
+        window.open(
+          'production_plan_daily_details.html?planId=' + planId,
+          '_blank',
+          'width=1400,height=900,scrollbars=yes,resizable=yes'
+        );
+      } else {
+        alert('No plan data available');
+      }
+    }
+
     function renderReport() {
       const planData = getPlanData();
 
@@ -226,14 +218,12 @@
       // Render summary (with comparison if combined mode)
       renderSummary(plan, isCombined ? results.unconstrained : null);
 
-      // Render daily results (with comparison if combined mode)
-      renderDailyResults(plan.programResults, isCombined ? results.unconstrained.programResults : null);
+      // Daily results moved to separate page - not rendered here anymore
 
       // Render weekly metrics (with comparison if combined mode)
       renderWeeklyMetrics(plan.weeklyMetrics, isCombined ? results.unconstrained.weeklyMetrics : null);
 
-      // Render visual analytics (numeric comparison)
-      renderVisualAnalytics(results, isCombined);
+      // Visual analytics removed - weekly metrics is sufficient
 
       // Render intelligent recommendations
       renderIntelligentRecommendations(results, planData.config);
@@ -247,6 +237,12 @@
     function renderConfigInfo(config) {
       const card = document.getElementById('configInfo');
       if (!card || !config) return;
+
+      // Only show config info card if all required fields exist
+      if (!config.icon || !config.name || !config.description || !config.highlights) {
+        // Config doesn't have display metadata, skip rendering this card
+        return;
+      }
 
       document.getElementById('reportConfigIcon').textContent = config.icon;
       document.getElementById('reportConfigName').textContent = config.name;
@@ -279,6 +275,8 @@
         const unconstrainedGap = unconstrainedTotalShipment - unconstrainedTotalDemand;
         const unconstrainedAttainment = unconstrainedTotalDemand > 0 ? (unconstrainedTotalShipment / unconstrainedTotalDemand * 100) : 0;
 
+        const shipmentStartDate = plan.programResults.find(d => d.shipment_final > 0)?.date || plan.programResults[0].date;
+
         html = `
           <h2 class="text-xl font-bold text-slate-900 mb-4">Summary Comparison</h2>
           <div class="grid grid-cols-2 gap-6">
@@ -289,14 +287,17 @@
                 <div class="bg-white p-3 rounded-lg">
                   <div class="text-xs text-slate-600 mb-1">Total Input</div>
                   <div class="text-xl font-bold text-blue-900">${formatNumber(unconstrainedLastDay.cum_input)}</div>
+                  <div class="text-xs text-blue-600 mt-1">As of ${unconstrainedLastDay.date}</div>
                 </div>
                 <div class="bg-white p-3 rounded-lg">
                   <div class="text-xs text-slate-600 mb-1">Total Output</div>
                   <div class="text-xl font-bold text-green-900">${formatNumber(unconstrainedLastDay.cum_output)}</div>
+                  <div class="text-xs text-green-600 mt-1">As of ${unconstrainedLastDay.date}</div>
                 </div>
                 <div class="bg-white p-3 rounded-lg">
                   <div class="text-xs text-slate-600 mb-1">Total Shipment</div>
                   <div class="text-xl font-bold text-purple-900">${formatNumber(unconstrainedTotalShipment)}</div>
+                  <div class="text-xs text-purple-600 mt-1">Starting ${shipmentStartDate}</div>
                 </div>
                 <div class="bg-white p-3 rounded-lg">
                   <div class="text-xs text-slate-600 mb-1">Attainment</div>
@@ -368,24 +369,31 @@
         `;
       } else {
         // Standard single-mode summary
+        const firstDay = plan.programResults[0];
+        const shipmentStartDate = plan.programResults.find(d => d.shipment_final > 0)?.date || firstDay.date;
+
         html = `
           <h2 class="text-xl font-bold text-slate-900 mb-4">Plan Summary</h2>
           <div class="grid grid-cols-4 gap-4 mb-6">
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <div class="text-2xl font-bold text-blue-900">${formatNumber(lastDay.cum_input)}</div>
               <div class="text-sm text-blue-700 mt-1">Total Input</div>
+              <div class="text-xs text-blue-600 mt-1">As of ${lastDay.date}</div>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <div class="text-2xl font-bold text-green-900">${formatNumber(lastDay.cum_output)}</div>
               <div class="text-sm text-green-700 mt-1">Total Output</div>
+              <div class="text-xs text-green-600 mt-1">As of ${lastDay.date}</div>
             </div>
             <div class="text-center p-4 bg-purple-50 rounded-lg">
               <div class="text-2xl font-bold text-purple-900">${formatNumber(totalShipment)}</div>
               <div class="text-sm text-purple-700 mt-1">Total Shipment</div>
+              <div class="text-xs text-purple-600 mt-1">Starting ${shipmentStartDate}</div>
             </div>
             <div class="text-center p-4 bg-orange-50 rounded-lg">
               <div class="text-2xl font-bold text-orange-900">${formatNumber(totalDemand)}</div>
               <div class="text-sm text-orange-700 mt-1">Total Demand</div>
+              <div class="text-xs text-orange-600 mt-1">Period total</div>
             </div>
           </div>
 
@@ -477,85 +485,79 @@
       const tbody = document.getElementById('weeklyMetricsBody');
       const thead = document.getElementById('weeklyMetricsTable').querySelector('thead tr');
 
-      // Update header if Combined Mode
-      if (unconstrainedMetrics) {
-        thead.innerHTML = `
-          <th class="px-3 py-3 text-left sticky left-0 bg-slate-100">Week</th>
-          <th class="px-2 py-3 text-right text-xs bg-slate-100">Demand</th>
-          <th class="px-2 py-3 text-right text-xs bg-blue-50 border-l-2 border-blue-300" colspan="3">🔓 Unconstrained</th>
-          <th class="px-2 py-3 text-right text-xs bg-orange-50 border-l-2 border-orange-300" colspan="3">🔒 Constrained</th>
-        `;
-      } else {
-        thead.innerHTML = `
-          <th class="px-4 py-3 text-left">Week</th>
-          <th class="px-4 py-3 text-right">Input</th>
-          <th class="px-4 py-3 text-right">Output</th>
-          <th class="px-4 py-3 text-right">Shipment</th>
-          <th class="px-4 py-3 text-right">Demand</th>
-          <th class="px-4 py-3 text-right">Gap</th>
-          <th class="px-4 py-3 text-right">Attainment %</th>
-        `;
-      }
+      // Calculate cumulative values
+      let cumInput = 0, cumOutput = 0, cumShipment = 0, cumDemand = 0;
+      const metricsWithCum = weeklyMetrics.map(week => {
+        cumInput += week.input || 0;
+        cumOutput += week.output || 0;
+        cumShipment += week.shipments || 0;
+        cumDemand += week.demand || 0;
+        const cumGap = cumShipment - cumDemand;
+        const cumAttainment = cumDemand > 0 ? (cumShipment / cumDemand * 100) : 0;
 
-      let html = '';
+        return {
+          ...week,
+          cum_input: cumInput,
+          cum_output: cumOutput,
+          cum_shipment: cumShipment,
+          cum_demand: cumDemand,
+          cum_gap: cumGap,
+          cum_attainment: cumAttainment
+        };
+      });
 
-      if (unconstrainedMetrics) {
-        // Combined mode: side-by-side comparison
-        weeklyMetrics.forEach((week, idx) => {
-          const uncWeek = unconstrainedMetrics[idx];
+      // Build header (weeks as columns)
+      let headerHtml = '<th class="px-3 py-2 text-left bg-slate-200 sticky left-0 z-10">Metric</th>';
+      metricsWithCum.forEach(week => {
+        headerHtml += `<th class="px-3 py-2 text-center text-xs bg-slate-100 min-w-[90px]">${week.week_id}</th>`;
+      });
+      thead.innerHTML = headerHtml;
 
-          const gap = week.gap || (week.shipments - week.demand);
-          const attainment = week.demand > 0 ? (week.shipments / week.demand * 100) : 0;
-          const gapClass = gap >= 0 ? 'text-green-700' : 'text-red-700';
-          const attainmentClass = attainment >= 100 ? 'text-green-700' : attainment >= 90 ? 'text-orange-700' : 'text-red-700';
+      // Build rows (metrics as rows)
+      const metrics = [
+        { label: 'Input', key: 'input', isCumulative: false },
+        { label: 'Cum Input', key: 'cum_input', isCumulative: true, bold: true },
+        { label: 'Output', key: 'output', isCumulative: false },
+        { label: 'Cum Output', key: 'cum_output', isCumulative: true, bold: true },
+        { label: 'Shipment', key: 'shipments', isCumulative: false },
+        { label: 'Cum Shipment', key: 'cum_shipment', isCumulative: true, bold: true },
+        { label: 'Demand', key: 'demand', isCumulative: false },
+        { label: 'Cum Demand', key: 'cum_demand', isCumulative: true, bold: true },
+        { label: 'Gap (Cum)', key: 'cum_gap', isGap: true, bold: true },
+        { label: 'Attainment %', key: 'cum_attainment', isPercent: true }
+      ];
 
-          const uncGap = uncWeek ? (uncWeek.gap || (uncWeek.shipments - uncWeek.demand)) : 0;
-          const uncAttainment = uncWeek && uncWeek.demand > 0 ? (uncWeek.shipments / uncWeek.demand * 100) : 0;
-          const uncGapClass = uncGap >= 0 ? 'text-green-700' : 'text-red-700';
-          const uncAttainmentClass = uncAttainment >= 100 ? 'text-green-700' : uncAttainment >= 90 ? 'text-orange-700' : 'text-red-700';
+      let bodyHtml = '';
+      metrics.forEach(metric => {
+        const rowClass = metric.isCumulative ? 'bg-blue-50' : '';
+        const labelClass = metric.bold ? 'font-bold' : '';
 
-          const hasDiff = uncWeek && (week.output !== uncWeek.output || week.shipments !== uncWeek.shipments);
+        bodyHtml += `<tr class="border-t hover:bg-slate-100 ${rowClass}">`;
+        bodyHtml += `<td class="px-3 py-2 text-left bg-slate-100 sticky left-0 z-10 ${labelClass}">${metric.label}</td>`;
 
-          html += `
-            <tr class="border-t hover:bg-slate-50 ${hasDiff ? 'bg-yellow-50' : ''}">
-              <td class="px-3 py-3 font-semibold sticky left-0 bg-white">${week.week_id}</td>
-              <td class="px-2 py-2 text-right text-sm bg-slate-100">${formatNumber(week.demand)}</td>
+        metricsWithCum.forEach(week => {
+          const value = week[metric.key] || 0;
+          let displayValue = '';
+          let cellClass = 'px-3 py-2 text-right text-sm';
 
-              <!-- Unconstrained -->
-              <td class="px-2 py-2 text-right text-xs bg-blue-50 border-l-2 border-blue-200">${uncWeek ? formatNumber(uncWeek.shipments) : '-'}</td>
-              <td class="px-2 py-2 text-right text-xs font-semibold bg-blue-50 ${uncGapClass}">${uncWeek ? (uncGap >= 0 ? '+' : '') + formatNumber(uncGap) : '-'}</td>
-              <td class="px-2 py-2 text-right text-xs font-semibold bg-blue-50 ${uncAttainmentClass}">${uncWeek ? uncAttainment.toFixed(1) + '%' : '-'}</td>
+          if (metric.isPercent) {
+            displayValue = value.toFixed(1) + '%';
+            cellClass += value >= 100 ? ' text-green-700 font-semibold' : value >= 90 ? ' text-orange-700 font-semibold' : ' text-red-700 font-semibold';
+          } else if (metric.isGap) {
+            displayValue = (value >= 0 ? '+' : '') + formatNumber(value);
+            cellClass += value >= 0 ? ' text-green-700 font-semibold' : ' text-red-700 font-semibold';
+          } else {
+            displayValue = formatNumber(value);
+            if (metric.bold) cellClass += ' font-semibold';
+          }
 
-              <!-- Constrained -->
-              <td class="px-2 py-2 text-right text-xs bg-orange-50 border-l-2 border-orange-200 ${hasDiff ? 'text-red-600 font-bold' : ''}">${formatNumber(week.shipments)}</td>
-              <td class="px-2 py-2 text-right text-xs font-semibold bg-orange-50 ${gapClass} ${hasDiff ? 'font-bold' : ''}">${gap >= 0 ? '+' : ''}${formatNumber(gap)}</td>
-              <td class="px-2 py-2 text-right text-xs font-semibold bg-orange-50 ${attainmentClass} ${hasDiff ? 'font-bold' : ''}">${attainment.toFixed(1)}%</td>
-            </tr>
-          `;
+          bodyHtml += `<td class="${cellClass}">${displayValue}</td>`;
         });
-      } else {
-        // Standard mode
-        weeklyMetrics.forEach(week => {
-          const gap = week.gap || (week.shipments - week.demand);
-          const attainment = week.demand > 0 ? (week.shipments / week.demand * 100) : 0;
-          const gapClass = gap >= 0 ? 'text-green-700' : 'text-red-700';
-          const attainmentClass = attainment >= 100 ? 'text-green-700' : attainment >= 90 ? 'text-orange-700' : 'text-red-700';
 
-          html += `
-            <tr class="border-t hover:bg-slate-50">
-              <td class="px-4 py-3 font-semibold">${week.week_id}</td>
-              <td class="px-4 py-3 text-right">${formatNumber(week.input)}</td>
-              <td class="px-4 py-3 text-right">${formatNumber(week.output)}</td>
-              <td class="px-4 py-3 text-right">${formatNumber(week.shipments)}</td>
-              <td class="px-4 py-3 text-right">${formatNumber(week.demand)}</td>
-              <td class="px-4 py-3 text-right font-semibold ${gapClass}">${gap >= 0 ? '+' : ''}${formatNumber(gap)}</td>
-              <td class="px-4 py-3 text-right font-semibold ${attainmentClass}">${attainment.toFixed(1)}%</td>
-            </tr>
-          `;
-        });
-      }
+        bodyHtml += '</tr>';
+      });
 
-      tbody.innerHTML = html;
+      tbody.innerHTML = bodyHtml;
     }
 
     function renderSiteBreakdown(siteResults) {
@@ -800,45 +802,6 @@
       const healthStyle = healthColors[analysis.summary.overallHealth] || healthColors.fair;
 
       let html = `
-        <!-- Health Summary Card -->
-        <div class="mb-6 p-5 ${healthStyle.bg} border-2 ${healthStyle.border} rounded-lg">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <div class="flex items-center gap-3">
-                <span class="text-3xl">${healthStyle.icon}</span>
-                <div>
-                  <h3 class="text-lg font-bold ${healthStyle.text}">Overall Health: ${analysis.summary.overallHealth.toUpperCase()}</h3>
-                  <p class="text-sm ${healthStyle.text} opacity-75">Plan Score: ${analysis.scores.overall.toFixed(1)}/100</p>
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-2xl font-bold ${healthStyle.text}">${analysis.summary.totalIssues}</div>
-              <div class="text-xs ${healthStyle.text} opacity-75">Total Issues</div>
-            </div>
-          </div>
-
-          <!-- Score Breakdown -->
-          <div class="grid grid-cols-4 gap-3 mt-4">
-            <div class="bg-white p-3 rounded-lg">
-              <div class="text-xs text-slate-600 mb-1">Gap Score</div>
-              <div class="text-lg font-bold ${analysis.scores.gapScore >= 75 ? 'text-green-600' : analysis.scores.gapScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.gapScore.toFixed(0)}</div>
-            </div>
-            <div class="bg-white p-3 rounded-lg">
-              <div class="text-xs text-slate-600 mb-1">CTB Score</div>
-              <div class="text-lg font-bold ${analysis.scores.ctbScore >= 75 ? 'text-green-600' : analysis.scores.ctbScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.ctbScore.toFixed(0)}</div>
-            </div>
-            <div class="bg-white p-3 rounded-lg">
-              <div class="text-xs text-slate-600 mb-1">Stability</div>
-              <div class="text-lg font-bold ${analysis.scores.stabilityScore >= 75 ? 'text-green-600' : analysis.scores.stabilityScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.stabilityScore.toFixed(0)}</div>
-            </div>
-            <div class="bg-white p-3 rounded-lg">
-              <div class="text-xs text-slate-600 mb-1">Ramp Score</div>
-              <div class="text-lg font-bold ${analysis.scores.rampScore >= 75 ? 'text-green-600' : analysis.scores.rampScore >= 50 ? 'text-orange-600' : 'text-red-600'}">${analysis.scores.rampScore.toFixed(0)}</div>
-            </div>
-          </div>
-        </div>
-
         <!-- Recommendations -->
         ${analysis.recommendations.length > 0 ? `
           <div class="mb-6">

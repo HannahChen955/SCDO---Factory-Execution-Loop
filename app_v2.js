@@ -23,10 +23,494 @@ window.STATE = STATE;
 const $ = (id) => document.getElementById(id);
 
 // ========================================
+// Date Format Helper
+// ========================================
+// Extract date portion from week_id format "2026-W39 (09/26)" -> "09/26"
+function getWeekDisplayDate(weekId) {
+  if (!weekId) return weekId;
+  const match = weekId.match(/\((.*?)\)/);
+  return match ? match[1] : weekId;
+}
+
+// ========================================
+// Configuration Persistence (LocalStorage)
+// ========================================
+const CONFIG_STORAGE_KEYS = {
+  SITES: 'productionPlan_sites_config',
+  CAPACITY_UNITS: 'productionPlan_capacity_units_config',
+  // PLAN_CONFIG: 'productionPlan_general_config',  // Unused - removed
+  PROGRAM_CONFIG: 'productionPlan_program_config',
+  COUNTRY_HOLIDAYS: 'productionPlan_country_holidays',
+  SITE_OVERRIDES: 'productionPlan_site_overrides'
+};
+
+/**
+ * Save sites configuration to localStorage
+ */
+function saveSitesConfig() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEYS.SITES, JSON.stringify(PRODUCTION_PLAN_SEED_DATA.sites));
+    console.log('[Config] Sites saved to localStorage:', PRODUCTION_PLAN_SEED_DATA.sites.length, 'sites');
+  } catch (error) {
+    console.error('[Config] Error saving sites:', error);
+  }
+}
+
+/**
+ * Load sites configuration from localStorage
+ */
+function loadSitesConfig() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEYS.SITES);
+    if (saved) {
+      PRODUCTION_PLAN_SEED_DATA.sites = JSON.parse(saved);
+      console.log('[Config] Sites loaded from localStorage:', PRODUCTION_PLAN_SEED_DATA.sites.length, 'sites');
+      return true;
+    }
+  } catch (error) {
+    console.error('[Config] Error loading sites:', error);
+  }
+  return false;
+}
+
+/**
+ * Save capacity units configuration to localStorage
+ */
+function saveCapacityUnitsConfig() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEYS.CAPACITY_UNITS, JSON.stringify(PRODUCTION_PLAN_SEED_DATA.capacityUnits));
+    console.log('[Config] Capacity units saved to localStorage:', PRODUCTION_PLAN_SEED_DATA.capacityUnits.length, 'units');
+  } catch (error) {
+    console.error('[Config] Error saving capacity units:', error);
+  }
+}
+
+/**
+ * Load capacity units configuration from localStorage
+ */
+function loadCapacityUnitsConfig() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEYS.CAPACITY_UNITS);
+    if (saved) {
+      PRODUCTION_PLAN_SEED_DATA.capacityUnits = JSON.parse(saved);
+      console.log('[Config] Capacity units loaded from localStorage:', PRODUCTION_PLAN_SEED_DATA.capacityUnits.length, 'units');
+
+      // ⚠️ CRITICAL: Refresh curve factors from presets
+      // If a unit has a preset specified, load the latest preset factors from window.curvePresets
+      // This ensures we use the latest preset definition, not stale factors saved in localStorage
+      PRODUCTION_PLAN_SEED_DATA.capacityUnits.forEach((unit, index) => {
+        // Refresh UPH curve from preset
+        if (unit.uph_ramp_curve_preset && unit.uph_ramp_curve_preset !== 'custom') {
+          const preset = window.curvePresets?.uph?.[unit.uph_ramp_curve_preset];
+          if (preset) {
+            unit.uph_ramp_curve = {
+              length_workdays: preset.length,
+              factors: [...preset.factors]
+            };
+            console.log(`[Config]   ✅ Unit ${index} (${unit.unit_id}): Refreshed UPH curve from preset '${unit.uph_ramp_curve_preset}'`);
+          } else {
+            console.warn(`[Config]   ⚠️ Unit ${index} (${unit.unit_id}): UPH preset '${unit.uph_ramp_curve_preset}' not found`);
+          }
+        }
+
+        // Refresh Yield curve from preset
+        if (unit.yield_ramp_curve_preset && unit.yield_ramp_curve_preset !== 'custom') {
+          const preset = window.curvePresets?.yield?.[unit.yield_ramp_curve_preset];
+          if (preset) {
+            unit.yield_ramp_curve = {
+              length_workdays: preset.length,
+              factors: [...preset.factors]
+            };
+            console.log(`[Config]   ✅ Unit ${index} (${unit.unit_id}): Refreshed Yield curve from preset '${unit.yield_ramp_curve_preset}'`);
+          } else {
+            console.warn(`[Config]   ⚠️ Unit ${index} (${unit.unit_id}): Yield preset '${unit.yield_ramp_curve_preset}' not found`);
+          }
+        }
+      });
+
+      return true;
+    }
+  } catch (error) {
+    console.error('[Config] Error loading capacity units:', error);
+  }
+  return false;
+}
+
+/**
+ * Save program configuration to localStorage
+ * Includes: program_id, program_name, default_shift_hours, output_factors, shipment_lag_workdays, shipment_pallet_size, weekly_window, startDate, endDate, considerHolidays
+ */
+function saveProgramConfig() {
+  try {
+    // Read all configuration fields from DOM if available
+    const startDateEl = document.getElementById('configStartDate');
+    const endDateEl = document.getElementById('configEndDate');
+    const shiftHoursEl = document.getElementById('configShiftHours');
+    const workingDaysEl = document.getElementById('configWorkingDays');
+    const shipmentLagEl = document.getElementById('configShipmentLag');
+    const palletSizeEl = document.getElementById('configPalletSize');
+    const considerHolidaysEl = document.getElementById('configConsiderHolidays');
+    const day1FactorEl = document.getElementById('configDay1Factor');
+    const day2FactorEl = document.getElementById('configDay2Factor');
+    const day3FactorEl = document.getElementById('configDay3Factor');
+    const maxDailyShipmentEl = document.getElementById('configMaxDailyShipment');
+    const shipmentStartDateEl = document.getElementById('configShipmentStartDate');
+
+    // Update programConfig with current values
+    if (startDateEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.startDate = startDateEl.value;
+    }
+    if (endDateEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.endDate = endDateEl.value;
+    }
+    if (shiftHoursEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.default_shift_hours = {
+        DAY: parseFloat(shiftHoursEl.value),
+        NIGHT: parseFloat(shiftHoursEl.value)
+      };
+    }
+    if (workingDaysEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.weekly_window = workingDaysEl.value;
+    }
+    if (shipmentLagEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.shipment_lag_workdays = parseInt(shipmentLagEl.value);
+    }
+    if (palletSizeEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.shipment_pallet_size = parseInt(palletSizeEl.value) || 1;
+    }
+    if (considerHolidaysEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.considerHolidays = considerHolidaysEl.checked;
+    }
+    if (day1FactorEl && day2FactorEl && day3FactorEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.output_factors = {
+        day1: parseFloat(day1FactorEl.value),
+        day2: parseFloat(day2FactorEl.value),
+        day3_plus: parseFloat(day3FactorEl.value)
+      };
+    }
+    if (maxDailyShipmentEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.max_daily_shipment = parseInt(maxDailyShipmentEl.value) || 0;
+    }
+    if (shipmentStartDateEl) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig.shipment_start_date = shipmentStartDateEl.value || null;
+    }
+
+    localStorage.setItem(CONFIG_STORAGE_KEYS.PROGRAM_CONFIG, JSON.stringify(PRODUCTION_PLAN_SEED_DATA.programConfig));
+    console.log('[Config] Program config saved to localStorage:', PRODUCTION_PLAN_SEED_DATA.programConfig);
+  } catch (error) {
+    console.error('[Config] Error saving program config:', error);
+  }
+}
+
+/**
+ * Load program configuration from localStorage
+ */
+function loadProgramConfig() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEYS.PROGRAM_CONFIG);
+    if (saved) {
+      PRODUCTION_PLAN_SEED_DATA.programConfig = JSON.parse(saved);
+      console.log('[Config] Program config loaded from localStorage:', PRODUCTION_PLAN_SEED_DATA.programConfig);
+
+      // Populate DOM elements if they exist
+      const startDateEl = document.getElementById('configStartDate');
+      const endDateEl = document.getElementById('configEndDate');
+      const shiftHoursEl = document.getElementById('configShiftHours');
+      const workingDaysEl = document.getElementById('configWorkingDays');
+      const shipmentLagEl = document.getElementById('configShipmentLag');
+      const palletSizeEl = document.getElementById('configPalletSize');
+      const considerHolidaysEl = document.getElementById('configConsiderHolidays');
+      const day1FactorEl = document.getElementById('configDay1Factor');
+      const day2FactorEl = document.getElementById('configDay2Factor');
+      const day3FactorEl = document.getElementById('configDay3Factor');
+      const maxDailyShipmentEl = document.getElementById('configMaxDailyShipment');
+      const shipmentStartDateEl = document.getElementById('configShipmentStartDate');
+
+      const config = PRODUCTION_PLAN_SEED_DATA.programConfig;
+
+      if (startDateEl && config.startDate) {
+        startDateEl.value = config.startDate;
+      }
+      if (endDateEl && config.endDate) {
+        endDateEl.value = config.endDate;
+      }
+      if (shiftHoursEl && config.default_shift_hours) {
+        shiftHoursEl.value = config.default_shift_hours.DAY || config.default_shift_hours.NIGHT || 10;
+      }
+      if (workingDaysEl && config.weekly_window) {
+        workingDaysEl.value = config.weekly_window;
+      }
+      if (shipmentLagEl && config.shipment_lag_workdays !== undefined) {
+        shipmentLagEl.value = config.shipment_lag_workdays;
+      }
+      if (palletSizeEl && config.shipment_pallet_size !== undefined) {
+        palletSizeEl.value = config.shipment_pallet_size;
+      }
+      if (considerHolidaysEl && config.considerHolidays !== undefined) {
+        considerHolidaysEl.checked = config.considerHolidays;
+      }
+      if (day1FactorEl && config.output_factors) {
+        day1FactorEl.value = config.output_factors.day1 || 0.5;
+      }
+      if (day2FactorEl && config.output_factors) {
+        day2FactorEl.value = config.output_factors.day2 || 1.0;
+      }
+      if (day3FactorEl && config.output_factors) {
+        day3FactorEl.value = config.output_factors.day3_plus || 1.0;
+      }
+      if (maxDailyShipmentEl && config.max_daily_shipment !== undefined) {
+        maxDailyShipmentEl.value = config.max_daily_shipment;
+      }
+      if (shipmentStartDateEl && config.shipment_start_date) {
+        shipmentStartDateEl.value = config.shipment_start_date;
+      }
+
+      return true;
+    }
+  } catch (error) {
+    console.error('[Config] Error loading program config:', error);
+  }
+  return false;
+}
+
+/**
+ * Save country holidays configuration to localStorage
+ */
+function saveCountryHolidaysConfig() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEYS.COUNTRY_HOLIDAYS, JSON.stringify(PRODUCTION_PLAN_SEED_DATA.countryHolidays));
+    console.log('[Config] Country holidays saved to localStorage');
+  } catch (error) {
+    console.error('[Config] Error saving country holidays:', error);
+  }
+}
+
+/**
+ * Load country holidays configuration from localStorage
+ */
+function loadCountryHolidaysConfig() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEYS.COUNTRY_HOLIDAYS);
+    if (saved) {
+      PRODUCTION_PLAN_SEED_DATA.countryHolidays = JSON.parse(saved);
+      console.log('[Config] Country holidays loaded from localStorage');
+      return true;
+    }
+  } catch (error) {
+    console.error('[Config] Error loading country holidays:', error);
+  }
+  return false;
+}
+
+/**
+ * Save site overrides configuration to localStorage
+ */
+function saveSiteOverridesConfig() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEYS.SITE_OVERRIDES, JSON.stringify(PRODUCTION_PLAN_SEED_DATA.siteOverrides));
+    console.log('[Config] Site overrides saved to localStorage');
+  } catch (error) {
+    console.error('[Config] Error saving site overrides:', error);
+  }
+}
+
+/**
+ * Load site overrides configuration from localStorage
+ */
+function loadSiteOverridesConfig() {
+  try {
+    const saved = localStorage.getItem(CONFIG_STORAGE_KEYS.SITE_OVERRIDES);
+    if (saved) {
+      PRODUCTION_PLAN_SEED_DATA.siteOverrides = JSON.parse(saved);
+      console.log('[Config] Site overrides loaded from localStorage');
+      return true;
+    }
+  } catch (error) {
+    console.error('[Config] Error loading site overrides:', error);
+  }
+  return false;
+}
+
+/**
+ * Reset to default configuration (from seed data file)
+ */
+function resetToDefaultConfig() {
+  if (!confirm('⚠️ Reset to default configuration? This will clear all your custom sites and lines.')) {
+    return;
+  }
+
+  // Clear localStorage
+  localStorage.removeItem(CONFIG_STORAGE_KEYS.SITES);
+  localStorage.removeItem(CONFIG_STORAGE_KEYS.CAPACITY_UNITS);
+  localStorage.removeItem(CONFIG_STORAGE_KEYS.PROGRAM_CONFIG);
+  localStorage.removeItem(CONFIG_STORAGE_KEYS.COUNTRY_HOLIDAYS);
+  localStorage.removeItem(CONFIG_STORAGE_KEYS.SITE_OVERRIDES);
+
+  // Reload page to get fresh data from seed file
+  showNotification('🔄 Resetting to default configuration...', 'info');
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+}
+
+// Expose to window for HTML onclick handlers
+window.resetToDefaultConfig = resetToDefaultConfig;
+
+/**
+ * Initialize configuration - load from localStorage or use defaults
+ */
+function initializeProductionPlanConfig() {
+  console.log('[Config] Initializing production plan configuration...');
+
+  // ⚠️ CRITICAL: Load curve presets from localStorage FIRST
+  // This must happen before loading capacity units config
+  if (localStorage.getItem('curvePresets')) {
+    try {
+      window.curvePresets = JSON.parse(localStorage.getItem('curvePresets'));
+      console.log('[Config] ✅ Loaded curve presets from localStorage:', Object.keys(window.curvePresets.uph || {}).length, 'UPH presets,', Object.keys(window.curvePresets.yield || {}).length, 'Yield presets');
+    } catch (error) {
+      console.error('[Config] Error loading curve presets from localStorage:', error);
+    }
+  } else {
+    console.log('[Config] No saved curve presets in localStorage, using defaults from curve_presets_manager.js');
+  }
+
+  // Try to load from localStorage first
+  const sitesLoaded = loadSitesConfig();
+  const unitsLoaded = loadCapacityUnitsConfig();
+  const programLoaded = loadProgramConfig();
+  const holidaysLoaded = loadCountryHolidaysConfig();
+  const overridesLoaded = loadSiteOverridesConfig();
+
+  if (!sitesLoaded || !unitsLoaded || !programLoaded || !holidaysLoaded || !overridesLoaded) {
+    console.log('[Config] Using default configuration from seed data file for some settings');
+  }
+
+  console.log('[Config] Final configuration:', {
+    sites: PRODUCTION_PLAN_SEED_DATA.sites.length,
+    capacityUnits: PRODUCTION_PLAN_SEED_DATA.capacityUnits.length,
+    programConfig: !!PRODUCTION_PLAN_SEED_DATA.programConfig,
+    countryHolidays: Object.keys(PRODUCTION_PLAN_SEED_DATA.countryHolidays || {}).length,
+    siteOverrides: PRODUCTION_PLAN_SEED_DATA.siteOverrides?.length || 0
+  });
+}
+
+/**
+ * Track unsaved changes
+ */
+let hasUnsavedChanges = false;
+
+/**
+ * Mark configuration as having unsaved changes
+ */
+function markConfigAsModified() {
+  hasUnsavedChanges = true;
+  updateSaveButtonState();
+}
+
+/**
+ * Update the save button to show unsaved changes state
+ */
+function updateSaveButtonState() {
+  const saveBtn = document.getElementById('saveConfigBtn');
+  if (saveBtn) {
+    if (hasUnsavedChanges) {
+      saveBtn.innerHTML = '<span>💾 Save Configuration</span><span class="px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">Unsaved</span>';
+      saveBtn.classList.remove('bg-slate-200', 'text-slate-600', 'hover:bg-slate-300');
+      saveBtn.classList.add('bg-green-600', 'text-white', 'hover:bg-green-700', 'font-bold', 'animate-pulse');
+    } else {
+      saveBtn.innerHTML = '<span>✅ Configuration Saved</span>';
+      saveBtn.classList.remove('bg-green-600', 'text-white', 'hover:bg-green-700', 'font-bold', 'animate-pulse');
+      saveBtn.classList.add('bg-slate-200', 'text-slate-600', 'hover:bg-slate-300');
+    }
+  }
+}
+
+/**
+ * Save all configuration changes to localStorage
+ */
+function saveAllConfiguration() {
+  saveSitesConfig();
+  saveCapacityUnitsConfig();
+  saveProgramConfig();
+  saveCountryHolidaysConfig();
+  saveSiteOverridesConfig();
+  hasUnsavedChanges = false;
+  updateSaveButtonState();
+  showNotification('✅ Configuration saved successfully!', 'success');
+}
+
+/**
+ * Update a specific field in a capacity unit (without auto-saving)
+ */
+function updateCapacityUnitField(unitIndex, field, value) {
+  try {
+    if (unitIndex < 0 || unitIndex >= PRODUCTION_PLAN_SEED_DATA.capacityUnits.length) {
+      console.error('[Config] Invalid unit index:', unitIndex);
+      return;
+    }
+
+    const unit = PRODUCTION_PLAN_SEED_DATA.capacityUnits[unitIndex];
+    const oldValue = unit[field];
+
+    // Convert value to appropriate type
+    if (field === 'base_uph' || field === 'shift_hours') {
+      value = parseFloat(value);
+    }
+
+    unit[field] = value;
+
+    // ⚠️ CRITICAL: When curve preset changes, update the actual curve factors
+    if (field === 'uph_ramp_curve_preset' && value !== 'custom') {
+      // Load preset from window.curvePresets
+      const preset = window.curvePresets?.uph?.[value];
+      if (preset) {
+        unit.uph_ramp_curve = {
+          length_workdays: preset.length,
+          factors: [...preset.factors] // Deep copy
+        };
+        console.log(`[Config] ✅ Loaded UPH curve preset '${value}':`, preset.length, 'workdays, factors:', preset.factors.slice(0, 5), '...');
+      } else {
+        console.error(`[Config] ❌ UPH curve preset '${value}' not found in window.curvePresets`);
+      }
+    } else if (field === 'yield_ramp_curve_preset' && value !== 'custom') {
+      // Load preset from window.curvePresets
+      const preset = window.curvePresets?.yield?.[value];
+      if (preset) {
+        unit.yield_ramp_curve = {
+          length_workdays: preset.length,
+          factors: [...preset.factors] // Deep copy
+        };
+        console.log(`[Config] ✅ Loaded Yield curve preset '${value}':`, preset.length, 'workdays, factors:', preset.factors.slice(0, 5), '...');
+      } else {
+        console.error(`[Config] ❌ Yield curve preset '${value}' not found in window.curvePresets`);
+      }
+    }
+
+    markConfigAsModified(); // Mark as modified, but don't save yet
+
+    console.log(`[Config] Updated ${unit.unit_id} ${field}: ${oldValue} → ${value}`);
+  } catch (error) {
+    console.error('[Config] Error updating capacity unit field:', error);
+  }
+}
+
+// Expose to window for HTML onclick/onchange handlers
+window.updateCapacityUnitField = updateCapacityUnitField;
+window.saveAllConfiguration = saveAllConfiguration;
+
+// ========================================
 // Navigation Helper
 // ========================================
 function navigateTo(view, updateUrl = true) {
   STATE.activeView = view;
+
+  // Save current view to localStorage for page refresh persistence
+  try {
+    localStorage.setItem('lastActiveView', view);
+  } catch (error) {
+    console.error('[Navigation] Error saving active view:', error);
+  }
 
   // Program workspace sub-views share the same URL (/mo-dashboard)
   // So we don't update URL for these, just render the new view
@@ -2218,6 +2702,10 @@ window.closeReportModal = closeReportModal;
   console.log('[App Init] productFilter element exists at start?', !!document.getElementById('productFilter'));
 
   await loadData();
+
+  // Load production plan configuration from localStorage
+  initializeProductionPlanConfig();
+
   setMeta();
 
   console.log('[App Init] About to call initControls()');
@@ -2233,6 +2721,23 @@ window.closeReportModal = closeReportModal;
 
       // Update STATE from route
       STATE.activeView = route.view;
+
+      // If navigating to program workspace, restore last sub-view from localStorage
+      const programWorkspaceViews = ['program', 'home', 'delivery', 'command-center'];
+      if (programWorkspaceViews.includes(route.view)) {
+        try {
+          const lastView = localStorage.getItem('lastActiveView');
+          const programWorkspaceSubViews = ['production-plan', 'mfg-leadtime', 'bto-cto-leadtime',
+                                             'fv-management', 'labor-fulfillment', 'campus-readiness',
+                                             'command-center', 'delivery'];
+          if (lastView && programWorkspaceSubViews.includes(lastView)) {
+            console.log('[App] Restoring last active sub-view:', lastView);
+            STATE.activeView = lastView;
+          }
+        } catch (error) {
+          console.error('[App] Error restoring last view:', error);
+        }
+      }
 
       // Update filters if provided in URL
       if (route.product) {
@@ -2278,6 +2783,18 @@ window.closeReportModal = closeReportModal;
   } else {
     // Fallback if router not loaded
     console.warn('[App] Router not loaded, using default initialization');
+
+    // Try to restore last active view
+    try {
+      const lastView = localStorage.getItem('lastActiveView');
+      if (lastView) {
+        console.log('[App] Restoring last active view from localStorage:', lastView);
+        STATE.activeView = lastView;
+      }
+    } catch (error) {
+      console.error('[App] Error restoring last view:', error);
+    }
+
     render();
   }
 })();
@@ -3384,6 +3901,27 @@ function renderDeliveryCommandCenter() {
 function renderProductionPlan() {
   //Initialize production plan state if not exists
   if (!window.productionPlanState) {
+    // Try to restore saved tab and subpage state from localStorage
+    let savedTab = 'generate';
+    let savedSubpage = 'latest';
+
+    try {
+      const storedTab = localStorage.getItem('productionPlan_activeTab');
+      const storedSubpage = localStorage.getItem('productionPlan_activeSubpage');
+
+      if (storedTab) {
+        savedTab = storedTab;
+        console.log('[Production Plan] Restored activeTab from localStorage:', storedTab);
+      }
+
+      if (storedSubpage) {
+        savedSubpage = storedSubpage;
+        console.log('[Production Plan] Restored activeSubpage from localStorage:', storedSubpage);
+      }
+    } catch (error) {
+      console.error('[Production Plan] Error restoring tab/subpage state:', error);
+    }
+
     window.productionPlanState = {
       program: 'product_a',
       site: 'all',
@@ -3392,8 +3930,8 @@ function renderProductionPlan() {
       mode: 'unconstrained',
       planResults: null,
       engine: null,
-      activeTab: 'generate', // 'generate' | 'library' | 'por' | 'history'
-      activeSubpage: 'latest' // 'latest' | 'generate' (subpage within generate tab)
+      activeTab: savedTab, // 'generate' | 'library' | 'por' | 'history'
+      activeSubpage: savedSubpage // 'latest' | 'generate' (subpage within generate tab)
     };
   }
 
@@ -3477,6 +4015,15 @@ function renderProductionPlan() {
 // Tab switching function
 window.switchProductionPlanTab = function(tabName) {
   window.productionPlanState.activeTab = tabName;
+
+  // Save tab state to localStorage
+  try {
+    localStorage.setItem('productionPlan_activeTab', tabName);
+    console.log('[Production Plan] Saved activeTab to localStorage:', tabName);
+  } catch (error) {
+    console.error('[Production Plan] Error saving activeTab:', error);
+  }
+
   renderProductionPlan();
 };
 
@@ -3489,6 +4036,19 @@ function renderProductionPlanLatest() {
     hasPlanResults: !!state.planResults,
     planResultsType: state.planResults ? (state.planResults.mode || 'normal') : 'none'
   });
+
+  // Load latest forecast data from localStorage
+  const forecastVersions = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+  if (forecastVersions.length > 0) {
+    const latestForecast = forecastVersions[forecastVersions.length - 1];
+    PRODUCTION_PLAN_SEED_DATA.weeklyDemand = latestForecast.data.map(row => ({
+      week_id: row.week_id,
+      program_id: 'product_a',
+      demand_qty: row.weekly_forecast,
+      notes: `From ${latestForecast.fileName}`
+    }));
+    console.log('[Plan Render] Loaded forecast data:', latestForecast.version, 'with', PRODUCTION_PLAN_SEED_DATA.weeklyDemand.length, 'weeks');
+  }
 
   //Initialize engine with seed data if not exists
   if (!state.engine) {
@@ -3582,8 +4142,8 @@ function renderProductionPlanLatest() {
 
   const weeklyMetrics = (results && results.weeklyMetrics) ? results.weeklyMetrics : [];
 
-  // Determine current granularity (default: daily)
-  const granularity = state.viewGranularity || 'daily';
+  // Determine current granularity (default: weekly)
+  const granularity = state.viewGranularity || 'weekly';
 
   // Get the month to display - use the start date of the plan
   // Extract YYYY-MM from state.startDate (e.g., "2026-10-01" -> "2026-10")
@@ -3908,7 +4468,7 @@ function renderProductionPlanLatest() {
             <tbody>
               ${currentData.map((row, idx) => {
                 const dateLabel = granularity === 'daily' ? row.date :
-                                 granularity === 'weekly' ? row.week_id : row.month_id;
+                                 granularity === 'weekly' ? getWeekDisplayDate(row.week_id) : row.month_id;
                 const isSunday = granularity === 'daily' && DateUtils.isSunday(row.date);
 
                 // Calculate cumulative values
@@ -4245,6 +4805,10 @@ function renderProductionPlanGenerate() {
               <span>🔄</span>
               <span>Compare</span>
             </button>
+            <button onclick="deleteCurrentForecast()" class="px-4 py-2 border border-red-600 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 flex items-center gap-2">
+              <span>🗑️</span>
+              <span>Delete</span>
+            </button>
           </div>
         </div>
 
@@ -4329,6 +4893,18 @@ function renderProductionPlanGenerate() {
             <div class="text-xl font-bold text-slate-900">Production Plan Configuration</div>
             <div class="text-sm text-slate-600 mt-1">Add capacity units (Site → Line → Shift) to define what the report will cover</div>
           </div>
+          <div class="flex gap-2">
+            <button id="saveConfigBtn" onclick="saveAllConfiguration()"
+                    class="px-6 py-3 bg-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-300 whitespace-nowrap flex items-center justify-center gap-2"
+                    title="Save all configuration changes to browser storage">
+              <span>✅ Configuration Saved</span>
+            </button>
+            <button onclick="resetToDefaultConfig()"
+                    class="px-6 py-3 border-2 border-slate-300 rounded-lg text-sm text-slate-600 hover:border-red-500 hover:bg-red-50 hover:text-red-700 font-semibold"
+                    title="Reset to default sites and lines from seed data file">
+              🔄 Reset to Default
+            </button>
+          </div>
         </div>
 
         <!-- Configuration Form -->
@@ -4350,11 +4926,12 @@ function renderProductionPlanGenerate() {
               </div>
               <div>
                 <label class="text-xs text-slate-600 font-semibold block mb-1">Start Date</label>
-                <input type="date" id="configStartDate" value="2026-10-01" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="date" id="configStartDate" value="2026-10-01" class="w-full border rounded px-3 py-2 text-sm" onchange="validateReportDateRange(); markConfigAsModified();">
               </div>
               <div>
                 <label class="text-xs text-slate-600 font-semibold block mb-1">End Date</label>
-                <input type="date" id="configEndDate" value="2026-10-31" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="date" id="configEndDate" value="2026-10-31" class="w-full border rounded px-3 py-2 text-sm" onchange="validateReportDateRange(); markConfigAsModified();">
+                <div id="endDateError" class="text-xs text-red-600 mt-1 hidden"></div>
               </div>
             </div>
           </div>
@@ -4370,10 +4947,12 @@ function renderProductionPlanGenerate() {
               <!-- Sites with their lines and shifts will be rendered here -->
             </div>
 
-            <button onclick="addSiteCapacity()"
-                    class="mt-4 w-full border-2 border-dashed border-blue-300 rounded-lg py-3 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-50 font-semibold">
-              + Add Site
-            </button>
+            <div class="mt-4">
+              <button onclick="addSiteCapacity()"
+                      class="w-full border-2 border-dashed border-blue-300 rounded-lg py-3 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-50 font-semibold">
+                + Add Site
+              </button>
+            </div>
           </div>
 
           <!-- Section 3: Working Parameters -->
@@ -4383,30 +4962,52 @@ function renderProductionPlanGenerate() {
               <span>⏰</span>
               <span>Working Parameters</span>
             </div>
-            <div id="workingParamsContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="text-xs text-slate-600 font-semibold block mb-1">Default Shift Hours</label>
-                <input type="number" id="configShiftHours" value="10" min="1" max="24" class="w-full border rounded px-3 py-2 text-sm">
-                <div class="text-xs text-slate-500 mt-1">Hours per shift (can be overridden per line)</div>
+            <div id="workingParamsContent" class="space-y-4">
+              <!-- Row 1: Basic Working Parameters -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">Default Shift Hours</label>
+                  <input type="number" id="configShiftHours" value="10" min="1" max="24" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                  <div class="text-xs text-slate-500 mt-1">Hours per shift (can be overridden per line)</div>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">Working Days Pattern</label>
+                  <select id="configWorkingDays" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                    <option value="MON_SAT" selected>Mon-Sat (6 days)</option>
+                    <option value="MON_FRI">Mon-Fri (5 days)</option>
+                    <option value="MON_SUN">Mon-Sun (7 days)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Lag (Workdays)</label>
+                  <input type="number" id="configShipmentLag" value="2" min="0" max="10" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                  <div class="text-xs text-slate-500 mt-1">Days from output to shipment-ready</div>
+                </div>
               </div>
-              <div>
-                <label class="text-xs text-slate-600 font-semibold block mb-1">Working Days Pattern</label>
-                <select id="configWorkingDays" class="w-full border rounded px-3 py-2 text-sm">
-                  <option value="MON_SAT" selected>Mon-Sat (6 days)</option>
-                  <option value="MON_FRI">Mon-Fri (5 days)</option>
-                  <option value="MON_SUN">Mon-Sun (7 days)</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Lag (Workdays)</label>
-                <input type="number" id="configShipmentLag" value="2" min="0" max="10" class="w-full border rounded px-3 py-2 text-sm">
-                <div class="text-xs text-slate-500 mt-1">Days from output to shipment-ready</div>
+
+              <!-- Row 2: Shipment Control Parameters -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">Max Daily Shipment (Units)</label>
+                  <input type="number" id="configMaxDailyShipment" value="30000" min="0" step="1000" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                  <div class="text-xs text-slate-500 mt-1">Maximum units that can ship per day (logistics limit)</div>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">📦 Pallet Size (Units/Pallet)</label>
+                  <input type="number" id="configPalletSize" value="480" min="1" step="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                  <div class="text-xs text-slate-500 mt-1">Shipment will be rounded to multiples of this (e.g., 480 = full pallets only)</div>
+                </div>
+                <div>
+                  <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Start Date</label>
+                  <input type="date" id="configShipmentStartDate" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                  <div class="text-xs text-slate-500 mt-1">First date when shipment can begin (leave empty to use forecast start date)</div>
+                </div>
               </div>
             </div>
 
               <div class="mt-4 col-span-full">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" id="configConsiderHolidays" checked class="rounded">
+                  <input type="checkbox" id="configConsiderHolidays" checked class="rounded" onchange="markConfigAsModified()">
                   <span class="text-sm font-semibold text-slate-700">Consider holidays when calculating working days</span>
                 </label>
               </div>
@@ -4444,17 +5045,17 @@ function renderProductionPlanGenerate() {
             <div id="flowTimeContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="text-xs text-slate-600 font-semibold block mb-1">Day 1 Factor</label>
-                <input type="number" id="configDay1Factor" value="0.5" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="number" id="configDay1Factor" value="0.5" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
                 <div class="text-xs text-slate-500 mt-1">First day output multiplier</div>
               </div>
               <div>
                 <label class="text-xs text-slate-600 font-semibold block mb-1">Day 2 Factor</label>
-                <input type="number" id="configDay2Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="number" id="configDay2Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
                 <div class="text-xs text-slate-500 mt-1">Second day output multiplier</div>
               </div>
               <div>
                 <label class="text-xs text-slate-600 font-semibold block mb-1">Day 3+ Factor</label>
-                <input type="number" id="configDay3Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm">
+                <input type="number" id="configDay3Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
                 <div class="text-xs text-slate-500 mt-1">Day 3+ output multiplier</div>
               </div>
             </div>
@@ -4544,11 +5145,44 @@ function renderProductionPlanGenerate() {
 
   // Render initial capacity units from seed data
   renderCapacityUnitsConfig();
+
+  // Load and display saved program config (including startDate and endDate)
+  loadProgramConfig();
+
+  // Load and display saved Forecast data if available
+  try {
+    const forecastVersions = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+    if (forecastVersions.length > 0 && typeof window.updateForecastSummary === 'function') {
+      window.updateForecastSummary(forecastVersions[forecastVersions.length - 1]);
+      console.log('[Render] Loaded and displayed forecast data');
+    }
+  } catch (error) {
+    console.error('[Render] Error loading forecast data:', error);
+  }
+
+  // Load and display saved CTB data if available
+  try {
+    const ctbVersions = JSON.parse(localStorage.getItem('productionPlan_ctb_versions') || '[]');
+    if (ctbVersions.length > 0 && typeof window.updateCTBSummary === 'function') {
+      window.updateCTBSummary(ctbVersions[ctbVersions.length - 1]);
+      console.log('[Render] Loaded and displayed CTB data');
+    }
+  } catch (error) {
+    console.error('[Render] Error loading CTB data:', error);
+  }
 }
 
 // Switch between subpages
 function switchProductionPlanSubpage(subpage) {
   window.productionPlanState.activeSubpage = subpage;
+
+  // Save subpage state to localStorage
+  try {
+    localStorage.setItem('productionPlan_activeSubpage', subpage);
+    console.log('[Production Plan] Saved activeSubpage to localStorage:', subpage);
+  } catch (error) {
+    console.error('[Production Plan] Error saving activeSubpage:', error);
+  }
 
   // Render the appropriate subpage
   if (subpage === 'latest') {
@@ -4560,6 +5194,54 @@ function switchProductionPlanSubpage(subpage) {
 
 // Export to window for onclick handlers
 window.switchProductionPlanSubpage = switchProductionPlanSubpage;
+
+// ==================== Report Date Range Validation ====================
+
+/**
+ * Validate that End Date is not earlier than Start Date
+ */
+function validateReportDateRange() {
+  const startDateInput = document.getElementById('configStartDate');
+  const endDateInput = document.getElementById('configEndDate');
+  const errorDiv = document.getElementById('endDateError');
+
+  // Get values
+  const startDate = startDateInput?.value;
+  const endDate = endDateInput?.value;
+
+  // Both dates must be filled
+  if (!startDate || !endDate) {
+    return true; // Don't show error if not both filled yet
+  }
+
+  // Compare dates
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (end < start) {
+    // Show error
+    if (errorDiv) {
+      errorDiv.textContent = '⚠️ End Date cannot be earlier than Start Date';
+      errorDiv.classList.remove('hidden');
+    }
+    if (endDateInput) {
+      endDateInput.style.borderColor = '#dc2626';
+    }
+    return false;
+  } else {
+    // Clear error
+    if (errorDiv) {
+      errorDiv.classList.add('hidden');
+    }
+    if (endDateInput) {
+      endDateInput.style.borderColor = '#cbd5e1';
+    }
+    return true;
+  }
+}
+
+// Export to window for onclick handlers
+window.validateReportDateRange = validateReportDateRange;
 
 // ==================== NEW: Simulation & POR Management Functions ====================
 
@@ -5607,6 +6289,7 @@ window.confirmSaveSimulation = function() {
         }
       }
     : {
+        mode: config.mode, // Add mode field for single mode
         programResults: planResults.programResults,
         weeklyMetrics: planResults.weeklyMetrics,
         siteResults: planResults.siteResults,
@@ -5673,8 +6356,10 @@ function renderCapacityUnitsConfig() {
   if (!container) return;
 
   const units = seedData.capacityUnits || [];
+  const sites = seedData.sites || [];
 
-  if (units.length === 0) {
+  // Check if there are any sites at all
+  if (sites.length === 0) {
     container.innerHTML = `
       <div class="text-center py-8 text-slate-500">
         <div class="text-4xl mb-2">🏭</div>
@@ -5684,13 +6369,33 @@ function renderCapacityUnitsConfig() {
     return;
   }
 
-  // Group units by site
+  // Group units by site, starting with all sites from sites array
   const siteGroups = {};
+
+  // First, initialize all sites from sites array
+  sites.forEach(site => {
+    siteGroups[site.site_id] = {
+      site_id: site.site_id,
+      site_name: site.site_name,
+      country: site.country,
+      holiday_config: 'legal', // default to legal holidays
+      lines: {}
+    };
+  });
+
+  // Then, populate with capacity units data
   units.forEach((unit, idx) => {
-    if (!siteGroups[unit.site_id]) {
+    // Update site if it exists in sites array
+    if (siteGroups[unit.site_id]) {
+      // Override holiday config from unit if exists
+      siteGroups[unit.site_id].holiday_config = unit.holiday_config || 'legal';
+    } else {
+      // This shouldn't happen, but handle legacy data
       siteGroups[unit.site_id] = {
         site_id: unit.site_id,
-        holiday_config: unit.holiday_config || 'legal', // 'legal' or 'custom'
+        site_name: unit.site_id,
+        country: 'CN', // default to CN
+        holiday_config: unit.holiday_config || 'legal',
         lines: {}
       };
     }
@@ -5727,35 +6432,40 @@ function renderCapacityUnitsConfig() {
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
             <div>
               <label class="text-xs text-slate-600 block mb-1">Base UPH</label>
-              <input type="number" value="${shift.base_uph}" class="w-full border rounded px-2 py-1 text-sm">
+              <input type="number" value="${shift.base_uph}" class="w-full border rounded px-2 py-1 text-sm"
+                     onchange="updateCapacityUnitField(${shift.originalIndex}, 'base_uph', this.value)">
             </div>
             <div>
               <label class="text-xs text-slate-600 block mb-1">Shift Hours</label>
-              <input type="number" value="${shift.shift_hours}" class="w-full border rounded px-2 py-1 text-sm">
+              <input type="number" value="${shift.shift_hours}" class="w-full border rounded px-2 py-1 text-sm"
+                     onchange="updateCapacityUnitField(${shift.originalIndex}, 'shift_hours', this.value)">
             </div>
             <div>
               <label class="text-xs text-slate-600 block mb-1">Ramp Start Date</label>
-              <input type="date" value="${shift.ramp_start_date}" class="w-full border rounded px-2 py-1 text-sm">
+              <input type="date" value="${shift.ramp_start_date}" class="w-full border rounded px-2 py-1 text-sm"
+                     onchange="updateCapacityUnitField(${shift.originalIndex}, 'ramp_start_date', this.value)">
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="text-xs text-slate-600 block mb-1">UPH Ramp Curve</label>
-              <select class="w-full border rounded px-2 py-1 text-sm">
-                <option value="standard_30d" selected>Standard 30-day Ramp</option>
-                <option value="fast_20d">Fast 20-day Ramp</option>
-                <option value="slow_45d">Slow 45-day Ramp</option>
-                <option value="custom">Custom Curve (${shift.uph_ramp_curve?.factors?.length || 0} points)</option>
+              <select class="w-full border rounded px-2 py-1 text-sm"
+                      onchange="updateCapacityUnitField(${shift.originalIndex}, 'uph_ramp_curve_preset', this.value)">
+                <option value="standard_30d" ${shift.uph_ramp_curve_preset === 'standard_30d' || !shift.uph_ramp_curve_preset ? 'selected' : ''}>Standard 30-day Ramp</option>
+                <option value="fast_20d" ${shift.uph_ramp_curve_preset === 'fast_20d' ? 'selected' : ''}>Fast 20-day Ramp</option>
+                <option value="slow_45d" ${shift.uph_ramp_curve_preset === 'slow_45d' ? 'selected' : ''}>Slow 45-day Ramp</option>
+                <option value="custom" ${shift.uph_ramp_curve_preset === 'custom' ? 'selected' : ''}>Custom Curve (${shift.uph_ramp_curve?.factors?.length || 0} points)</option>
               </select>
             </div>
             <div>
               <label class="text-xs text-slate-600 block mb-1">Yield Curve</label>
-              <select class="w-full border rounded px-2 py-1 text-sm">
-                <option value="standard_30d" selected>Standard 30-day Yield</option>
-                <option value="fast_20d">Fast 20-day Yield</option>
-                <option value="slow_45d">Slow 45-day Yield</option>
-                <option value="custom">Custom Curve (${shift.yield_ramp_curve?.factors?.length || 0} points)</option>
+              <select class="w-full border rounded px-2 py-1 text-sm"
+                      onchange="updateCapacityUnitField(${shift.originalIndex}, 'yield_ramp_curve_preset', this.value)">
+                <option value="standard_30d" ${shift.yield_ramp_curve_preset === 'standard_30d' || !shift.yield_ramp_curve_preset ? 'selected' : ''}>Standard 30-day Yield</option>
+                <option value="fast_20d" ${shift.yield_ramp_curve_preset === 'fast_20d' ? 'selected' : ''}>Fast 20-day Yield</option>
+                <option value="slow_45d" ${shift.yield_ramp_curve_preset === 'slow_45d' ? 'selected' : ''}>Slow 45-day Yield</option>
+                <option value="custom" ${shift.yield_ramp_curve_preset === 'custom' ? 'selected' : ''}>Custom Curve (${shift.yield_ramp_curve?.factors?.length || 0} points)</option>
               </select>
             </div>
           </div>
@@ -5776,12 +6486,18 @@ function renderCapacityUnitsConfig() {
       `;
     }).join('');
 
+    const countryFlag = site.country === 'CN' ? '🇨🇳' : '🇻🇳';
+    const countryName = site.country === 'CN' ? 'China' : 'Vietnam';
+
     return `
       <div class="border-2 border-blue-300 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-slate-50">
         <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleSection('siteContent_${site.site_id}', 'siteToggle_${site.site_id}')">
           <div class="flex items-center gap-3">
             <span id="siteToggle_${site.site_id}" class="text-blue-600 text-lg transition-transform">▼</span>
-            <div class="text-lg font-bold text-blue-900">🏭 Site: ${site.site_id}</div>
+            <div>
+              <div class="text-lg font-bold text-blue-900">🏭 Site: ${site.site_name}</div>
+              <div class="text-xs text-slate-600 mt-1">${countryFlag} ${countryName} Holidays</div>
+            </div>
           </div>
           <button onclick="event.stopPropagation(); removeSite('${site.site_id}')" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm font-semibold">
             🗑️ Remove Site
@@ -5809,56 +6525,406 @@ function renderCapacityUnitsConfig() {
             ${linesHtml}
             <button onclick="addLineToSite('${site.site_id}')"
                     class="w-full border-2 border-dashed border-blue-300 rounded-lg py-2 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-100 font-semibold">
-              + Add Line to ${site.site_id}
+              + Add Line to ${site.site_name}
             </button>
           </div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Update save button state after rendering
+  updateSaveButtonState();
 }
 
 // Hierarchical capacity configuration management functions
 
 function addSiteCapacity() {
-  const siteId = prompt('Enter Site ID (e.g., WF, VN01, VN02):');
-  if (!siteId) return;
+  // Create modal for site configuration
+  const modalHTML = `
+    <div id="addSiteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full" style="background: white; border-radius: 12px; padding: 32px; max-width: 480px; width: 90%;">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-slate-900 mb-2" style="font-size: 24px; font-weight: bold; color: #0f172a; margin-bottom: 8px;">🏭 Add New Production Site</h2>
+          <p class="text-sm text-slate-600" style="font-size: 14px; color: #64748b;">Configure the site location and country settings</p>
+        </div>
 
-  // Check if site already exists
-  const existingSite = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(u => u.site_id === siteId);
-  if (existingSite) {
-    showNotification('⚠️ Site already exists. Use "Add Line" to add more lines.', 'warning');
+        <!-- Site Name Input -->
+        <div class="mb-6" style="margin-bottom: 24px;">
+          <label class="block text-sm font-semibold text-slate-700 mb-2" style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">
+            Site Name <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="siteNameInput" placeholder="e.g., WF, VN01, Wistron Fab"
+                 class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                 style="width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px;">
+          <div class="text-xs text-slate-500 mt-2" style="font-size: 12px; color: #64748b; margin-top: 8px;">
+            This will be used as the site identifier
+          </div>
+        </div>
+
+        <!-- Country Selection -->
+        <div class="mb-6" style="margin-bottom: 24px;">
+          <label class="block text-sm font-semibold text-slate-700 mb-3" style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px;">
+            Country <span class="text-red-500">*</span>
+          </label>
+          <div class="text-xs text-slate-500 mb-3" style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+            This will determine which public holiday calendar to use
+          </div>
+          <div class="grid grid-cols-2 gap-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button type="button" onclick="selectCountry('CN')" id="country_CN"
+                    class="px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    style="padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: 500;">
+              🇨🇳 China
+            </button>
+            <button type="button" onclick="selectCountry('VN')" id="country_VN"
+                    class="px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    style="padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: 500;">
+              🇻🇳 Vietnam
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 pt-4" style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid #e2e8f0; margin-top: 24px;">
+          <button onclick="closeAddSiteModal()"
+                  class="flex-1 px-6 py-3 bg-slate-200 hover:bg-slate-300 rounded-lg font-semibold transition-colors"
+                  style="flex: 1; padding: 12px 24px; background: #e2e8f0; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;">
+            Cancel
+          </button>
+          <button onclick="confirmAddSite()"
+                  class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  style="flex: 1; padding: 12px 24px; background: #2563eb; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;">
+            Add Site
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  // Focus on site name input
+  setTimeout(() => {
+    document.getElementById('siteNameInput')?.focus();
+  }, 100);
+}
+
+// Global variable to store country selection
+let selectedCountry = null;
+
+function selectCountry(country) {
+  selectedCountry = country;
+
+  // Reset all buttons
+  document.getElementById('country_CN').style.borderColor = '#cbd5e1';
+  document.getElementById('country_CN').style.background = 'white';
+  document.getElementById('country_VN').style.borderColor = '#cbd5e1';
+  document.getElementById('country_VN').style.background = 'white';
+
+  // Highlight selected
+  const btn = document.getElementById(`country_${country}`);
+  btn.style.borderColor = '#2563eb';
+  btn.style.background = '#eff6ff';
+}
+
+function closeAddSiteModal() {
+  const modal = document.getElementById('addSiteModal');
+  if (modal) {
+    modal.remove();
+  }
+  selectedCountry = null;
+}
+
+function confirmAddSite() {
+  const siteName = document.getElementById('siteNameInput')?.value.trim();
+
+  // Validation
+  if (!siteName) {
+    alert('⚠️ Please enter a Site Name');
     return;
   }
 
-  showNotification(`✅ Site ${siteId} ready. Click "Add Line" to configure production lines.`, 'success');
+  if (!selectedCountry) {
+    alert('⚠️ Please select a Country');
+    return;
+  }
+
+  // Auto-generate site_id from site_name (remove spaces, convert to uppercase)
+  const siteId = siteName.replace(/\s+/g, '').toUpperCase();
+
+  // Check if site already exists in sites array
+  const existingSite = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  if (existingSite) {
+    alert(`⚠️ Site "${siteName}" already exists`);
+    return;
+  }
+
+  // Add site to sites array
+  PRODUCTION_PLAN_SEED_DATA.sites.push({
+    site_id: siteId,
+    site_name: siteName,
+    country: selectedCountry
+  });
+
+  // Mark as modified (user will save manually)
+  markConfigAsModified();
+
+  // Close modal
+  closeAddSiteModal();
+
+  // Re-render and show success
   renderCapacityUnitsConfig();
+
+  const countryName = selectedCountry === 'CN' ? 'China' : 'Vietnam';
+  showNotification(`✅ Site ${siteName} added with ${countryName} holiday calendar. Now click "Add Line" to configure production lines.`, 'success');
 }
 
 function removeSite(siteId) {
-  if (!confirm(`Remove site ${siteId} and all its lines/shifts?`)) return;
+  // Get site name for confirmation
+  const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  const siteName = siteInfo ? siteInfo.site_name : siteId;
+
+  if (!confirm(`Remove site "${siteName}" and all its lines/shifts?`)) return;
 
   // Remove all units for this site
   PRODUCTION_PLAN_SEED_DATA.capacityUnits = PRODUCTION_PLAN_SEED_DATA.capacityUnits.filter(
     unit => unit.site_id !== siteId
   );
 
+  // Remove site from sites array
+  PRODUCTION_PLAN_SEED_DATA.sites = PRODUCTION_PLAN_SEED_DATA.sites.filter(
+    site => site.site_id !== siteId
+  );
+
+  // Mark as modified (user will save manually)
+  markConfigAsModified();
+
   renderCapacityUnitsConfig();
-  showNotification(`✅ Site ${siteId} removed`, 'success');
+  showNotification(`✅ Site "${siteName}" removed (not saved yet)`, 'info');
 }
 
 function addLineToSite(siteId) {
-  const lineId = prompt(`Enter Line ID for site ${siteId} (e.g., L1, L2, L3):`);
-  if (!lineId) return;
+  // Find site info to get site_name
+  const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  const siteName = siteInfo ? siteInfo.site_name : siteId;
 
-  const lineType = prompt('Enter Line Type (AUTO or MANUAL):')?.toUpperCase();
-  if (!lineType || (lineType !== 'AUTO' && lineType !== 'MANUAL')) {
-    showNotification('⚠️ Invalid line type. Must be AUTO or MANUAL.', 'warning');
+  // Create modal for line configuration
+  const modalHTML = `
+    <div id="addLineModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full" style="background: white; border-radius: 12px; padding: 32px; max-width: 480px; width: 90%;">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-slate-900 mb-2" style="font-size: 24px; font-weight: bold; color: #0f172a; margin-bottom: 8px;">Add New Line to ${siteName}</h2>
+          <p class="text-sm text-slate-600" style="font-size: 14px; color: #64748b;">Configure the production line and shift settings</p>
+        </div>
+
+        <!-- Line ID Input -->
+        <div class="mb-6" style="margin-bottom: 24px;">
+          <label class="block text-sm font-semibold text-slate-700 mb-2" style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">
+            Line ID <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="lineIdInput" placeholder="e.g., L1, L2, L3"
+                 class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                 style="width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px;">
+        </div>
+
+        <!-- Line Type Selection -->
+        <div class="mb-6" style="margin-bottom: 24px;">
+          <label class="block text-sm font-semibold text-slate-700 mb-3" style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px;">
+            Line Type <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button type="button" onclick="selectLineType('AUTO')" id="lineType_AUTO"
+                    class="px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    style="padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: 500;">
+              🤖 AUTO
+            </button>
+            <button type="button" onclick="selectLineType('MANUAL')" id="lineType_MANUAL"
+                    class="px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    style="padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; font-weight: 500;">
+              👷 MANUAL
+            </button>
+          </div>
+        </div>
+
+        <!-- Shift Configuration -->
+        <div class="mb-6" style="margin-bottom: 24px;">
+          <label class="block text-sm font-semibold text-slate-700 mb-3" style="display: block; font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px;">
+            Shift Configuration <span class="text-red-500">*</span>
+          </label>
+          <div class="space-y-2" style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" onclick="selectShiftConfig('DAY')" id="shiftConfig_DAY"
+                    class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left transition-all"
+                    style="width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; text-align: left; font-weight: 500;">
+              ☀️ Day Shift Only
+            </button>
+            <button type="button" onclick="selectShiftConfig('NIGHT')" id="shiftConfig_NIGHT"
+                    class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left transition-all"
+                    style="width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; text-align: left; font-weight: 500;">
+              🌙 Night Shift Only
+            </button>
+            <button type="button" onclick="selectShiftConfig('BOTH')" id="shiftConfig_BOTH"
+                    class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left transition-all"
+                    style="width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; cursor: pointer; text-align: left; font-weight: 500;">
+              ☀️🌙 Day & Night Shifts
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 pt-4" style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid #e2e8f0; margin-top: 24px;">
+          <button onclick="closeAddLineModal()"
+                  class="flex-1 px-6 py-3 bg-slate-200 hover:bg-slate-300 rounded-lg font-semibold transition-colors"
+                  style="flex: 1; padding: 12px 24px; background: #e2e8f0; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;">
+            Cancel
+          </button>
+          <button onclick="confirmAddLine('${siteId}')"
+                  class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  style="flex: 1; padding: 12px 24px; background: #2563eb; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; border: none;">
+            Add Line
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  // Focus on line ID input
+  setTimeout(() => {
+    document.getElementById('lineIdInput')?.focus();
+  }, 100);
+}
+
+// Global variables to store selections
+let selectedLineType = null;
+let selectedShiftConfig = null;
+
+function selectLineType(type) {
+  selectedLineType = type;
+
+  // Reset all buttons
+  document.getElementById('lineType_AUTO').style.borderColor = '#cbd5e1';
+  document.getElementById('lineType_AUTO').style.background = 'white';
+  document.getElementById('lineType_MANUAL').style.borderColor = '#cbd5e1';
+  document.getElementById('lineType_MANUAL').style.background = 'white';
+
+  // Highlight selected
+  const btn = document.getElementById(`lineType_${type}`);
+  btn.style.borderColor = '#2563eb';
+  btn.style.background = '#eff6ff';
+}
+
+function selectShiftConfig(config) {
+  selectedShiftConfig = config;
+
+  // Reset all buttons
+  ['DAY', 'NIGHT', 'BOTH'].forEach(c => {
+    const btn = document.getElementById(`shiftConfig_${c}`);
+    btn.style.borderColor = '#cbd5e1';
+    btn.style.background = 'white';
+  });
+
+  // Highlight selected
+  const btn = document.getElementById(`shiftConfig_${config}`);
+  btn.style.borderColor = '#2563eb';
+  btn.style.background = '#eff6ff';
+}
+
+function closeAddLineModal() {
+  const modal = document.getElementById('addLineModal');
+  if (modal) {
+    modal.remove();
+  }
+  selectedLineType = null;
+  selectedShiftConfig = null;
+}
+
+function confirmAddLine(siteId) {
+  const lineId = document.getElementById('lineIdInput')?.value.trim();
+
+  // Validation
+  if (!lineId) {
+    alert('⚠️ Please enter a Line ID');
     return;
   }
 
-  showNotification(`✅ Line ${lineId} ready. Click "Add Shift" to configure shifts.`, 'success');
+  if (!selectedLineType) {
+    alert('⚠️ Please select a Line Type (AUTO or MANUAL)');
+    return;
+  }
+
+  if (!selectedShiftConfig) {
+    alert('⚠️ Please select a Shift Configuration');
+    return;
+  }
+
+  // Check if line already exists
+  const existingLine = PRODUCTION_PLAN_SEED_DATA.capacityUnits.find(
+    u => u.site_id === siteId && u.line_id === lineId
+  );
+
+  if (existingLine) {
+    alert(`⚠️ Line ${lineId} already exists in ${siteId}`);
+    return;
+  }
+
+  // Create shifts based on selection
+  const shiftsToCreate = selectedShiftConfig === 'BOTH'
+    ? ['DAY', 'NIGHT']
+    : [selectedShiftConfig];
+
+  shiftsToCreate.forEach(shiftType => {
+    const newUnit = {
+      unit_id: `${siteId}_${lineId}_${shiftType}`,
+      program_id: 'product_a',
+      site_id: siteId,
+      line_id: lineId,
+      line_type: selectedLineType,
+      shift_type: shiftType,
+      base_uph: 120,
+      shift_hours: 10,
+      ramp_start_date: '2026-10-05',
+      holiday_config: 'legal',
+      uph_ramp_curve_preset: 'standard_30d',
+      uph_ramp_curve: {
+        length_workdays: 30,
+        factors: [
+          0.50, 0.55, 0.60, 0.65, 0.70, 0.72, 0.74, 0.76, 0.78, 0.80,
+          0.82, 0.84, 0.86, 0.88, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95,
+          0.96, 0.97, 0.98, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00, 1.00
+        ]
+      },
+      yield_ramp_curve_preset: 'standard_30d',
+      yield_ramp_curve: {
+        length_workdays: 30,
+        factors: [
+          0.70, 0.72, 0.74, 0.76, 0.78, 0.80, 0.82, 0.84, 0.85, 0.86,
+          0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.95,
+          0.96, 0.96, 0.97, 0.97, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98
+        ]
+      }
+    };
+
+    PRODUCTION_PLAN_SEED_DATA.capacityUnits.push(newUnit);
+  });
+
+  // Mark as modified (user will save manually)
+  markConfigAsModified();
+
+  // Close modal
+  closeAddLineModal();
+
+  // Re-render and show success
   renderCapacityUnitsConfig();
+
+  // Get site name for notification
+  const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  const siteName = siteInfo ? siteInfo.site_name : siteId;
+
+  const shiftText = selectedShiftConfig === 'BOTH' ? 'Day & Night shifts' : `${selectedShiftConfig} shift`;
+  showNotification(`✅ Line ${lineId} (${selectedLineType}) with ${shiftText} added to ${siteName}`, 'success');
 }
 
 function addShiftToLine(siteId, lineId) {
@@ -5873,7 +6939,10 @@ function addShiftToLine(siteId, lineId) {
     u => u.site_id === siteId && u.line_id === lineId && u.shift_type === shiftType
   );
   if (existingShift) {
-    showNotification(`⚠️ ${shiftType} shift already exists for ${siteId} Line ${lineId}`, 'warning');
+    // Get site name for warning
+    const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+    const siteName = siteInfo ? siteInfo.site_name : siteId;
+    showNotification(`⚠️ ${shiftType} shift already exists for ${siteName} Line ${lineId}`, 'warning');
     return;
   }
 
@@ -5895,6 +6964,7 @@ function addShiftToLine(siteId, lineId) {
     shift_hours: 10,
     ramp_start_date: '2026-10-01',
     holiday_config: 'legal',
+    uph_ramp_curve_preset: 'standard_30d',
     uph_ramp_curve: {
       length_workdays: 30,
       factors: [
@@ -5903,6 +6973,7 @@ function addShiftToLine(siteId, lineId) {
         0.96, 0.97, 0.98, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00, 1.00
       ]
     },
+    yield_ramp_curve_preset: 'standard_30d',
     yield_ramp_curve: {
       length_workdays: 30,
       factors: [
@@ -5914,17 +6985,31 @@ function addShiftToLine(siteId, lineId) {
   };
 
   PRODUCTION_PLAN_SEED_DATA.capacityUnits.push(newUnit);
+  markConfigAsModified(); // Mark as modified (user will save manually)
   renderCapacityUnitsConfig();
-  showNotification(`✅ ${shiftType} shift added to ${siteId} Line ${lineId}`, 'success');
+
+  // Get site name for notification
+  const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === siteId);
+  const siteName = siteInfo ? siteInfo.site_name : siteId;
+
+  showNotification(`✅ ${shiftType} shift added to ${siteName} Line ${lineId} (not saved yet)`, 'info');
 }
 
 function removeCapacityUnit(index) {
   const unit = PRODUCTION_PLAN_SEED_DATA.capacityUnits[index];
-  if (!confirm(`Remove ${unit.shift_type} shift from ${unit.site_id} Line ${unit.line_id}?`)) return;
+  // Get site name for confirmation
+  const siteInfo = PRODUCTION_PLAN_SEED_DATA.sites.find(s => s.site_id === unit.site_id);
+  const siteName = siteInfo ? siteInfo.site_name : unit.site_id;
+
+  if (!confirm(`Remove ${unit.shift_type} shift from ${siteName} Line ${unit.line_id}?`)) return;
 
   PRODUCTION_PLAN_SEED_DATA.capacityUnits.splice(index, 1);
+
+  // Mark as modified (user will save manually)
+  markConfigAsModified();
+
   renderCapacityUnitsConfig();
-  showNotification('✅ Shift removed', 'success');
+  showNotification('✅ Shift removed (not saved yet)', 'info');
 }
 
 function updateSiteHolidayConfig(siteId, configType) {
@@ -5940,7 +7025,8 @@ function updateSiteHolidayConfig(siteId, configType) {
       }
     });
 
-    showNotification(`✅ ${siteId} now follows legal holidays`, 'success');
+    markConfigAsModified(); // Mark as modified (user will save manually)
+    showNotification(`✅ ${siteId} now follows legal holidays (not saved yet)`, 'info');
   }
 }
 
@@ -6088,7 +7174,8 @@ function saveCustomHolidaysToSite(siteId, customHolidays) {
     }
   });
 
-  showNotification(`✅ Custom holiday schedule saved for ${siteId}`, 'success');
+  markConfigAsModified(); // Mark as modified (user will save manually)
+  showNotification(`✅ Custom holiday schedule updated for ${siteId} (not saved yet)`, 'info');
   renderCapacityUnitsConfig();
 }
 
@@ -6112,10 +7199,13 @@ function resetConfigurationToDefault() {
   document.getElementById('configShiftHours').value = '10';
   document.getElementById('configWorkingDays').value = 'MON_SAT';
   document.getElementById('configShipmentLag').value = '2';
+  document.getElementById('configPalletSize').value = '480';
   document.getElementById('configConsiderHolidays').checked = true;
   document.getElementById('configDay1Factor').value = '0.5';
   document.getElementById('configDay2Factor').value = '1.0';
   document.getElementById('configDay3Factor').value = '1.0';
+  document.getElementById('configMaxDailyShipment').value = '30000';
+  document.getElementById('configShipmentStartDate').value = '';  // Empty = use forecast start date
 
   showNotification('✅ Configuration reset to default', 'success');
 }
@@ -6396,6 +7486,32 @@ function proceedWithPlanGeneration() {
   const selectedMode = document.querySelector('input[name="planningMode"]:checked').value;
 
   // ========================================
+  // LOAD LATEST FORECAST DATA FROM LOCALSTORAGE
+  // ========================================
+  const forecastVersions = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+  if (forecastVersions.length > 0) {
+    const latestForecast = forecastVersions[forecastVersions.length - 1];
+    // Convert forecast data to weeklyDemand format
+    // week_id is now in format "yyyy/mm/dd" (Saturday date representing the week)
+    PRODUCTION_PLAN_SEED_DATA.weeklyDemand = latestForecast.data.map(row => ({
+      week_id: row.week_id,  // Already in "yyyy/mm/dd" format
+      program_id: 'product_a',
+      demand_qty: row.weekly_forecast,
+      notes: `From ${latestForecast.fileName}`
+    }));
+    console.log('[Plan Generation] ✅ Loaded forecast data:', latestForecast.fileName);
+    console.log('[Plan Generation]   - Weeks:', PRODUCTION_PLAN_SEED_DATA.weeklyDemand.length);
+    console.log('[Plan Generation]   - First week:', PRODUCTION_PLAN_SEED_DATA.weeklyDemand[0]);
+    console.log('[Plan Generation]   - Total demand:', PRODUCTION_PLAN_SEED_DATA.weeklyDemand.reduce((sum, w) => sum + w.demand_qty, 0).toLocaleString());
+
+    // ⚠️ CRITICAL: Reinitialize engine with updated forecast data
+    // Engine constructor copies weeklyDemand array, so we must reinitialize after loading new forecast
+    const state = window.productionPlanState;
+    state.engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+    console.log('[Plan Generation] ✅ Engine reinitialized with updated forecast data');
+  }
+
+  // ========================================
   // DATA VALIDATION BEFORE GENERATION
   // ========================================
   const validationErrors = [];
@@ -6406,10 +7522,18 @@ function proceedWithPlanGeneration() {
     validationErrors.push('❌ <strong>Forecast data is missing</strong><br>Please upload weekly demand forecast data before generating the plan.');
   }
 
-  // Check 2: CTB data (required for Constrained and Combined modes)
-  if (selectedMode === 'constrained' || selectedMode === 'combined') {
+  // Check 2: CTB data (required for Constrained mode only)
+  // Note: Unconstrained mode does NOT require CTB data (infinite material assumption)
+  if (selectedMode === 'constrained') {
     if (!seedData.ctbDaily || seedData.ctbDaily.length === 0) {
       validationErrors.push('❌ <strong>CTB (Clear-to-Build) data is missing</strong><br>Constrained mode requires daily CTB material availability data.');
+    }
+  }
+
+  // Combined mode: Warn if CTB missing, but allow generation (will show Unconstrained only)
+  if (selectedMode === 'combined') {
+    if (!seedData.ctbDaily || seedData.ctbDaily.length === 0) {
+      console.warn('[Validation] CTB data missing for Combined mode. Will generate Unconstrained scenario only.');
     }
   }
 
@@ -6467,21 +7591,49 @@ function proceedWithPlanGeneration() {
   document.querySelector('.fixed.inset-0').remove();
 
   // Gather configuration
+  const startDateValue = document.getElementById('configStartDate').value;
+  const endDateValue = document.getElementById('configEndDate').value;
+
+  // Validate that end date is not earlier than start date
+  if (!validateReportDateRange()) {
+    alert('⚠️ Please fix the date validation error: End Date cannot be earlier than Start Date');
+    return;
+  }
+
   const config = {
     program: 'product_a', // Fixed value
-    startDate: document.getElementById('configStartDate').value,
-    endDate: document.getElementById('configEndDate').value,
+    startDate: startDateValue,
+    endDate: endDateValue,
     mode: selectedMode, // From modal selection
     shiftHours: parseFloat(document.getElementById('configShiftHours').value),
     workingDays: document.getElementById('configWorkingDays').value,
     shipmentLag: parseInt(document.getElementById('configShipmentLag').value),
+    palletSize: parseInt(document.getElementById('configPalletSize').value) || 1,
     considerHolidays: document.getElementById('configConsiderHolidays').checked,
     outputFactors: {
       day1: parseFloat(document.getElementById('configDay1Factor').value),
       day2: parseFloat(document.getElementById('configDay2Factor').value),
       day3_plus: parseFloat(document.getElementById('configDay3Factor').value)
-    }
+    },
+    maxDailyShipment: parseInt(document.getElementById('configMaxDailyShipment').value) || 0,
+    shipmentStartDate: document.getElementById('configShipmentStartDate').value || null
   };
+
+  // ========================================
+  // UPDATE PRODUCTION_PLAN_SEED_DATA.programConfig WITH UI VALUES
+  // ========================================
+  PRODUCTION_PLAN_SEED_DATA.programConfig.default_shift_hours = {
+    DAY: config.shiftHours,
+    NIGHT: config.shiftHours
+  };
+  PRODUCTION_PLAN_SEED_DATA.programConfig.weekly_window = config.workingDays;
+  PRODUCTION_PLAN_SEED_DATA.programConfig.shipment_lag_workdays = config.shipmentLag;
+  PRODUCTION_PLAN_SEED_DATA.programConfig.considerHolidays = config.considerHolidays;
+  PRODUCTION_PLAN_SEED_DATA.programConfig.output_factors = config.outputFactors;
+  PRODUCTION_PLAN_SEED_DATA.programConfig.max_daily_shipment = config.maxDailyShipment;
+  PRODUCTION_PLAN_SEED_DATA.programConfig.shipment_start_date = config.shipmentStartDate;
+
+  console.log('[Generate] Updated programConfig with UI values:', PRODUCTION_PLAN_SEED_DATA.programConfig);
 
   // Show loading overlay
   const loadingOverlay = document.createElement('div');
@@ -6509,6 +7661,22 @@ function proceedWithPlanGeneration() {
 
       console.log('[Generate] Starting plan generation with config:', config);
 
+      // ========================================
+      // DIAGNOSTIC: Log all seed data before generation
+      // ========================================
+      console.log('[Generate] 📊 DATA DIAGNOSTIC REPORT:');
+      console.log('[Generate]   - weeklyDemand:', PRODUCTION_PLAN_SEED_DATA.weeklyDemand?.length || 0, 'weeks');
+      if (PRODUCTION_PLAN_SEED_DATA.weeklyDemand && PRODUCTION_PLAN_SEED_DATA.weeklyDemand.length > 0) {
+        const firstWeek = PRODUCTION_PLAN_SEED_DATA.weeklyDemand[0];
+        const lastWeek = PRODUCTION_PLAN_SEED_DATA.weeklyDemand[PRODUCTION_PLAN_SEED_DATA.weeklyDemand.length - 1];
+        console.log('[Generate]     First week:', firstWeek.week_id, 'Demand:', firstWeek.demand_qty);
+        console.log('[Generate]     Last week:', lastWeek.week_id, 'Demand:', lastWeek.demand_qty);
+      }
+      console.log('[Generate]   - ctbDaily:', PRODUCTION_PLAN_SEED_DATA.ctbDaily?.length || 0, 'records');
+      console.log('[Generate]   - capacityUnits:', PRODUCTION_PLAN_SEED_DATA.capacityUnits?.length || 0, 'units');
+      console.log('[Generate]   - sites:', PRODUCTION_PLAN_SEED_DATA.sites?.length || 0, 'sites');
+      console.log('[Generate]   - Date Range: ', config.startDate, 'to', config.endDate);
+
       // Generate new plan(s) based on mode
       if (config.mode === 'combined') {
         // Generate both unconstrained and constrained plans
@@ -6533,7 +7701,57 @@ function proceedWithPlanGeneration() {
           constrained: constrainedPlan,
           mode: 'combined'
         };
-        console.log('[Generate] Combined plans generated successfully');
+        console.log('[Generate] ✅ Combined plans generated successfully:', {
+          unconstrainedResults: unconstrainedPlan.programResults.length,
+          constrainedResults: constrainedPlan.programResults.length
+        });
+
+        // Check if data is empty and warn user
+        if (unconstrainedPlan.programResults.length === 0 || constrainedPlan.programResults.length === 0) {
+          loadingOverlay.remove();
+
+          const warningModal = document.createElement('div');
+          warningModal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center';
+          warningModal.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+              <div class="flex items-start gap-4 mb-6">
+                <div class="text-4xl">⚠️</div>
+                <div class="flex-1">
+                  <div class="text-2xl font-bold text-orange-900 mb-2">Report Generated with Empty Data</div>
+                  <div class="text-sm text-slate-600">The plan was generated but contains no data rows.</div>
+                </div>
+              </div>
+
+              <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-6">
+                <div class="font-semibold text-orange-900 mb-2">🔍 Possible Causes:</div>
+                <ul class="text-sm text-orange-800 space-y-2">
+                  <li>• <strong>Date Range Mismatch</strong>: Your report dates (${config.startDate} to ${config.endDate}) may not overlap with your forecast data dates</li>
+                  <li>• <strong>Forecast Data Issue</strong>: Check if your uploaded forecast covers the report date range</li>
+                  <li>• <strong>Capacity Configuration</strong>: Ensure you have configured at least one production line</li>
+                </ul>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="font-semibold text-blue-900 mb-2">💡 Recommended Actions:</div>
+                <ul class="text-sm text-blue-800 space-y-1">
+                  <li>1. Check Console logs for detailed diagnostic information</li>
+                  <li>2. Verify your forecast data date range matches your report dates</li>
+                  <li>3. Ensure at least one production line is configured</li>
+                  <li>4. Try adjusting the Start Date and End Date to match your forecast data</li>
+                </ul>
+              </div>
+
+              <div class="flex justify-end gap-3">
+                <button onclick="this.closest('.fixed').remove()"
+                        class="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700">
+                  OK, I'll Check the Data
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(warningModal);
+          return; // Don't show save modal
+        }
       } else {
         console.log('[Generate] Generating single mode plan:', config.mode);
         const plan = state.engine.generatePlan(config.startDate, config.endDate, config.mode);
@@ -6544,16 +7762,76 @@ function proceedWithPlanGeneration() {
           throw new Error('Plan generation failed - missing required data (programResults or weeklyMetrics)');
         }
 
-        console.log('[Generate] Plan generated:', {
+        console.log('[Generate] ✅ Plan generated:', {
           mode: config.mode,
           programResultsLength: plan.programResults.length,
-          weeklyMetricsLength: plan.weeklyMetrics.length
+          weeklyMetricsLength: plan.weeklyMetrics.length,
+          siteResultsLength: plan.siteResults?.length || 0
         });
+
+        // DIAGNOSTIC: Check if results are empty
+        if (plan.programResults.length === 0) {
+          console.warn('[Generate] ⚠️ WARNING: programResults is EMPTY! This will result in a blank report.');
+          console.warn('[Generate] ⚠️ Possible causes:');
+          console.warn('[Generate]    - Date range mismatch: weeklyDemand date range does not overlap with report date range');
+          console.warn('[Generate]    - Missing capacity units');
+          console.warn('[Generate]    - Data format issues');
+        }
+        if (plan.weeklyMetrics.length === 0) {
+          console.warn('[Generate] ⚠️ WARNING: weeklyMetrics is EMPTY!');
+        }
 
         // Calculate summary metrics
         plan.summary = calculatePlanSummaryMetrics(plan);
 
         state.planResults = plan;
+
+        // Check if data is empty and warn user
+        if (plan.programResults.length === 0 || plan.weeklyMetrics.length === 0) {
+          loadingOverlay.remove();
+
+          const warningModal = document.createElement('div');
+          warningModal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center';
+          warningModal.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+              <div class="flex items-start gap-4 mb-6">
+                <div class="text-4xl">⚠️</div>
+                <div class="flex-1">
+                  <div class="text-2xl font-bold text-orange-900 mb-2">Report Generated with Empty Data</div>
+                  <div class="text-sm text-slate-600">The plan was generated but contains no data rows.</div>
+                </div>
+              </div>
+
+              <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-6">
+                <div class="font-semibold text-orange-900 mb-2">🔍 Possible Causes:</div>
+                <ul class="text-sm text-orange-800 space-y-2">
+                  <li>• <strong>Date Range Mismatch</strong>: Your report dates (${config.startDate} to ${config.endDate}) may not overlap with your forecast data dates</li>
+                  <li>• <strong>Forecast Data Issue</strong>: Check if your uploaded forecast covers the report date range</li>
+                  <li>• <strong>Capacity Configuration</strong>: Ensure you have configured at least one production line</li>
+                </ul>
+              </div>
+
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="font-semibold text-blue-900 mb-2">💡 Recommended Actions:</div>
+                <ul class="text-sm text-blue-800 space-y-1">
+                  <li>1. Check Console logs for detailed diagnostic information</li>
+                  <li>2. Verify your forecast data date range matches your report dates</li>
+                  <li>3. Ensure at least one production line is configured</li>
+                  <li>4. Try adjusting the Start Date and End Date to match your forecast data</li>
+                </ul>
+              </div>
+
+              <div class="flex justify-end gap-3">
+                <button onclick="this.closest('.fixed').remove()"
+                        class="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700">
+                  OK, I'll Check the Data
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(warningModal);
+          return; // Don't show save modal
+        }
       }
 
       // Close loading overlay

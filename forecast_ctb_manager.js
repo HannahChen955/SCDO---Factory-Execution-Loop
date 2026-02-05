@@ -14,6 +14,18 @@ const STORAGE_KEYS = {
   POR_VERSION: 'productionPlan_por_version'
 };
 
+// =========================
+// Helper Functions
+// =========================
+
+// Format week_id for display
+// Week ID is in format "yyyy/mm/dd" (e.g., "2026/09/26")
+// This function just returns it as-is for display
+function getWeekDisplayDate(weekId) {
+  if (!weekId) return weekId;
+  return weekId; // Already in yyyy/mm/dd format
+}
+
 // Initialize data storage with mock data if not exists
 function initializeDataStorage() {
   // Initialize Forecast data with mock data
@@ -124,6 +136,77 @@ function initializeDataStorage() {
  * Upload Forecast Data
  */
 function uploadForecast() {
+  // Check if there's already a forecast
+  const versions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORECAST_DATA) || '[]');
+
+  if (versions.length > 0) {
+    // There's an existing forecast, ask user what to do
+    const currentVersion = versions[versions.length - 1];
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center';
+    modal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+        <div class="flex items-start gap-4 mb-6">
+          <span class="text-4xl">⚠️</span>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Existing Forecast Detected</h3>
+            <p class="text-sm text-slate-600">
+              Current forecast: <strong>${currentVersion.fileName}</strong> (${currentVersion.version})
+            </p>
+            <p class="text-sm text-slate-600 mt-2">
+              What would you like to do with the existing forecast before uploading a new one?
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-6">
+          <button onclick="uploadForecastWithAction('save_to_history')"
+                  class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 text-left flex items-start gap-3">
+            <span class="text-xl">💾</span>
+            <div>
+              <div class="font-semibold">Save to History (Recommended)</div>
+              <div class="text-xs opacity-90">Keep current forecast in history and upload new one</div>
+            </div>
+          </button>
+
+          <button onclick="uploadForecastWithAction('delete_old')"
+                  class="w-full px-4 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 text-left flex items-start gap-3">
+            <span class="text-xl">🗑️</span>
+            <div>
+              <div class="font-semibold">Delete Old & Upload New</div>
+              <div class="text-xs opacity-90">Remove current forecast permanently</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="this.closest('.fixed').remove()"
+                  class="px-4 py-2 text-slate-600 hover:text-slate-900 font-semibold">
+            Cancel
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } else {
+    // No existing forecast, proceed directly
+    proceedWithForecastUpload();
+  }
+}
+
+function uploadForecastWithAction(action) {
+  // Close modal
+  document.querySelector('.fixed.inset-0').remove();
+
+  // Store the action for later use
+  window._forecastUploadAction = action;
+
+  // Proceed with file selection
+  proceedWithForecastUpload();
+}
+
+function proceedWithForecastUpload() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.xlsx,.xls';
@@ -144,7 +227,17 @@ function uploadForecast() {
       }
 
       // Get existing versions
-      const versions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORECAST_DATA) || '[]');
+      let versions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORECAST_DATA) || '[]');
+
+      // Handle action
+      const action = window._forecastUploadAction || 'save_to_history';
+
+      if (action === 'delete_old' && versions.length > 0) {
+        // Delete the current forecast (keep it simple - just remove the last one)
+        versions = [];
+        console.log('[Forecast] Deleted old forecast before uploading new one');
+      }
+      // If 'save_to_history', just keep all existing versions (default behavior)
 
       // Create new version
       const newVersion = {
@@ -162,6 +255,9 @@ function uploadForecast() {
       // Update UI
       updateForecastSummary(newVersion);
 
+      // Clean up
+      delete window._forecastUploadAction;
+
       showNotification(`✅ Forecast ${newVersion.version} uploaded successfully!`, 'success');
     } catch (error) {
       console.error('Error uploading forecast:', error);
@@ -170,6 +266,92 @@ function uploadForecast() {
   };
 
   input.click();
+}
+
+/**
+ * Delete Current Forecast
+ */
+function deleteCurrentForecast() {
+  const versions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORECAST_DATA) || '[]');
+
+  if (versions.length === 0) {
+    showNotification('⚠️ No forecast to delete', 'info');
+    return;
+  }
+
+  const currentVersion = versions[versions.length - 1];
+
+  // Confirmation modal
+  const modal = document.createElement('div');
+  modal.id = 'deleteForecastModal'; // Add unique ID for easy removal
+  modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+      <div class="flex items-start gap-4 mb-6">
+        <span class="text-4xl">🗑️</span>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-red-900 mb-2">Delete Current Forecast?</h3>
+          <p class="text-sm text-slate-600">
+            Are you sure you want to delete the current forecast?
+          </p>
+          <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div class="text-sm font-semibold text-red-900">${currentVersion.fileName}</div>
+            <div class="text-xs text-red-700">${currentVersion.version} | ${currentVersion.releaseDate}</div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">
+            ⚠️ This action cannot be undone. The forecast will be permanently removed.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('deleteForecastModal').remove()"
+                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+          Cancel
+        </button>
+        <button onclick="confirmDeleteForecast()"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">
+          Delete
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function confirmDeleteForecast() {
+  try {
+    let versions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FORECAST_DATA) || '[]');
+
+    if (versions.length > 0) {
+      const deletedVersion = versions.pop(); // Remove last version
+      localStorage.setItem(STORAGE_KEYS.FORECAST_DATA, JSON.stringify(versions));
+
+      // Close modal AFTER successful deletion
+      const modal = document.getElementById('deleteForecastModal');
+      if (modal) modal.remove();
+
+      // Update UI to show the next most recent version (if any)
+      if (versions.length > 0) {
+        updateForecastSummary(versions[versions.length - 1]);
+        showNotification(`✅ Forecast deleted. Showing previous version: ${versions[versions.length - 1].version}`, 'success');
+      } else {
+        // No forecast left
+        document.getElementById('forecastVersion').textContent = 'Not uploaded';
+        document.getElementById('forecastReleaseDate').textContent = '-';
+        document.getElementById('forecastSummaryTable').innerHTML = '<tr><td colspan="3" class="px-3 py-4 text-center text-slate-500">No forecast data uploaded yet</td></tr>';
+        showNotification('✅ Forecast deleted successfully', 'success');
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting forecast:', error);
+
+    // Close modal even if error occurs
+    const modal = document.getElementById('deleteForecastModal');
+    if (modal) modal.remove();
+
+    showNotification(`❌ Error deleting forecast: ${error.message}`, 'error');
+  }
 }
 
 /**
@@ -217,7 +399,7 @@ function updateForecastSummary(versionData) {
   // Update table
   tbody.innerHTML = recentWeeks.map(row => `
     <tr class="border-t hover:bg-purple-50">
-      <td class="px-3 py-2">${row.week_id}</td>
+      <td class="px-3 py-2">${getWeekDisplayDate(row.week_id)}</td>
       <td class="px-3 py-2 text-right font-mono">${parseInt(row.weekly_forecast).toLocaleString()}</td>
       <td class="px-3 py-2 text-right font-mono font-semibold">${parseInt(row.cum_forecast).toLocaleString()}</td>
     </tr>
@@ -279,7 +461,7 @@ function viewAllForecastWeeks() {
               <tbody>
                 ${latestVersion.data.map((row, idx) => `
                   <tr class="hover:bg-purple-50 border-b">
-                    <td class="px-4 py-2 border">${row.week_id}</td>
+                    <td class="px-4 py-2 border">${getWeekDisplayDate(row.week_id)}</td>
                     <td class="px-4 py-2 border text-right">
                       <input type="number" id="weekly_${idx}"
                              value="${row.weekly_forecast}"
@@ -458,6 +640,9 @@ function viewForecastHistory() {
   // Write JavaScript functions
   doc.write('<script>');
   doc.write('var allVersions = ' + JSON.stringify(versions) + ';');
+  doc.write('function getWeekDisplayDate(weekId) {');
+  doc.write('  return weekId || "";'); // Week ID is already in yyyy/mm/dd format
+  doc.write('}');
   doc.write('function viewVersion(idx) {');
   doc.write('  var version = allVersions[idx];');
   doc.write('  var detailWindow = window.open("", "_blank", "width=1200,height=800");');
@@ -481,7 +666,7 @@ function viewForecastHistory() {
   doc.write('  for (var i=0; i<version.data.length; i++) {');
   doc.write('    var row = version.data[i];');
   doc.write('    d.write("<tr class=\\"border-b hover:bg-purple-50\\">");');
-  doc.write('    d.write("<td class=\\"px-4 py-2 border\\">" + row.week_id + "<\\/td>");');
+  doc.write('    d.write("<td class=\\"px-4 py-2 border\\">" + getWeekDisplayDate(row.week_id) + "<\\/td>");');
   doc.write('    d.write("<td class=\\"px-4 py-2 border text-right font-mono\\">" + parseInt(row.weekly_forecast).toLocaleString() + "<\\/td>");');
   doc.write('    d.write("<td class=\\"px-4 py-2 border text-right font-mono font-semibold\\">" + parseInt(row.cum_forecast).toLocaleString() + "<\\/td>");');
   doc.write('    d.write("<\\/tr>");');
@@ -667,7 +852,7 @@ function compareForecastVersions() {
 
             tableHTML += \`
               <tr class="border-b hover:bg-purple-50">
-                <td class="px-4 py-2 border font-semibold">\${weekId}</td>
+                <td class="px-4 py-2 border font-semibold">\${getWeekDisplayDate(weekId)}</td>
                 <td class="px-4 py-2 border text-right font-mono">\${baseWeekly.toLocaleString()}</td>
                 <td class="px-4 py-2 border text-right font-mono">\${compareWeekly.toLocaleString()}</td>
                 <td class="px-4 py-2 border text-right font-mono font-semibold \${weeklyDeltaClass}">
@@ -828,7 +1013,7 @@ function updateCTBSummary(versionData) {
           <tbody>
             ${recentWeeks.map(row => `
               <tr class="border-t">
-                <td class="px-2 py-1">${row.week_id}</td>
+                <td class="px-2 py-1">${getWeekDisplayDate(row.week_id)}</td>
                 <td class="px-2 py-1 text-right font-mono">${parseInt(row.weekly_ctb).toLocaleString()}</td>
                 <td class="px-2 py-1 text-right font-mono font-semibold">${parseInt(row.cum_ctb).toLocaleString()}</td>
               </tr>
@@ -939,6 +1124,10 @@ function viewCTBHistory() {
       <script>
         const allVersions = ${JSON.stringify(versions)};
 
+        function getWeekDisplayDate(weekId) {
+          return weekId || ""; // Week ID is already in yyyy/mm/dd format
+        }
+
         function viewVersion(idx) {
           const version = allVersions[idx];
 
@@ -991,7 +1180,7 @@ function viewCTBHistory() {
                             <tbody>
                               \\\${siteData.map(row => \\\\\`
                                 <tr class="border-b hover:bg-orange-50">
-                                  <td class="px-4 py-2 border">\\\\\${row.week_id}</td>
+                                  <td class="px-4 py-2 border">\\\\\${getWeekDisplayDate(row.week_id)}</td>
                                   <td class="px-4 py-2 border text-right font-mono">\\\\\${parseInt(row.weekly_ctb).toLocaleString()}</td>
                                   <td class="px-4 py-2 border text-right font-mono font-semibold">\\\\\${parseInt(row.cum_ctb).toLocaleString()}</td>
                                 </tr>
@@ -1221,7 +1410,7 @@ function compareCTBVersions() {
 
               resultsHTML += \`
                 <tr class="border-b hover:bg-orange-50">
-                  <td class="px-4 py-2 border font-semibold">\${weekId}</td>
+                  <td class="px-4 py-2 border font-semibold">\${getWeekDisplayDate(weekId)}</td>
                   <td class="px-4 py-2 border text-right font-mono">\${baseWeekly.toLocaleString()}</td>
                   <td class="px-4 py-2 border text-right font-mono">\${compareWeekly.toLocaleString()}</td>
                   <td class="px-4 py-2 border text-right font-mono font-semibold \${weeklyDeltaClass}">
@@ -1273,6 +1462,167 @@ function compareCTBVersions() {
 /**
  * Read Excel File using SheetJS
  */
+// =========================
+// Date Utilities for Forecast
+// =========================
+
+
+/**
+ * Parse horizontal forecast Excel format
+ * Supports simplified 3-row format:
+ *
+ * Format (3 rows):
+ * Row 1: Forecast    | 2026/09/26 | 2026/10/03 | 2026/10/10 | ...
+ * Row 2: Weekly      | 32000      | 32000      | 24000      | ...
+ * Row 3: Cum         | 32000      | 64000      | 96000      | ...
+ *
+ * Date format: yyyy/mm/dd (e.g., 2026/09/26)
+ * Week representation: Saturday date of the week
+ */
+function parseHorizontalForecast(sheetData) {
+  const errors = [];
+
+  // Validate structure (3 or 4 rows)
+  if (!sheetData || sheetData.length < 3) {
+    throw new Error('Invalid Excel format: Expected at least 3 rows (Forecast with dates, Weekly, Cum)');
+  }
+
+  // Detect format based on first row
+  const firstRowLabel = sheetData[0][0] ? sheetData[0][0].toString() : '';
+
+  if (!firstRowLabel.includes('Forecast')) {
+    throw new Error('Invalid Excel format: Row 1 should start with "Forecast"');
+  }
+
+  // 3-row format
+  const dateRow = sheetData[0];    // Row 1: Forecast | 2026/09/26 | 2026/10/03 | ...
+  const weeklyRow = sheetData[1];  // Row 2: Weekly | 32000 | 32000 | ...
+  const cumRow = sheetData[2];     // Row 3: Cum | 32000 | 64000 | ...
+
+  // Validate row labels
+  if (!dateRow[0] || !dateRow[0].toString().includes('Forecast')) {
+    errors.push('Row 1 should start with "Forecast"');
+  }
+  if (!weeklyRow[0] || !weeklyRow[0].toString().includes('Weekly')) {
+    errors.push('Row 2 should start with "Weekly"');
+  }
+  if (!cumRow[0] || !cumRow[0].toString().includes('Cum')) {
+    errors.push('Row 3 should start with "Cum"');
+  }
+
+  if (errors.length > 0) {
+    throw new Error('Excel format validation failed:\n' + errors.join('\n'));
+  }
+
+  // Parse data columns (starting from column 1, skipping column 0 which is the label)
+  const forecastData = [];
+
+  for (let col = 1; col < dateRow.length; col++) {
+    const dateValue = dateRow[col];
+    const weekly = weeklyRow[col];
+    const cum = cumRow[col];
+
+    // Skip empty columns
+    if (!dateValue && !weekly && !cum) {
+      break;
+    }
+
+    // Parse date and calculate ISO week
+    let displayDate;
+    let isoWeek;
+
+    if (!dateValue) {
+      errors.push(`Column ${col}: Missing date value`);
+      continue;
+    }
+
+    displayDate = dateValue.toString();
+
+    // Parse yyyy/mm/dd date to calculate Saturday (week_id)
+    const parts = displayDate.split('/');
+    if (parts.length !== 3) {
+      errors.push(`Column ${col}: Invalid date format "${dateValue}". Expected yyyy/mm/dd format (e.g., 2026/09/26)`);
+      continue;
+    }
+
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+
+    if (isNaN(year) || isNaN(month) || isNaN(day) || year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+      errors.push(`Column ${col}: Invalid date values "${dateValue}". Expected valid yyyy/mm/dd (e.g., 2026/09/26)`);
+      continue;
+    }
+
+    // Create date object
+    const inputDate = new Date(year, month - 1, day);
+    const dayOfWeek = inputDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+    // Calculate Saturday of the week this date belongs to
+    const daysToSaturday = (6 - dayOfWeek + 7) % 7;
+    const saturdayDate = new Date(inputDate);
+    saturdayDate.setDate(inputDate.getDate() + daysToSaturday);
+
+    // Format Saturday as yyyy/mm/dd for week_id
+    const satYear = saturdayDate.getFullYear();
+    const satMonth = String(saturdayDate.getMonth() + 1).padStart(2, '0');
+    const satDay = String(saturdayDate.getDate()).padStart(2, '0');
+    const weekId = `${satYear}/${satMonth}/${satDay}`;
+
+    if (weekly === null || weekly === undefined || weekly === '') {
+      errors.push(`Column ${col}: Missing Weekly forecast value`);
+      continue;
+    }
+    if (cum === null || cum === undefined || cum === '') {
+      errors.push(`Column ${col}: Missing Cum forecast value`);
+      continue;
+    }
+
+    // Validate numeric values
+    const weeklyNum = Number(weekly);
+    const cumNum = Number(cum);
+
+    if (isNaN(weeklyNum)) {
+      errors.push(`Column ${col}: Weekly value "${weekly}" is not a number`);
+      continue;
+    }
+    if (isNaN(cumNum)) {
+      errors.push(`Column ${col}: Cum value "${cum}" is not a number`);
+      continue;
+    }
+
+    // Validate cumulative logic (Cum should be >= Weekly for first week, and >= previous Cum)
+    if (forecastData.length > 0) {
+      const prevCum = forecastData[forecastData.length - 1].cum_forecast;
+      const expectedCum = prevCum + weeklyNum;
+
+      // Allow small rounding errors (within 1 unit)
+      if (Math.abs(cumNum - expectedCum) > 1) {
+        errors.push(`Column ${col}: Cum validation failed. Expected ${expectedCum} (prev ${prevCum} + weekly ${weeklyNum}), got ${cumNum}`);
+      }
+    }
+
+    forecastData.push({
+      week_id: weekId,
+      weekly_forecast: weeklyNum,
+      cum_forecast: cumNum
+    });
+  }
+
+  if (errors.length > 0) {
+    throw new Error('Data validation errors:\n' + errors.join('\n'));
+  }
+
+  if (forecastData.length === 0) {
+    throw new Error('No valid forecast data found in Excel file');
+  }
+
+  return forecastData;
+}
+
+/**
+ * Read and parse Excel file (supports horizontal forecast format)
+ */
 async function readExcelFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1292,10 +1642,17 @@ async function readExcelFile(file) {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
 
-        // Convert to JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        // Convert to array of arrays (preserves horizontal structure)
+        const sheetData = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,  // Use array of arrays instead of objects
+          defval: null,  // Use null for empty cells
+          raw: false  // Format values as displayed
+        });
 
-        resolve(jsonData);
+        // Parse horizontal forecast format
+        const forecastData = parseHorizontalForecast(sheetData);
+
+        resolve(forecastData);
       } catch (error) {
         reject(error);
       }
@@ -1634,7 +1991,7 @@ function exportProductionPlanToExcel(planVersion) {
       const deltaPercent = forecastCum !== 0 ? ((delta / forecastCum) * 100).toFixed(2) + '%' : '0%';
 
       exportData.push({
-        'Week ID': weekId,
+        'Week ID': getWeekDisplayDate(weekId),
         'Forecast (Weekly)': forecastWeekly,
         'Forecast (Cum)': forecastCum,
         'CTB (Weekly)': ctbWeekly,
@@ -1907,7 +2264,7 @@ function compareProductionPlanVersions() {
 
             tableHTML += \`
               <tr class="border-b hover:bg-blue-50">
-                <td class="px-3 py-2 border font-semibold">\${weekId}</td>
+                <td class="px-3 py-2 border font-semibold">\${getWeekDisplayDate(weekId)}</td>
 
                 <td class="px-3 py-2 border text-right font-mono">\${baseInput.toLocaleString()}</td>
                 <td class="px-3 py-2 border text-right font-mono">\${compareInput.toLocaleString()}</td>
@@ -2234,6 +2591,9 @@ document.addEventListener('DOMContentLoaded', () => {
 console.log('[ForecastCTB] Exposing functions to global scope...');
 
 window.uploadForecast = uploadForecast;
+window.uploadForecastWithAction = uploadForecastWithAction;
+window.deleteCurrentForecast = deleteCurrentForecast;
+window.confirmDeleteForecast = confirmDeleteForecast;
 window.viewForecastHistory = viewForecastHistory;
 window.compareForecastVersions = compareForecastVersions;
 window.viewAllForecastWeeks = viewAllForecastWeeks;
