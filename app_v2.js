@@ -889,8 +889,8 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
-    // Hide filters on global pages (Overview, Decision Center, MO KPIs, Data Foundation, White Paper)
+  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
+    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -911,6 +911,9 @@ function render() {
   switch (STATE.activeView) {
     case "overview":
       renderOverview();
+      break;
+    case "notification":
+      renderNotification();
       break;
     case "portfolio":
       renderPortfolio();
@@ -10571,24 +10574,42 @@ function renderWhitePaper() {
   const content = $("content");
 
   content.innerHTML = `
-    <div class="space-y-6">
-      <!-- Header -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h1 class="text-2xl font-bold text-slate-900">White Paper</h1>
-        <p class="text-sm text-slate-600 mt-1">Enterprise Decision Operations (EDO) - System Overview & Development Roadmap</p>
+    <div class="space-y-6 max-w-6xl mx-auto">
+      <!-- Demo Notes -->
+      <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">📝</div>
+          <div>
+            <div class="font-bold text-amber-900 mb-2">DEMO NOTES</div>
+            <ul class="text-sm text-amber-800 space-y-1.5">
+              <li class="flex items-start gap-2">
+                <span class="text-amber-600 mt-0.5">•</span>
+                <span>Delivery-first decision prototype with mocked data.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-amber-600 mt-0.5">•</span>
+                <span>Primary goal: protect weekly commit while avoiding avoidable overbuild.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-amber-600 mt-0.5">•</span>
+                <span>Use Simulation mode to test pacing trade-offs.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <!-- Executive Summary -->
-      <div class="bg-white rounded-xl shadow-sm p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">📋</span>
-          Executive Summary
-        </h2>
-        <div class="prose prose-slate max-w-none">
-          <p class="text-slate-700 leading-relaxed mb-4">
-            Enterprise Decision Operations (EDO) is an integrated internal decision support system designed to transform how our organization manages manufacturing operations and supply chain execution. Built on the foundation of Manufacturing Operations (MO) expertise, this platform addresses critical operational challenges through systematic data integration, standardization, and intelligent automation.
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">📋</div>
+          <h2 class="text-2xl font-bold text-slate-900">Executive Summary</h2>
+        </div>
+        <div class="prose prose-slate prose-lg max-w-none space-y-4">
+          <p class="text-slate-700 leading-relaxed">
+            <strong class="text-slate-900">Enterprise Decision Operations (EDO)</strong> is an integrated internal decision support system designed to transform how our organization manages manufacturing operations and supply chain execution. Built on the foundation of Manufacturing Operations (MO) expertise, this platform addresses critical operational challenges through systematic data integration, standardization, and intelligent automation.
           </p>
-          <p class="text-slate-700 leading-relaxed mb-4">
+          <p class="text-slate-700 leading-relaxed">
             This system serves multiple interconnected purposes: it automates external data integration from contract manufacturers and suppliers, standardizes metrics and indices across the organization to ensure data integrity, and completes the supply chain decision loop by connecting planning, execution, and performance monitoring in a unified environment.
           </p>
           <p class="text-slate-700 leading-relaxed">
@@ -10598,88 +10619,104 @@ function renderWhitePaper() {
       </div>
 
       <!-- Core Objectives -->
-      <div class="bg-white rounded-xl shadow-sm p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">🎯</span>
-          Core Objectives
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-blue-600">🔗</span>
-              External Data Integration & Automation
-            </h3>
-            <p class="text-sm text-slate-600">
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🎯</div>
+          <h2 class="text-2xl font-bold text-slate-900">Core Objectives</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="group bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100 rounded-xl p-6 hover:shadow-xl hover:border-blue-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">🔗</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                External Data Integration & Automation
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Automate data collection from contract manufacturers, suppliers, and logistics partners. Eliminate manual data entry and email-based processes, establishing real-time or near-real-time data pipelines through API integration and system connections.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-green-600">📊</span>
-              Data & Index Standardization
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl p-6 hover:shadow-xl hover:border-green-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">📊</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                Data & Index Standardization
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Establish unified definitions for operational metrics, KPIs, and indices across all programs and sites. Ensure data integrity, consistency, and reliability through standardized calculation logic and validation rules.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-purple-600">🔄</span>
-              Supply Chain Decision Loop
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-purple-50 to-white border-2 border-purple-100 rounded-xl p-6 hover:shadow-xl hover:border-purple-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">🔄</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                Supply Chain Decision Loop
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Complete the closed-loop system connecting demand forecasting, production planning, execution monitoring, shipment tracking, and performance analysis. Enable proactive decision-making through real-time visibility and constraint identification.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-orange-600">📈</span>
-              KPI Visualization & Performance Monitoring
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-orange-50 to-white border-2 border-orange-100 rounded-xl p-6 hover:shadow-xl hover:border-orange-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">📈</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                KPI Visualization & Performance Monitoring
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Provide intuitive, role-based dashboards presenting critical operational data and KPIs. Enable stakeholders at all levels to access relevant metrics, identify trends, and monitor performance against targets in real-time.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-indigo-600">⚡</span>
-              Intelligent Workflow Reconstruction
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-indigo-50 to-white border-2 border-indigo-100 rounded-xl p-6 hover:shadow-xl hover:border-indigo-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">⚡</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                Intelligent Workflow Reconstruction
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Evolve beyond traditional MO processes by embedding intelligence into daily workflows. Automate routine tasks, standardize decision frameworks, and free team members to focus on strategic problem-solving and continuous improvement.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-pink-600">🤖</span>
-              AI-Powered Analysis & Recommendations
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-pink-50 to-white border-2 border-pink-100 rounded-xl p-6 hover:shadow-xl hover:border-pink-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">🤖</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                AI-Powered Analysis & Recommendations
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Leverage AI capabilities to analyze operational data, identify patterns and anomalies, generate actionable recommendations, and suggest specific actions. Support decision-makers with data-driven insights and predictive analytics.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-teal-600">💬</span>
-              Knowledge Base & Chatbot Assistant
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-teal-50 to-white border-2 border-teal-100 rounded-xl p-6 hover:shadow-xl hover:border-teal-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">💬</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                Knowledge Base & Chatbot Assistant
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Build an organizational knowledge repository accessible through natural language queries. Enable team members to quickly retrieve data, understand metrics, and access historical context without navigating multiple systems or files.
             </p>
           </div>
 
-          <div class="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-            <h3 class="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-              <span class="text-red-600">⚙️</span>
-              System-Based Work Management
-            </h3>
-            <p class="text-sm text-slate-600">
+          <div class="group bg-gradient-to-br from-red-50 to-white border-2 border-red-100 rounded-xl p-6 hover:shadow-xl hover:border-red-300 transition-all hover:-translate-y-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="text-3xl">⚙️</div>
+              <h3 class="font-bold text-slate-900 text-lg leading-tight mt-1">
+                System-Based Work Management
+              </h3>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
               Transform manual, ad-hoc processes into systematic, repeatable workflows managed through the platform. Reduce manual effort, minimize errors, and ensure consistency in operational execution and reporting.
             </p>
           </div>
@@ -10687,11 +10724,11 @@ function renderWhitePaper() {
       </div>
 
       <!-- Development Phases -->
-      <div class="bg-white rounded-xl shadow-sm p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">🚀</span>
-          Development Phases
-        </h2>
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">🚀</div>
+          <h2 class="text-2xl font-bold text-slate-900">Development Phases</h2>
+        </div>
         <div class="space-y-4">
           <!-- Phase 1 -->
           <div class="border-l-4 border-blue-500 pl-4 py-2">
@@ -10800,11 +10837,11 @@ function renderWhitePaper() {
       </div>
 
       <!-- Roadmap & Timeline -->
-      <div class="bg-white rounded-xl shadow-sm p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">📅</span>
-          Roadmap & Timeline
-        </h2>
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl">📅</div>
+          <h2 class="text-2xl font-bold text-slate-900">Roadmap & Timeline</h2>
+        </div>
         <div class="relative">
           <!-- Timeline Line -->
           <div class="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-green-500 via-purple-500 to-orange-500"></div>
@@ -10875,56 +10912,56 @@ function renderWhitePaper() {
       </div>
 
       <!-- Key Success Metrics -->
-      <div class="bg-white rounded-xl shadow-sm p-8">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">📊</span>
-          Key Success Metrics
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-blue-600 mb-2">📉</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Manual Work Reduction</div>
-            <div class="text-xs text-slate-600">Measure reduction in repetitive data collection and reporting tasks through automation</div>
+      <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+          <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center text-2xl">📊</div>
+          <h2 class="text-2xl font-bold text-slate-900">Key Success Metrics</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all">
+            <div class="text-3xl mb-3">📉</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Manual Work Reduction</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Measure reduction in repetitive data collection and reporting tasks through automation</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-green-600 mb-2">✓</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Data Accuracy</div>
-            <div class="text-xs text-slate-600">Track data integrity improvement through standardized processes and validation</div>
+          <div class="bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl p-5 hover:shadow-md hover:border-green-200 transition-all">
+            <div class="text-3xl mb-3">✓</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Data Accuracy</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Track data integrity improvement through standardized processes and validation</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-purple-600 mb-2">⚡</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Decision Speed</div>
-            <div class="text-xs text-slate-600">Monitor acceleration in decision-making through real-time visibility and AI insights</div>
+          <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-100 rounded-xl p-5 hover:shadow-md hover:border-purple-200 transition-all">
+            <div class="text-3xl mb-3">⚡</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Decision Speed</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Monitor acceleration in decision-making through real-time visibility and AI insights</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-orange-600 mb-2">🔄</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Process Standardization</div>
-            <div class="text-xs text-slate-600">Measure adoption of unified metrics and workflows across all programs and sites</div>
+          <div class="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-100 rounded-xl p-5 hover:shadow-md hover:border-orange-200 transition-all">
+            <div class="text-3xl mb-3">🔄</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Process Standardization</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Measure adoption of unified metrics and workflows across all programs and sites</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-indigo-600 mb-2">👁️</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Data Visibility</div>
-            <div class="text-xs text-slate-600">Track transition from periodic reports to continuous operational monitoring</div>
+          <div class="bg-gradient-to-br from-indigo-50 to-white border-2 border-indigo-100 rounded-xl p-5 hover:shadow-md hover:border-indigo-200 transition-all">
+            <div class="text-3xl mb-3">👁️</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Data Visibility</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Track transition from periodic reports to continuous operational monitoring</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <div class="text-2xl font-bold text-teal-600 mb-2">💬</div>
-            <div class="text-sm font-medium text-slate-900 mb-1">Knowledge Access</div>
-            <div class="text-xs text-slate-600">Monitor usage of on-demand information retrieval through AI chatbot assistant</div>
+          <div class="bg-gradient-to-br from-teal-50 to-white border-2 border-teal-100 rounded-xl p-5 hover:shadow-md hover:border-teal-200 transition-all">
+            <div class="text-3xl mb-3">💬</div>
+            <div class="text-base font-bold text-slate-900 mb-2">Knowledge Access</div>
+            <div class="text-sm text-slate-600 leading-relaxed">Monitor usage of on-demand information retrieval through AI chatbot assistant</div>
           </div>
         </div>
       </div>
 
       <!-- Conclusion -->
-      <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl shadow-sm p-8 border border-blue-100">
-        <h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span class="text-2xl">💡</span>
-          Looking Forward
-        </h2>
-        <div class="prose prose-slate max-w-none">
-          <p class="text-slate-700 leading-relaxed">
-            Enterprise Decision Operations represents more than a technology implementation—it is a fundamental transformation in how we approach manufacturing operations management. By systematically building capabilities across data integration, standardization, intelligence, and automation, we create a sustainable competitive advantage rooted in operational excellence and informed decision-making.
+      <div class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl shadow-lg p-8 border-2 border-purple-200">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-3xl shadow-sm">💡</div>
+          <h2 class="text-2xl font-bold text-slate-900">Looking Forward</h2>
+        </div>
+        <div class="prose prose-slate prose-lg max-w-none space-y-4">
+          <p class="text-slate-800 leading-relaxed font-medium">
+            <strong class="text-slate-900">Enterprise Decision Operations</strong> represents more than a technology implementation—it is a fundamental transformation in how we approach manufacturing operations management. By systematically building capabilities across data integration, standardization, intelligence, and automation, we create a sustainable competitive advantage rooted in operational excellence and informed decision-making.
           </p>
-          <p class="text-slate-700 leading-relaxed mt-3">
+          <p class="text-slate-800 leading-relaxed">
             This platform leverages our deep Manufacturing Operations expertise while positioning us at the forefront of intelligent supply chain management. As we progress through each development phase, we will continuously refine and expand capabilities based on real-world operational needs, user feedback, and emerging technology opportunities.
           </p>
         </div>
@@ -11025,4 +11062,211 @@ function convertMarkdownToHTML(markdown) {
   html = html.replace(/(<tr>.*<\/tr>\n?)+/g, '<table class="w-full border-collapse my-4">$&</table>');
 
   return html;
+}
+
+
+/**
+ * Render Notification Page (Global Page)
+ * Includes team calendar and weekly to-do list
+ */
+function renderNotification() {
+  const content = $("content");
+
+  // Get current date info
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentDate = today.getDate();
+  
+  // Month names
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  // Get first day of month and number of days
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
+
+  // Generate calendar grid
+  let calendarHTML = '';
+  let dayCounter = 1;
+  
+  // Calculate total rows needed (up to 6 weeks)
+  const totalSlots = Math.ceil((daysInMonth + startDayOfWeek) / 7) * 7;
+  
+  for (let i = 0; i < totalSlots; i++) {
+    if (i % 7 === 0) {
+      calendarHTML += '<div class="grid grid-cols-7 calendar-row">';
+    }
+
+    // Empty cells before month starts
+    if (i < startDayOfWeek) {
+      calendarHTML += '<div class="bg-slate-200 min-h-[100px] p-2 border-r border-slate-300"></div>';
+    }
+    // Days of current month
+    else if (dayCounter <= daysInMonth) {
+      const isToday = dayCounter === currentDate;
+      const isSunday = i % 7 === 0;
+      const dayClass = isSunday ? 'bg-slate-200' : 'bg-white';
+      const borderClass = (i % 7 === 6) ? '' : 'border-r border-slate-300';
+      const todayBadge = isToday ? 'inline-flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full' : '';
+
+      calendarHTML += `
+        <div class="${dayClass} min-h-[100px] p-2 hover:bg-blue-50 transition-colors ${borderClass}">
+          <div class="font-medium mb-1 ${isToday ? todayBadge : 'text-slate-700'}">${dayCounter}</div>
+          <div class="space-y-1 text-xs">
+            <!-- Placeholder for events - will be dynamic in future -->
+          </div>
+        </div>
+      `;
+      dayCounter++;
+    }
+    // Empty cells after month ends
+    else {
+      const borderClass = (i % 7 === 6) ? '' : 'border-r border-slate-300';
+      calendarHTML += `<div class="bg-slate-200 min-h-[100px] p-2 ${borderClass}"></div>`;
+    }
+
+    if (i % 7 === 6) {
+      calendarHTML += '</div>';
+    }
+  }
+
+  // Sample to-do items (will be dynamic in future)
+  const sampleTodos = [
+    { id: 1, title: 'Review Q1 Production Plan', priority: 'high', dueDate: '2026-02-09', assignee: null, status: 'pending' },
+    { id: 2, title: 'Update Capacity Configuration', priority: 'medium', dueDate: '2026-02-10', assignee: null, status: 'pending' },
+    { id: 3, title: 'Finalize Shipment Schedule', priority: 'high', dueDate: '2026-02-11', assignee: null, status: 'in-progress' },
+    { id: 4, title: 'Team Sync Meeting Prep', priority: 'low', dueDate: '2026-02-12', assignee: null, status: 'pending' },
+    { id: 5, title: 'Review AI Opportunities Report', priority: 'medium', dueDate: '2026-02-13', assignee: null, status: 'pending' }
+  ];
+
+  content.innerHTML = `
+    <style>
+      .priority-high { border-left: 4px solid #ef4444; }
+      .priority-medium { border-left: 4px solid #f59e0b; }
+      .priority-low { border-left: 4px solid #10b981; }
+      .status-pending { background: linear-gradient(to right, #fef3c7, white); }
+      .status-in-progress { background: linear-gradient(to right, #dbeafe, white); }
+      .status-completed { background: linear-gradient(to right, #d1fae5, white); opacity: 0.6; }
+      .calendar-row { border-bottom: 1px solid #cbd5e1; }
+    </style>
+
+    <div class="space-y-6">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-blue-100 via-indigo-100 to-cyan-100 rounded-xl shadow-md border border-blue-200 p-6">
+        <h1 class="text-3xl font-bold mb-2 text-slate-800">🔔 Team Notifications & Calendar</h1>
+        <p class="text-slate-600">Stay organized with team events and to-do items</p>
+      </div>
+
+      <!-- Team Calendar Section -->
+      <div class="bg-slate-100 rounded-xl shadow-lg overflow-hidden border border-slate-300">
+        <div class="bg-slate-200 px-6 py-4 border-b border-slate-400">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-slate-800">${monthNames[currentMonth]} ${currentYear}</h2>
+            <div class="flex gap-2">
+              <button class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 rounded-lg transition-colors text-sm font-medium">
+                ◀ Previous
+              </button>
+              <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium">
+                Today
+              </button>
+              <button class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 rounded-lg transition-colors text-sm font-medium">
+                Next ▶
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day of week headers -->
+        <div class="grid grid-cols-7 bg-slate-300 text-slate-700 text-center text-sm font-semibold border-b border-slate-400">
+          <div class="py-3 border-r border-slate-400">Sun</div>
+          <div class="py-3 border-r border-slate-400">Mon</div>
+          <div class="py-3 border-r border-slate-400">Tue</div>
+          <div class="py-3 border-r border-slate-400">Wed</div>
+          <div class="py-3 border-r border-slate-400">Thu</div>
+          <div class="py-3 border-r border-slate-400">Fri</div>
+          <div class="py-3">Sat</div>
+        </div>
+
+        <!-- Calendar grid -->
+        ${calendarHTML}
+      </div>
+
+      <!-- This Week's To-Do Section -->
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-300">
+        <div class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 border-b border-purple-200">
+          <h2 class="text-2xl font-bold text-slate-800">📋 This Week's To-Do List</h2>
+          <p class="text-slate-600 text-sm mt-1">Week of ${monthNames[currentMonth]} ${currentDate}, ${currentYear}</p>
+        </div>
+
+        <div class="p-6">
+          <div class="space-y-3">
+            ${sampleTodos.map(todo => `
+              <div class="priority-${todo.priority} status-${todo.status} rounded-lg p-4 border border-slate-200 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <input type="checkbox" ${todo.status === 'completed' ? 'checked' : ''} 
+                             class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                      <h3 class="font-semibold text-slate-800 ${todo.status === 'completed' ? 'line-through' : ''}">${todo.title}</h3>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-slate-600 ml-8">
+                      <div class="flex items-center gap-1">
+                        <span>📅</span>
+                        <span>Due: ${todo.dueDate}</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span>🏷️</span>
+                        <span class="capitalize">${todo.priority} Priority</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span>👤</span>
+                        <span class="text-slate-400 italic">${todo.assignee || 'Unassigned'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-xs font-medium rounded-full ${
+                      todo.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      todo.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }">
+                      ${todo.status === 'completed' ? '✓ Completed' :
+                        todo.status === 'in-progress' ? '⚡ In Progress' :
+                        '⏳ Pending'}
+                    </span>
+                    <button class="text-slate-400 hover:text-slate-600 p-1">⋮</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Add new to-do button -->
+          <button class="mt-6 w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 transition-colors font-medium">
+            + Add New To-Do Item
+          </button>
+        </div>
+      </div>
+
+      <!-- Future Features Notice -->
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+        <div class="flex items-start gap-4">
+          <div class="text-3xl">🚀</div>
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-amber-900 mb-2">Coming Soon: Smart Notifications</h3>
+            <ul class="space-y-2 text-sm text-amber-800">
+              <li>✓ Email notifications for upcoming deadlines</li>
+              <li>✓ Chat integration (Teams/Slack) for real-time alerts</li>
+              <li>✓ Team member assignment and workload tracking</li>
+              <li>✓ Automatic reminders based on priority levels</li>
+              <li>✓ Calendar event sync with holidays and team schedules</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }

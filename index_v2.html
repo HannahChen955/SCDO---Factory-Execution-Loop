@@ -65,6 +65,10 @@
           Overview
         </button>
         <span class="text-slate-300">|</span>
+        <button onclick="navigateTo('notification');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="notification">
+          🔔 Notification
+        </button>
+        <span class="text-slate-300">|</span>
         <button onclick="navigateTo('portfolio');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="portfolio">
           Decision Center
         </button>
@@ -416,8 +420,9 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="./ai_system.js"></script>
   <script src="./data_update_system.js"></script>
   <script src="./chatbot_system.js"></script>
-  <!-- SheetJS for Excel file reading -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <!-- SheetJS for Excel file reading - MUST load before forecast_ctb_manager.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <script src="./production_plan_engine.js"></script>
   <script src="./production_plan_seed_data.js"></script>
@@ -443,8 +448,7 @@ Or paste CSV, JSON, or any structured data..."></textarea>
   <script src="./production_plan_demo_presets.js"></script>
   <!-- Simulation & POR Version Management -->
   <script src="./simulation_manager.js"></script>
-  <!-- SheetJS for Excel Export -->
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Excel Export (uses SheetJS loaded above) -->
   <script src="./excel_export.js"></script>
   <!-- Rules Engine for Intelligent Recommendations -->
   <script src="./production_plan_rules_engine.js"></script>

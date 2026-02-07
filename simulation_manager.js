@@ -538,19 +538,81 @@ const SimulationManager = (function() {
   /**
    * Clean up old production plan data from localStorage
    * Keeps only recent 10 plans and deletes plans older than 7 days
+   *
+   * 🎯 STRATEGY: White-list approach
+   *    - Only cleans up keys that are explicitly identified as temporary simulation/plan data
+   *    - All config keys (*_config), version keys (*_versions), and UI state are automatically protected
+   *    - This allows adding new configuration variables without updating this file
+   *
+   * ✅ AUTO-PROTECTED patterns:
+   *    - productionPlan_*_config (all configuration data)
+   *    - productionPlan_*_versions (all version data)
+   *    - productionPlan_activeTab, productionPlan_activeSubpage (UI state)
+   *    - productionPlan_simulations, productionPlan_currentPOR, productionPlan_porHistory (core data)
+   *
+   * 🗑️ CLEANED UP: Only temporary simulation data with valid timestamps
    */
   function cleanupOldPlans() {
     const keys = Object.keys(localStorage)
-      .filter(k => k.startsWith('productionPlan_') && k !== 'productionPlan_simulations' && k !== 'productionPlan_currentPOR' && k !== 'productionPlan_porHistory')
+      .filter(k => {
+        // Must start with productionPlan_
+        if (!k.startsWith('productionPlan_')) {
+          return false;
+        }
+
+        // 🛡️ Auto-protect all configuration keys
+        if (k.endsWith('_config')) {
+          return false;
+        }
+
+        // 🛡️ Auto-protect all version data
+        if (k.endsWith('_versions') || k.includes('_version')) {
+          return false;
+        }
+
+        // 🛡️ Auto-protect UI state
+        if (k === 'productionPlan_activeTab' ||
+            k === 'productionPlan_activeSubpage' ||
+            k === 'productionPlan_lastCleanup') {
+          return false;
+        }
+
+        // 🛡️ Auto-protect core data stores
+        if (k === 'productionPlan_simulations' ||
+            k === 'productionPlan_currentPOR' ||
+            k === 'productionPlan_porHistory') {
+          return false;
+        }
+
+        // ✅ Everything else needs a valid timestamp to be eligible for cleanup
+        // If no timestamp, skip cleanup (safe default)
+        try {
+          const data = JSON.parse(localStorage.getItem(k));
+          return !!(data.generatedAt || data.createdAt);
+        } catch {
+          console.warn('[SimulationManager] Skipping cleanup for unparseable key:', k);
+          return false;
+        }
+      })
       .map(k => {
         try {
           const data = JSON.parse(localStorage.getItem(k));
-          const createdAt = data.generatedAt || data.createdAt || new Date(0).toISOString();
+          const createdAt = data.generatedAt || data.createdAt;
+
+          // 关键修复：没有时间戳就跳过清理
+          if (!createdAt) {
+            console.warn('[SimulationManager] Skipping cleanup for key without timestamp:', k);
+            return null;
+          }
+
           return { key: k, createdAt: new Date(createdAt) };
         } catch {
-          return { key: k, createdAt: new Date(0) };
+          // 解析失败也跳过清理
+          console.warn('[SimulationManager] Skipping cleanup for unparseable key:', k);
+          return null;
         }
       })
+      .filter(item => item !== null)  // 过滤掉跳过的项
       .sort((a, b) => b.createdAt - a.createdAt);
 
     // Keep only recent 10
@@ -576,12 +638,23 @@ const SimulationManager = (function() {
   }
 
   /**
-   * Auto-run cleanup on module load
+   * Auto-run cleanup on module load (with 24-hour throttle)
    */
   (function autoCleanup() {
     try {
+      // 检查上次清理时间，24小时内不重复清理
+      const lastCleanup = localStorage.getItem('productionPlan_lastCleanup');
+      const now = Date.now();
+
+      if (lastCleanup && now - parseInt(lastCleanup) < 24 * 60 * 60 * 1000) {
+        console.log('[SimulationManager] Cleanup skipped (ran within last 24 hours)');
+        return;
+      }
+
       cleanupOldSimulations();
       cleanupOldPlans();
+
+      localStorage.setItem('productionPlan_lastCleanup', now.toString());
     } catch (error) {
       console.error('[SimulationManager] Auto cleanup failed:', error);
     }

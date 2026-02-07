@@ -29,6 +29,7 @@ const Router = {
 
     const viewMap = {
       'overview': 'overview',
+      'notification': 'notification',
       'decision-center': 'portfolio',
       'mo-dashboard': 'home',
       'mo-kpis': 'moKpis',
@@ -79,6 +80,7 @@ const Router = {
   buildHash(view, product = null, site = null, week = null) {
     const viewUrlMap = {
       'overview': 'overview',
+      'notification': 'notification',
       'portfolio': 'decision-center',
       'home': 'mo-dashboard',
       'moKpis': 'mo-kpis',
