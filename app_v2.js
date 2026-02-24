@@ -977,8 +977,8 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper" || STATE.activeView === "teamAIStrategy") {
-    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper, Team AI Strategy)
+  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
+    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -1049,9 +1049,6 @@ function render() {
       break;
     case "whitePaper":
       renderWhitePaper();
-      break;
-    case "teamAIStrategy":
-      renderTeamAIStrategy();
       break;
     default:
       renderOverview();
@@ -11627,6 +11624,7 @@ function renderWhitePaper() {
   `;
 }
 
+/* REMOVED - Team AI Strategy (for internal use only)
 /**
  * Render Team AI Strategy (Global Page)
  */
@@ -12435,6 +12433,7 @@ flowchart LR
     }
   });
 }
+// END REMOVED - Team AI Strategy */
 
 /**
  * Render Production Plan Logic from markdown documentation
