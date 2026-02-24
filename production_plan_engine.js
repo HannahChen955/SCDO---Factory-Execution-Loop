@@ -234,6 +234,35 @@ class ProductionPlanEngine {
     );
   }
 
+  // Check if date is an Inventory Audit date (complete shutdown)
+  isInventoryAuditDate(date) {
+    if (!this.programConfig.inventory_audit) {
+      return false;
+    }
+
+    const auditConfig = this.programConfig.inventory_audit;
+    const allAuditDates = [
+      ...(auditConfig.middle_year?.dates || []),
+      ...(auditConfig.end_year?.dates || [])
+    ];
+
+    return allAuditDates.includes(date);
+  }
+
+  // Check if tomorrow is a triple-pay holiday
+  isTomorrowTriplePayHoliday(siteCountry, date) {
+    const tomorrow = DateUtils.addDays(date, 1);
+    const holidays = this.calendar.countryHolidays[siteCountry] || [];
+
+    for (const holiday of holidays) {
+      if (holiday.triple_pay_dates && holiday.triple_pay_dates.includes(tomorrow)) {
+        return { isTriplePay: true, holiday };
+      }
+    }
+
+    return { isTriplePay: false, holiday: null };
+  }
+
   // Generate full production plan
   generatePlan(startDate, endDate, mode = 'unconstrained') {
     const dates = DateUtils.getDateRange(startDate, endDate);
@@ -285,6 +314,24 @@ class ProductionPlanEngine {
       console.log(`[Engine] ${unit.unit_id} Preset:`, unit.uph_ramp_curve_preset || 'not set');
 
       for (const date of dates) {
+        // Check if Inventory Audit date (complete shutdown)
+        const isInventoryAuditDate = this.isInventoryAuditDate(date);
+        if (isInventoryAuditDate) {
+          results.push({
+            unit_id: unit.unit_id,
+            date,
+            site_id: unit.site_id,
+            line_id: unit.line_id,
+            shift_type: unit.shift_type,
+            is_working: false,
+            workday_index: 0,
+            input: 0,
+            output: 0,
+            reason: 'inventory_audit'
+          });
+          continue;
+        }
+
         // Check if working day
         const isWorking = this.calendar.isWorkingDay(unit.site_id, site.country, date);
 
@@ -334,18 +381,48 @@ class ProductionPlanEngine {
         const yieldFactor = unit.yield_ramp_curve.factors[Math.min(workdayIdx - 1, yieldCurveLength - 1)];
 
         // Get shift hours (with potential override)
-        const shiftHours = this.calendar.getShiftHours(
+        let shiftHours = this.calendar.getShiftHours(
           unit.site_id,
           date,
           unit.shift_type,
           unit.shift_hours
         );
 
+        // Check if tomorrow is a triple-pay holiday and this is a night shift
+        const tomorrowCheck = this.isTomorrowTriplePayHoliday(site.country, date);
+        let isEveNightShift = false;
+        let eveNightConfig = null;
+
+        if (tomorrowCheck.isTriplePay && unit.shift_type === 'NIGHT') {
+          // Check if today is Sunday (if Sunday, normal logic applies - no work)
+          const dayOfWeek = new Date(date).getDay();
+          const isSunday = (dayOfWeek === 0);
+
+          if (!isSunday) {
+            // This is the eve night shift - apply special logic
+            isEveNightShift = true;
+            eveNightConfig = tomorrowCheck.holiday.eve_night_shift || { input_hours: 0, output_hours: 4 };
+            shiftHours = eveNightConfig.output_hours || 4;
+          }
+        }
+
         // Calculate input
-        const input = unit.base_uph * uphFactor * shiftHours;
+        let input = unit.base_uph * uphFactor * shiftHours;
+
+        // Eve night shift: no input (don't feed new materials)
+        if (isEveNightShift) {
+          input = 0;
+        }
 
         // Calculate base output
-        const baseOutput = input * yieldFactor;
+        // For eve night shift: output is based on clearing WIP, not input
+        // Use base_uph × yield × output_hours to represent WIP clearance
+        let baseOutput;
+        if (isEveNightShift) {
+          baseOutput = unit.base_uph * uphFactor * yieldFactor * shiftHours;
+        } else {
+          baseOutput = input * yieldFactor;
+        }
 
         // Apply output factor for first two days
         let outputFactor = 1.0;

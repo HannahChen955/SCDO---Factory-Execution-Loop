@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Diagnose Production Plan Data</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">🔍 Production Plan Data Diagnostic</h1>
+
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">Check Specific Plan</h2>
+      <div class="flex gap-3">
+        <input type="text" id="planIdInput" placeholder="Enter planId (e.g., temp_1770076906903)"
+               class="flex-1 px-4 py-2 border rounded">
+        <button onclick="checkPlan()" class="px-6 py-2 bg-blue-600 text-white rounded font-semibold">
+          Check Plan
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">All Production Plans in localStorage</h2>
+      <button onclick="listAll()" class="px-6 py-2 bg-green-600 text-white rounded font-semibold mb-4">
+        List All Plans
+      </button>
+      <div id="allPlansOutput" class="font-mono text-sm bg-slate-50 p-4 rounded max-h-96 overflow-auto"></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">PRODUCTION_PLAN_SEED_DATA Check</h2>
+      <button onclick="checkSeedData()" class="px-6 py-2 bg-purple-600 text-white rounded font-semibold mb-4">
+        Check Seed Data
+      </button>
+      <div id="seedDataOutput" class="font-mono text-sm bg-slate-50 p-4 rounded max-h-96 overflow-auto"></div>
+    </div>
+
+    <div id="output" class="bg-slate-800 text-green-400 rounded-lg shadow p-6 font-mono text-sm max-h-96 overflow-auto"></div>
+  </div>
+
+  <script src="./production_plan_seed_data.js"></script>
+  <script>
+    function log(message, isError = false) {
+      const output = document.getElementById('output');
+      const color = isError ? 'text-red-400' : 'text-green-400';
+      output.innerHTML += `<div class="${color}">${message}</div>`;
+    }
+
+    function checkPlan() {
+      const output = document.getElementById('output');
+      output.innerHTML = '';
+
+      const planId = document.getElementById('planIdInput').value.trim();
+      if (!planId) {
+        log('❌ Please enter a planId', true);
+        return;
+      }
+
+      log(`🔍 Checking localStorage for key: productionPlan_${planId}`);
+
+      const dataStr = localStorage.getItem('productionPlan_' + planId);
+
+      if (!dataStr) {
+        log('❌ No data found in localStorage for this planId', true);
+        return;
+      }
+
+      log('✅ Data found! Length: ' + dataStr.length + ' characters');
+
+      try {
+        const data = JSON.parse(dataStr);
+        log('✅ Data is valid JSON');
+        log('');
+        log('📊 Data Structure:');
+        log('  - Has results? ' + (data.results ? 'YES' : 'NO'));
+        log('  - Has config? ' + (data.config ? 'YES' : 'NO'));
+
+        const results = data.results || data;
+
+        log('');
+        log('📋 Results Details:');
+        log('  - Mode: ' + (results.mode || 'not specified'));
+
+        if (results.mode === 'combined') {
+          log('  - Combined mode detected');
+          log('  - Unconstrained programResults: ' + (results.unconstrained?.programResults?.length || 0) + ' rows');
+          log('  - Constrained programResults: ' + (results.constrained?.programResults?.length || 0) + ' rows');
+        } else {
+          log('  - programResults: ' + (results.programResults?.length || 0) + ' rows');
+          log('  - weeklyMetrics: ' + (results.weeklyMetrics?.length || 0) + ' rows');
+          log('  - siteResults: ' + (results.siteResults ? Object.keys(results.siteResults).length : 0) + ' sites');
+        }
+
+        log('');
+        log('📝 Full Data (first 500 chars):');
+        log(JSON.stringify(data, null, 2).substring(0, 500) + '...');
+
+        if (results.programResults && results.programResults.length === 0) {
+          log('');
+          log('⚠️  WARNING: programResults is EMPTY!', true);
+          log('⚠️  This will cause the report to be blank!', true);
+        }
+
+      } catch (e) {
+        log('❌ Error parsing JSON: ' + e.message, true);
+      }
+    }
+
+    function listAll() {
+      const output = document.getElementById('allPlansOutput');
+      output.innerHTML = '';
+
+      const plans = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('productionPlan_')) {
+          const planId = key.replace('productionPlan_', '');
+          const dataStr = localStorage.getItem(key);
+          try {
+            const data = JSON.parse(dataStr);
+            const results = data.results || data;
+            const rowCount = results.mode === 'combined'
+              ? (results.constrained?.programResults?.length || 0)
+              : (results.programResults?.length || 0);
+
+            plans.push({
+              planId,
+              rowCount,
+              mode: results.mode || 'unknown',
+              size: (dataStr.length / 1024).toFixed(2) + ' KB'
+            });
+          } catch (e) {
+            plans.push({
+              planId,
+              rowCount: 'ERROR',
+              mode: 'ERROR',
+              size: 'ERROR'
+            });
+          }
+        }
+      }
+
+      if (plans.length === 0) {
+        output.innerHTML = '<div class="text-slate-500">No production plans found in localStorage</div>';
+        return;
+      }
+
+      output.innerHTML = plans.map(p =>
+        `<div class="mb-2 p-2 border rounded ${p.rowCount === 0 ? 'bg-red-50 border-red-300' : ''}">
+          <div class="font-bold">${p.planId}</div>
+          <div class="text-xs">Mode: ${p.mode} | Rows: ${p.rowCount} | Size: ${p.size}</div>
+        </div>`
+      ).join('');
+    }
+
+    function checkSeedData() {
+      const output = document.getElementById('seedDataOutput');
+      output.innerHTML = '';
+
+      if (typeof PRODUCTION_PLAN_SEED_DATA === 'undefined') {
+        output.innerHTML = '<div class="text-red-500">❌ PRODUCTION_PLAN_SEED_DATA is not loaded!</div>';
+        return;
+      }
+
+      const data = PRODUCTION_PLAN_SEED_DATA;
+
+      output.innerHTML = `
+        <div class="space-y-2">
+          <div><strong>programConfig:</strong> ${data.programConfig ? 'EXISTS' : 'MISSING'}</div>
+          ${data.programConfig ? `
+            <div class="ml-4 text-xs">
+              <div>- max_daily_shipment: ${data.programConfig.max_daily_shipment || 'NOT SET'}</div>
+              <div>- shipment_start_date: ${data.programConfig.shipment_start_date || 'NOT SET'}</div>
+              <div>- shipment_lag_workdays: ${data.programConfig.shipment_lag_workdays || 'NOT SET'}</div>
+            </div>
+          ` : ''}
+
+          <div><strong>sites:</strong> ${data.sites?.length || 0} sites</div>
+          <div><strong>capacityUnits:</strong> ${data.capacityUnits?.length || 0} units</div>
+          <div><strong>weeklyDemand:</strong> ${data.weeklyDemand?.length || 0} weeks</div>
+          ${data.weeklyDemand && data.weeklyDemand.length > 0 ? `
+            <div class="ml-4 text-xs">
+              <div>- First week: ${data.weeklyDemand[0].week_id} (${data.weeklyDemand[0].demand_qty} units)</div>
+              <div>- Last week: ${data.weeklyDemand[data.weeklyDemand.length-1].week_id} (${data.weeklyDemand[data.weeklyDemand.length-1].demand_qty} units)</div>
+            </div>
+          ` : ''}
+          <div><strong>ctbDaily:</strong> ${data.ctbDaily?.length || 0} records</div>
+          <div><strong>countryHolidays:</strong> ${data.countryHolidays ? Object.keys(data.countryHolidays).join(', ') : 'NONE'}</div>
+        </div>
+      `;
+    }
+
+    // Auto-fill with URL parameter if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const planId = urlParams.get('planId');
+    if (planId) {
+      document.getElementById('planIdInput').value = planId;
+      checkPlan();
+    }
+  </script>
+</body>
+</html>

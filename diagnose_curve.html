@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UPH Curve Diagnostics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">🔍 UPH Curve Diagnostics</h1>
+
+    <div class="space-y-4">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-bold text-lg mb-2">1️⃣ localStorage - Curve Presets</h2>
+        <pre id="curvePresetsOutput" class="bg-slate-100 p-3 rounded text-xs overflow-x-auto"></pre>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-bold text-lg mb-2">2️⃣ localStorage - Capacity Units Config</h2>
+        <pre id="capacityUnitsOutput" class="bg-slate-100 p-3 rounded text-xs overflow-x-auto"></pre>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-bold text-lg mb-2">3️⃣ window.curvePresets (In-Memory)</h2>
+        <pre id="windowCurvePresetsOutput" class="bg-slate-100 p-3 rounded text-xs overflow-x-auto"></pre>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-bold text-lg mb-2">4️⃣ Expected vs Actual Comparison</h2>
+        <pre id="comparisonOutput" class="bg-slate-100 p-3 rounded text-xs overflow-x-auto"></pre>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="font-bold text-lg mb-2">5️⃣ Input Calculation Verification</h2>
+        <pre id="calculationOutput" class="bg-slate-100 p-3 rounded text-xs overflow-x-auto"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Check localStorage curve presets
+    const curvePresetsLS = localStorage.getItem('curvePresets');
+    const curvePresetsOutput = document.getElementById('curvePresetsOutput');
+    if (curvePresetsLS) {
+      const parsed = JSON.parse(curvePresetsLS);
+      const standard30d = parsed.uph?.standard_30d;
+      if (standard30d) {
+        curvePresetsOutput.textContent =
+          'Standard 30-day Ramp in localStorage:\n' +
+          'First 10 days: ' + JSON.stringify(standard30d.factors.slice(0, 10)) + '\n\n' +
+          'Full curve:\n' + JSON.stringify(standard30d.factors, null, 2);
+      } else {
+        curvePresetsOutput.textContent = '❌ standard_30d not found in localStorage';
+      }
+    } else {
+      curvePresetsOutput.textContent = '❌ No curvePresets in localStorage';
+    }
+
+    // 2. Check capacity units in localStorage
+    const capacityUnitsLS = localStorage.getItem('productionPlan_capacity_units');
+    const capacityUnitsOutput = document.getElementById('capacityUnitsOutput');
+    if (capacityUnitsLS) {
+      const units = JSON.parse(capacityUnitsLS);
+      const wfL1Day = units.find(u => u.unit_id === 'WF_L1_DAY');
+      if (wfL1Day) {
+        capacityUnitsOutput.textContent =
+          'WF_L1_DAY in localStorage:\n' +
+          'Preset: ' + (wfL1Day.uph_ramp_curve_preset || 'NOT SET') + '\n' +
+          'First 10 days: ' + JSON.stringify(wfL1Day.uph_ramp_curve.factors.slice(0, 10)) + '\n\n' +
+          'Full curve:\n' + JSON.stringify(wfL1Day.uph_ramp_curve.factors, null, 2);
+      } else {
+        capacityUnitsOutput.textContent = '❌ WF_L1_DAY not found in capacity units';
+      }
+    } else {
+      capacityUnitsOutput.textContent = '❌ No capacity units in localStorage';
+    }
+
+    // 3. Check window.curvePresets
+    const windowCurvePresetsOutput = document.getElementById('windowCurvePresetsOutput');
+    if (window.opener && window.opener.curvePresets) {
+      const standard30d = window.opener.curvePresets.uph?.standard_30d;
+      if (standard30d) {
+        windowCurvePresetsOutput.textContent =
+          'Standard 30-day Ramp in window.curvePresets:\n' +
+          'First 10 days: ' + JSON.stringify(standard30d.factors.slice(0, 10)) + '\n\n' +
+          'Full curve:\n' + JSON.stringify(standard30d.factors, null, 2);
+      } else {
+        windowCurvePresetsOutput.textContent = '❌ standard_30d not found in window.opener.curvePresets';
+      }
+    } else {
+      windowCurvePresetsOutput.textContent = '⚠️ window.opener.curvePresets not available (open from main page)';
+    }
+
+    // 4. Comparison
+    const comparisonOutput = document.getElementById('comparisonOutput');
+    const expected = [0.50, 0.52, 0.53, 0.55, 0.57, 0.59, 0.60, 0.62, 0.64, 0.66];
+    const actual = capacityUnitsLS ?
+      JSON.parse(capacityUnitsLS).find(u => u.unit_id === 'WF_L1_DAY')?.uph_ramp_curve.factors.slice(0, 10) :
+      null;
+
+    let comparison = 'Expected curve (from your UI screenshot): ' + JSON.stringify(expected) + '\n\n';
+
+    if (actual) {
+      comparison += 'Actual curve (used in calculation): ' + JSON.stringify(actual) + '\n\n';
+
+      comparison += 'Day-by-day comparison:\n';
+      for (let i = 0; i < 10; i++) {
+        const match = Math.abs(expected[i] - actual[i]) < 0.001 ? '✅' : '❌';
+        comparison += 'Day ' + (i+1) + ': Expected ' + expected[i].toFixed(2) + ' vs Actual ' + actual[i].toFixed(2) + ' ' + match + '\n';
+      }
+    } else {
+      comparison += '❌ Cannot find actual curve for comparison';
+    }
+
+    comparisonOutput.textContent = comparison;
+
+    // 5. Verify input calculations
+    const calculationOutput = document.getElementById('calculationOutput');
+    if (actual) {
+      let calc = 'Verifying input calculations (Base UPH = 120, Shift hours = 10):\n\n';
+      calc += 'Sep 3 (Day 1): 120 × 10 × ' + actual[0] + ' = ' + (120 * 10 * actual[0]) + ' (Screenshot shows: 600)\n';
+      calc += 'Sep 4 (Day 2): 120 × 10 × ' + actual[1] + ' = ' + (120 * 10 * actual[1]) + ' (Screenshot shows: 660)\n';
+      calc += 'Sep 5 (Day 3): 120 × 10 × ' + actual[2] + ' = ' + (120 * 10 * actual[2]) + ' (Screenshot shows: 720)\n';
+      calc += 'Sep 7 (Day 4): 120 × 10 × ' + actual[3] + ' = ' + (120 * 10 * actual[3]) + ' (Screenshot shows: 1380)\n';
+      calc += 'Sep 8 (Day 5): 120 × 10 × ' + actual[4] + ' = ' + (120 * 10 * actual[4]) + ' (Screenshot shows: 1464)\n';
+      calculationOutput.textContent = calc;
+    } else {
+      calculationOutput.textContent = '❌ Cannot perform calculation verification';
+    }
+  </script>
+</body>
+</html>

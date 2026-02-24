@@ -18,58 +18,112 @@ if (!window.holidayCalendarData) {
   };
 }
 
-// China official statutory holiday periods (法定节假日)
+// China official statutory holiday periods
 const CHINA_STATUTORY_HOLIDAYS_2026 = [
   {
-    name: '元旦 (New Year)',
+    name: 'New Year',
+    name_cn: '元旦',
     start: '2026-01-01',
     end: '2026-01-03',
     type: 'public',
-    editable: true
+    editable: false,
+    notes: '3-day holiday',
+    triple_pay_dates: ['2026-01-01'],
+    eve_night_shift: {
+      date: '2025-12-31',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '春节 (Spring Festival)',
+    name: 'Spring Festival',
+    name_cn: '春节',
     start: '2026-02-15',
     end: '2026-02-23',
     type: 'public',
-    editable: true,
-    notes: 'Includes Feb 14 (Sat) & Feb 21 (Sat) makeup work days'
+    editable: false,
+    notes: 'Includes Feb 14 (Sat) & Feb 21 (Sat) makeup work days',
+    triple_pay_dates: ['2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19'],
+    eve_night_shift: {
+      date: '2026-02-15',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '清明节 (Qingming Festival)',
+    name: 'Qingming Festival',
+    name_cn: '清明节',
     start: '2026-04-04',
     end: '2026-04-06',
     type: 'public',
-    editable: true
+    editable: false,
+    notes: '3-day holiday',
+    triple_pay_dates: ['2026-04-04'],
+    eve_night_shift: {
+      date: '2026-04-03',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '劳动节 (Labor Day)',
+    name: 'Labor Day',
+    name_cn: '劳动节',
     start: '2026-05-01',
     end: '2026-05-05',
     type: 'public',
-    editable: true
+    editable: false,
+    notes: '5-day holiday',
+    triple_pay_dates: ['2026-05-01', '2026-05-02', '2026-05-03'],
+    eve_night_shift: {
+      date: '2026-04-30',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '端午节 (Dragon Boat Festival)',
+    name: 'Dragon Boat Festival',
+    name_cn: '端午节',
     start: '2026-06-19',
     end: '2026-06-21',
     type: 'public',
-    editable: true
+    editable: false,
+    notes: '3-day holiday',
+    triple_pay_dates: ['2026-06-19'],
+    eve_night_shift: {
+      date: '2026-06-18',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '中秋节 (Mid-Autumn Festival)',
+    name: 'Mid-Autumn Festival',
+    name_cn: '中秋节',
     start: '2026-09-25',
     end: '2026-09-27',
     type: 'public',
-    editable: true
+    editable: false,
+    notes: '3-day holiday',
+    triple_pay_dates: ['2026-09-25'],
+    eve_night_shift: {
+      date: '2026-09-24',
+      input_hours: 0,
+      output_hours: 4
+    }
   },
   {
-    name: '国庆节 (National Day)',
+    name: 'National Day',
+    name_cn: '国庆节',
     start: '2026-10-01',
     end: '2026-10-07',
     type: 'public',
-    editable: true,
-    notes: 'Includes Sep 27 (Sun) & Oct 10 (Sat) makeup work days'
+    editable: false,
+    notes: 'Includes Sep 27 (Sun) & Oct 10 (Sat) makeup work days',
+    triple_pay_dates: ['2026-10-01', '2026-10-02', '2026-10-03'],
+    eve_night_shift: {
+      date: '2026-09-30',
+      input_hours: 0,
+      output_hours: 4
+    }
   }
 ];
 
@@ -279,7 +333,7 @@ async function openHolidayCalendarManager() {
                 Current: ${countries.CN.holidays.length} holiday periods loaded
               </div>
               <div class="mt-1 text-xs text-green-600">
-                ✓ Includes full statutory holiday periods (连续假期段)
+                ✓ Includes full statutory holiday periods
               </div>
             </div>
 
@@ -338,34 +392,103 @@ async function openHolidayCalendarManager() {
                         const endDate = new Date(h.end);
                         const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                         const isMultiDay = h.end !== h.start;
+                        const hasTriplePay = h.triple_pay_dates && h.triple_pay_dates.length > 0;
+                        const hasEveConfig = h.eve_night_shift;
 
                         return `
-                        <div class="flex items-center justify-between p-3 border-2 ${isMultiDay ? 'border-amber-200 bg-amber-50' : 'border-slate-200'} rounded-lg hover:shadow-sm transition-all">
-                          <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                              <div class="font-semibold text-sm text-slate-900">${h.name}</div>
-                              ${isMultiDay ? `
-                                <span class="px-2 py-0.5 bg-amber-500 text-white rounded text-xs font-bold">
-                                  ${daysDiff} 天假期
-                                </span>
-                              ` : ''}
+                        <div class="border-2 ${isMultiDay ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'} rounded-lg overflow-hidden hover:shadow-sm transition-all">
+                          <!-- Holiday Header -->
+                          <div class="p-3 cursor-pointer" onclick="toggleHolidayDetails('${countryCode}_${idx}')">
+                            <div class="flex items-center justify-between">
+                              <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                  <span id="holidayToggle_${countryCode}_${idx}" class="text-sm">▼</span>
+                                  <div class="font-semibold text-sm text-slate-900">${h.name}</div>
+                                  ${isMultiDay ? `
+                                    <span class="px-2 py-0.5 bg-amber-500 text-white rounded text-xs font-bold">
+                                      ${daysDiff} days
+                                    </span>
+                                  ` : ''}
+                                </div>
+                                <div class="text-xs ${isMultiDay ? 'text-amber-700 font-semibold' : 'text-slate-600'} ml-5">
+                                  ${isMultiDay ? `📅 ${h.start} to ${h.end}` : `📅 ${h.start}`}
+                                </div>
+                              </div>
+                              <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">${h.type || 'public'}</span>
+                                <button onclick="event.stopPropagation(); editHolidayOvertime('${countryCode}', ${idx})" class="text-green-600 hover:bg-green-100 p-1.5 rounded transition-colors" title="Configure Overtime">
+                                  ⚙️
+                                </button>
+                                ${h.editable ? `
+                                  <button onclick="event.stopPropagation(); deleteHoliday('${countryCode}', ${idx})" class="text-red-600 hover:bg-red-100 p-1.5 rounded transition-colors">
+                                    🗑️
+                                  </button>
+                                ` : ''}
+                              </div>
                             </div>
-                            <div class="text-xs ${isMultiDay ? 'text-amber-700 font-semibold' : 'text-slate-600'}">
-                              ${isMultiDay ? `📅 ${h.start} 至 ${h.end}` : `📅 ${h.start}`}
-                            </div>
-                            ${h.notes ? `
-                              <div class="text-xs text-slate-500 mt-1 italic">💡 ${h.notes}</div>
-                            ` : ''}
                           </div>
-                          <div class="flex items-center gap-2">
-                            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">${h.type || 'public'}</span>
-                            ${h.editable ? `
-                              <button onclick="editHoliday('${countryCode}', ${idx})" class="text-blue-600 hover:bg-blue-100 p-1.5 rounded transition-colors">
-                                ✏️
-                              </button>
-                              <button onclick="deleteHoliday('${countryCode}', ${idx})" class="text-red-600 hover:bg-red-100 p-1.5 rounded transition-colors">
-                                🗑️
-                              </button>
+
+                          <!-- Holiday Details (Collapsible) -->
+                          <div id="holidayDetails_${countryCode}_${idx}" class="border-t border-slate-200">
+                            ${h.notes ? `
+                              <div class="px-3 py-2 bg-slate-50 text-xs text-slate-600 italic">💡 ${h.notes}</div>
+                            ` : ''}
+
+                            <!-- Triple Pay Dates -->
+                            ${hasTriplePay ? `
+                              <div class="p-3 bg-orange-50 border-t border-orange-200">
+                                <div class="text-xs font-semibold text-orange-900 mb-2">💰 Triple-Pay Dates:</div>
+                                <div class="flex flex-wrap gap-1">
+                                  ${h.triple_pay_dates.map(date => `
+                                    <span class="px-2 py-0.5 bg-orange-500 text-white rounded text-xs font-semibold">${date}</span>
+                                  `).join('')}
+                                </div>
+                              </div>
+                            ` : ''}
+
+                            <!-- Eve Night Shift Configuration -->
+                            ${hasEveConfig ? `
+                              <div class="p-3 bg-purple-50 border-t border-purple-200">
+                                <div class="text-xs font-semibold text-purple-900 mb-2">🌙 Eve Night Shift (${h.eve_night_shift.date}):</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label class="text-xs text-slate-600 block mb-1">Input (hours)</label>
+                                    <input type="number"
+                                           value="${h.eve_night_shift.input_hours || 0}"
+                                           min="0"
+                                           max="10"
+                                           class="w-full border rounded px-2 py-1 text-sm"
+                                           onchange="updateEveNightShift('${countryCode}', ${idx}, 'input', this.value)">
+                                  </div>
+                                  <div>
+                                    <label class="text-xs text-slate-600 block mb-1">Output (hours)</label>
+                                    <input type="number"
+                                           value="${h.eve_night_shift.output_hours || 4}"
+                                           min="0"
+                                           max="10"
+                                           class="w-full border rounded px-2 py-1 text-sm"
+                                           onchange="updateEveNightShift('${countryCode}', ${idx}, 'output', this.value)">
+                                  </div>
+                                </div>
+                                <div class="mt-2 text-xs text-purple-700">
+                                  ℹ️ Default: Input = 0h (no material), Output = 4h (clear WIP)
+                                </div>
+                              </div>
+                            ` : ''}
+
+                            <!-- Overtime Configuration -->
+                            ${h.overtime_config && h.overtime_config.dates && h.overtime_config.dates.length > 0 ? `
+                              <div class="p-3 bg-green-50 border-t border-green-200">
+                                <div class="text-xs font-semibold text-green-900 mb-2">⏰ Overtime Schedule:</div>
+                                <div class="space-y-1 text-xs text-green-800">
+                                  ${h.overtime_config.dates.map(ot => `
+                                    <div class="flex items-center justify-between py-1">
+                                      <span>📅 ${ot.date}</span>
+                                      <span class="font-semibold">${ot.shifts.join(', ')} shifts</span>
+                                    </div>
+                                  `).join('')}
+                                </div>
+                              </div>
                             ` : ''}
                           </div>
                         </div>
@@ -469,6 +592,227 @@ function deleteHoliday(countryCode, index) {
   window.holidayCalendarData.countries[countryCode].holidays.splice(index, 1);
 
   // Refresh modal
+  closeHolidayCalendarManager();
+  setTimeout(() => openHolidayCalendarManager(), 100);
+}
+
+// Update eve night shift configuration
+function updateEveNightShift(countryCode, index, field, value) {
+  const holiday = window.holidayCalendarData.countries[countryCode].holidays[index];
+
+  if (!holiday.eve_night_shift) {
+    holiday.eve_night_shift = { input_hours: 0, output_hours: 4 };
+  }
+
+  if (field === 'input') {
+    holiday.eve_night_shift.input_hours = parseInt(value) || 0;
+  } else if (field === 'output') {
+    holiday.eve_night_shift.output_hours = parseInt(value) || 4;
+  }
+
+  // Save to seed data
+  if (window.PRODUCTION_PLAN_SEED_DATA && window.PRODUCTION_PLAN_SEED_DATA.countryHolidays) {
+    window.PRODUCTION_PLAN_SEED_DATA.countryHolidays[countryCode] =
+      window.holidayCalendarData.countries[countryCode].holidays;
+  }
+
+  // Save to localStorage directly
+  if (window.PRODUCTION_PLAN_SEED_DATA && window.PRODUCTION_PLAN_SEED_DATA.countryHolidays) {
+    localStorage.setItem('productionPlan_country_holidays', JSON.stringify(window.PRODUCTION_PLAN_SEED_DATA.countryHolidays));
+  }
+
+  console.log(`[Holiday] Updated eve night shift for ${holiday.name}: ${field} = ${value}h`);
+}
+
+// Toggle holiday details (collapse/expand)
+function toggleHolidayDetails(holidayId) {
+  const detailsDiv = document.getElementById(`holidayDetails_${holidayId}`);
+  const toggleIcon = document.getElementById(`holidayToggle_${holidayId}`);
+
+  if (detailsDiv.style.display === 'none') {
+    detailsDiv.style.display = 'block';
+    toggleIcon.textContent = '▼';
+  } else {
+    detailsDiv.style.display = 'none';
+    toggleIcon.textContent = '▶';
+  }
+}
+
+// Edit holiday overtime configuration
+function editHolidayOvertime(countryCode, index) {
+  const holiday = window.holidayCalendarData.countries[countryCode].holidays[index];
+
+  // Get holiday dates
+  const startDate = new Date(holiday.start);
+  const endDate = new Date(holiday.end);
+  const holidayDates = [];
+
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    holidayDates.push(d.toISOString().split('T')[0]);
+  }
+
+  // Get existing overtime config
+  const existingOT = holiday.overtime_config || { dates: [] };
+
+  // Create modal for overtime configuration
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  modal.style.zIndex = '10001';
+
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mx-4">
+      <div class="sticky top-0 bg-gradient-to-r from-green-600 to-teal-600 px-6 py-4 border-b">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-lg font-bold text-white">⏰ Configure Overtime</div>
+            <div class="text-sm text-green-100 mt-1">${holiday.name} (${holiday.start} to ${holiday.end})</div>
+          </div>
+          <button onclick="this.closest('.fixed').remove()" class="text-white hover:bg-white hover:bg-opacity-20 px-3 py-1 rounded text-xl">
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div class="text-sm font-semibold text-blue-900 mb-2">ℹ️ Overtime Override</div>
+          <p class="text-xs text-blue-800">
+            By default, statutory holidays have no production. Configure overtime work days below to override this and enable production during the holiday period.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          ${holidayDates.map(date => {
+            const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+            const existingDateConfig = existingOT.dates.find(d => d.date === date);
+            const isConfigured = existingDateConfig && existingDateConfig.shifts.length > 0;
+
+            return `
+              <div class="border ${isConfigured ? 'border-green-300 bg-green-50' : 'border-slate-200 bg-white'} rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox"
+                           id="ot_enable_${date}"
+                           class="w-4 h-4"
+                           ${isConfigured ? 'checked' : ''}
+                           onchange="toggleOvertimeDate('${date}')">
+                    <label for="ot_enable_${date}" class="font-semibold text-sm cursor-pointer">
+                      📅 ${date} (${dayOfWeek})
+                    </label>
+                  </div>
+                  ${isConfigured ? `
+                    <span class="text-xs px-2 py-1 bg-green-500 text-white rounded font-semibold">✓ Overtime</span>
+                  ` : ''}
+                </div>
+
+                <div id="ot_shifts_${date}" style="display: ${isConfigured ? 'block' : 'none'}">
+                  <label class="text-xs text-slate-600 font-semibold block mb-2">Working Shifts:</label>
+                  <div class="flex gap-3">
+                    <label class="flex items-center gap-2 text-sm">
+                      <input type="checkbox"
+                             class="ot-shift-checkbox"
+                             data-date="${date}"
+                             value="DAY"
+                             ${existingDateConfig && existingDateConfig.shifts.includes('DAY') ? 'checked' : ''}>
+                      <span>☀️ Day Shift</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                      <input type="checkbox"
+                             class="ot-shift-checkbox"
+                             data-date="${date}"
+                             value="NIGHT"
+                             ${existingDateConfig && existingDateConfig.shifts.includes('NIGHT') ? 'checked' : ''}>
+                      <span>🌙 Night Shift</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="sticky bottom-0 bg-slate-50 px-6 py-4 border-t flex gap-3">
+        <button onclick="this.closest('.fixed').remove()"
+                class="flex-1 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition font-medium">
+          Cancel
+        </button>
+        <button onclick="saveOvertimeConfig('${countryCode}', ${index})"
+                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+          💾 Save Overtime Config
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+// Toggle overtime date enable/disable
+function toggleOvertimeDate(date) {
+  const checkbox = document.getElementById(`ot_enable_${date}`);
+  const shiftsDiv = document.getElementById(`ot_shifts_${date}`);
+
+  if (checkbox.checked) {
+    shiftsDiv.style.display = 'block';
+  } else {
+    shiftsDiv.style.display = 'none';
+    // Uncheck all shifts
+    shiftsDiv.querySelectorAll('.ot-shift-checkbox').forEach(cb => cb.checked = false);
+  }
+}
+
+// Save overtime configuration
+function saveOvertimeConfig(countryCode, index) {
+  const holiday = window.holidayCalendarData.countries[countryCode].holidays[index];
+
+  // Collect all overtime dates and shifts
+  const overtimeDates = [];
+  const allCheckboxes = document.querySelectorAll('.ot-shift-checkbox');
+
+  const dateShiftsMap = {};
+  allCheckboxes.forEach(cb => {
+    if (cb.checked) {
+      const date = cb.getAttribute('data-date');
+      const shift = cb.value;
+
+      if (!dateShiftsMap[date]) {
+        dateShiftsMap[date] = [];
+      }
+      dateShiftsMap[date].push(shift);
+    }
+  });
+
+  // Convert to array format
+  Object.keys(dateShiftsMap).forEach(date => {
+    if (dateShiftsMap[date].length > 0) {
+      overtimeDates.push({
+        date: date,
+        shifts: dateShiftsMap[date]
+      });
+    }
+  });
+
+  // Save to holiday object
+  holiday.overtime_config = {
+    dates: overtimeDates
+  };
+
+  // Save to PRODUCTION_PLAN_SEED_DATA
+  if (window.PRODUCTION_PLAN_SEED_DATA && window.PRODUCTION_PLAN_SEED_DATA.countryHolidays) {
+    window.PRODUCTION_PLAN_SEED_DATA.countryHolidays[countryCode] =
+      window.holidayCalendarData.countries[countryCode].holidays;
+  }
+
+  // Save to localStorage
+  if (window.PRODUCTION_PLAN_SEED_DATA && window.PRODUCTION_PLAN_SEED_DATA.countryHolidays) {
+    localStorage.setItem('productionPlan_country_holidays', JSON.stringify(window.PRODUCTION_PLAN_SEED_DATA.countryHolidays));
+  }
+
+  console.log(`[Holiday] Saved overtime config for ${holiday.name}:`, overtimeDates);
+
+  // Close modal and refresh
+  document.querySelector('.fixed.inset-0').remove();
   closeHolidayCalendarManager();
   setTimeout(() => openHolidayCalendarManager(), 100);
 }
@@ -848,6 +1192,7 @@ window.importHolidaysForCountry = importHolidaysForCountry;
 window.addCustomHoliday = addCustomHoliday;
 window.editHoliday = editHoliday;
 window.deleteHoliday = deleteHoliday;
+window.updateEveNightShift = updateEveNightShift;
 window.autoImportHolidays = autoImportHolidays;
 window.openUphRampCurveManager = openUphRampCurveManager;
 window.openYieldRampCurveManager = openYieldRampCurveManager;

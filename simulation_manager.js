@@ -18,7 +18,8 @@ const SimulationManager = (function() {
   const STORAGE_KEYS = {
     SIMULATIONS: 'productionPlan_simulations',
     CURRENT_POR: 'productionPlan_currentPOR',
-    POR_HISTORY: 'productionPlan_porHistory'
+    POR_HISTORY: 'productionPlan_porHistory',
+    PROJECTS: 'productionPlan_projects'
   };
 
   const VERSION_TYPES = {
@@ -464,6 +465,173 @@ const SimulationManager = (function() {
     return history.find(p => p.version === version) || null;
   }
 
+  // ==================== Project Operations ====================
+
+  /**
+   * Get all projects from localStorage
+   * @returns {Array} Array of project objects
+   */
+  function getProjects() {
+    const data = localStorage.getItem(STORAGE_KEYS.PROJECTS);
+    return data ? JSON.parse(data) : [];
+  }
+
+  /**
+   * Save projects to localStorage
+   * @param {Array} projects - Array of project objects
+   */
+  function saveProjectsToStorage(projects) {
+    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+  }
+
+  /**
+   * Get project by ID
+   * @param {string} id - Project ID
+   * @returns {Object|null} Project object or null
+   */
+  function getProjectById(id) {
+    const projects = getProjects();
+    return projects.find(p => p.id === id) || null;
+  }
+
+  /**
+   * Create a new project
+   * @param {Object} params - Project parameters
+   * @param {string} params.name - Project name
+   * @param {string} params.description - Description (optional)
+   * @param {Object} params.baseConditions - Base configuration
+   * @returns {Object} Created project
+   */
+  function createProject({ name, description, baseConditions }) {
+    const project = {
+      id: `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: name || 'Untitled Project',
+      description: description || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      baseConditions: baseConditions || {},
+      simulationIds: []
+    };
+
+    const projects = getProjects();
+    projects.unshift(project);
+    saveProjectsToStorage(projects);
+
+    console.log('[ProjectManager] Created project:', project.id);
+    return project;
+  }
+
+  /**
+   * Add simulation to project
+   * @param {string} projectId - Project ID
+   * @param {string} simulationId - Simulation ID
+   * @returns {boolean} Success
+   */
+  function addSimulationToProject(projectId, simulationId) {
+    const projects = getProjects();
+    const project = projects.find(p => p.id === projectId);
+
+    if (!project) {
+      console.error('[ProjectManager] Project not found:', projectId);
+      return false;
+    }
+
+    if (!project.simulationIds.includes(simulationId)) {
+      project.simulationIds.push(simulationId);
+      project.updatedAt = new Date().toISOString();
+      saveProjectsToStorage(projects);
+      console.log('[ProjectManager] Added simulation to project:', simulationId, '->', projectId);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Remove simulation from project
+   * @param {string} projectId - Project ID
+   * @param {string} simulationId - Simulation ID
+   * @returns {boolean} Success
+   */
+  function removeSimulationFromProject(projectId, simulationId) {
+    const projects = getProjects();
+    const project = projects.find(p => p.id === projectId);
+
+    if (!project) {
+      console.error('[ProjectManager] Project not found:', projectId);
+      return false;
+    }
+
+    const index = project.simulationIds.indexOf(simulationId);
+    if (index > -1) {
+      project.simulationIds.splice(index, 1);
+      project.updatedAt = new Date().toISOString();
+      saveProjectsToStorage(projects);
+      console.log('[ProjectManager] Removed simulation from project:', simulationId, '<-', projectId);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Delete a project
+   * @param {string} projectId - Project ID
+   * @returns {boolean} Success
+   */
+  function deleteProject(projectId) {
+    const projects = getProjects();
+    const index = projects.findIndex(p => p.id === projectId);
+
+    if (index > -1) {
+      projects.splice(index, 1);
+      saveProjectsToStorage(projects);
+      console.log('[ProjectManager] Deleted project:', projectId);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Get simulations for a project
+   * @param {string} projectId - Project ID
+   * @returns {Array} Array of simulations
+   */
+  function getProjectSimulations(projectId) {
+    const project = getProjectById(projectId);
+    if (!project) return [];
+
+    const allSimulations = getSimulations();
+    return project.simulationIds
+      .map(id => allSimulations.find(s => s.id === id))
+      .filter(Boolean);
+  }
+
+  /**
+   * Update project metadata
+   * @param {string} projectId - Project ID
+   * @param {Object} updates - Fields to update
+   * @returns {boolean} Success
+   */
+  function updateProject(projectId, updates) {
+    const projects = getProjects();
+    const project = projects.find(p => p.id === projectId);
+
+    if (!project) {
+      console.error('[ProjectManager] Project not found:', projectId);
+      return false;
+    }
+
+    Object.assign(project, updates, {
+      updatedAt: new Date().toISOString()
+    });
+
+    saveProjectsToStorage(projects);
+    console.log('[ProjectManager] Updated project:', projectId);
+    return true;
+  }
+
   // ==================== Comparison Operations ====================
 
   /**
@@ -713,6 +881,16 @@ const SimulationManager = (function() {
     getPORHistory,
     getPORByVersion,
     promoteSimulationToPOR,
+
+    // Project operations
+    createProject,
+    getProjects,
+    getProjectById,
+    updateProject,
+    deleteProject,
+    addSimulationToProject,
+    removeSimulationFromProject,
+    getProjectSimulations,
 
     // Comparison
     compareSimulations,

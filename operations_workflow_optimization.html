@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operations Workflow Optimization Report 2025</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @media print {
+      .no-print { display: none; }
+      .page-break { page-break-before: always; }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+
+    .workflow-stage {
+      transition: all 0.3s ease;
+    }
+
+    .workflow-stage:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .pain-point {
+      border-left: 4px solid #ef4444;
+      background: linear-gradient(to right, #fef2f2, white);
+    }
+
+    .ai-opportunity {
+      border-left: 4px solid #10b981;
+      background: linear-gradient(to right, #f0fdf4, white);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .timeline-connector {
+      position: relative;
+    }
+
+    .timeline-connector::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 40px;
+      background: linear-gradient(to bottom, #cbd5e1, #e2e8f0);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white py-12 no-print">
+    <div class="max-w-7xl mx-auto px-6">
+      <h1 class="text-5xl font-bold mb-4">🚀 Operations Workflow Optimization Report</h1>
+      <p class="text-xl text-blue-100">AI-Driven Process Enhancement Initiative 2025</p>
+      <div class="mt-6 flex gap-4 text-sm">
+        <span class="px-4 py-2 bg-white/20 rounded-full">Manufacturing Operations Excellence</span>
+        <span class="px-4 py-2 bg-white/20 rounded-full">AI & Automation Focus</span>
+        <span class="px-4 py-2 bg-white/20 rounded-full">Data-Driven Decision Making</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-12 space-y-12">
+
+    <!-- Executive Summary -->
+    <section class="bg-white rounded-2xl shadow-xl p-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">📊</div>
+        <h2 class="text-3xl font-bold text-gray-900">Executive Summary</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-blue-200">
+          <div class="text-4xl font-bold text-blue-600 mb-2">5</div>
+          <div class="text-sm font-semibold text-blue-900">Product Lifecycle Stages</div>
+          <div class="text-xs text-blue-700 mt-1">From Supplier Selection to EOL</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6 border-2 border-red-200">
+          <div class="text-4xl font-bold text-red-600 mb-2">60%+</div>
+          <div class="text-sm font-semibold text-red-900">Manual Work Identified</div>
+          <div class="text-xs text-red-700 mt-1">Excel, Email, Repetitive Tasks</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-2 border-green-200">
+          <div class="text-4xl font-bold text-green-600 mb-2">15+</div>
+          <div class="text-sm font-semibold text-green-900">AI Opportunities</div>
+          <div class="text-xs text-green-700 mt-1">Automation & Intelligence</div>
+        </div>
+      </div>
+
+      <div class="prose max-w-none">
+        <p class="text-gray-700 leading-relaxed">
+          As the <strong>Manufacturing Operations team</strong>, we serve as the critical bridge between internal requirements and factory execution. Our mission encompasses <strong>delivery assurance, risk management, and continuous optimization</strong> across the entire product lifecycle. This report analyzes our current workflows, identifies manual bottlenecks, and proposes <strong>AI-driven automation opportunities</strong> to enhance efficiency and decision-making quality.
+        </p>
+      </div>
+    </section>
+
+    <!-- Current State: Core Responsibilities -->
+    <section class="bg-white rounded-2xl shadow-xl p-8 page-break">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🎯</div>
+        <h2 class="text-3xl font-bold text-gray-900">Core Responsibilities & Work Streams</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Work Stream 1 -->
+        <div class="border-2 border-purple-200 rounded-xl p-6 bg-gradient-to-br from-purple-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">📈</span>
+            <h3 class="text-xl font-bold text-purple-900">Planning & Simulation</h3>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2">
+              <span class="text-purple-500 mt-1">▸</span>
+              <span><strong>Production Planning:</strong> Capacity modeling, RAMP planning, weekly/daily schedules</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-purple-500 mt-1">▸</span>
+              <span><strong>Scenario Simulation:</strong> Demand fluctuation, material shortage, yield impact analysis</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-purple-500 mt-1">▸</span>
+              <span><strong>Risk Assessment:</strong> Framework-driven proactive risk identification</span>
+            </li>
+          </ul>
+          <div class="mt-4 pain-point p-3 rounded-lg">
+            <div class="text-xs font-bold text-red-700 mb-1">⚠️ PAIN POINT</div>
+            <div class="text-xs text-gray-700">Heavy manual Excel work, time-consuming simulation runs, difficult to iterate quickly</div>
+          </div>
+        </div>
+
+        <!-- Work Stream 2 -->
+        <div class="border-2 border-blue-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">📊</span>
+            <h3 class="text-xl font-bold text-blue-900">Data & Reporting</h3>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2">
+              <span class="text-blue-500 mt-1">▸</span>
+              <span><strong>Data Collection:</strong> Manual gathering via email, Excel from suppliers</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-500 mt-1">▸</span>
+              <span><strong>Report Generation:</strong> Multiple formats for different stakeholders</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-500 mt-1">▸</span>
+              <span><strong>Visualization:</strong> Providing visibility into factory execution status</span>
+            </li>
+          </ul>
+          <div class="mt-4 pain-point p-3 rounded-lg">
+            <div class="text-xs font-bold text-red-700 mb-1">⚠️ PAIN POINT</div>
+            <div class="text-xs text-gray-700">High interpretation cost, inconsistent data formats, manual consolidation effort</div>
+          </div>
+        </div>
+
+        <!-- Work Stream 3 -->
+        <div class="border-2 border-green-200 rounded-xl p-6 bg-gradient-to-br from-green-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🤝</span>
+            <h3 class="text-xl font-bold text-green-900">Cross-Functional Coordination</h3>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2">
+              <span class="text-green-500 mt-1">▸</span>
+              <span><strong>Internal Alignment:</strong> Regular meetings with Material, PM, Engineering teams</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500 mt-1">▸</span>
+              <span><strong>Supplier Bridge:</strong> Translate requirements, align expectations</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-500 mt-1">▸</span>
+              <span><strong>Decision Support:</strong> Data-driven recommendations to leadership</span>
+            </li>
+          </ul>
+          <div class="mt-4 pain-point p-3 rounded-lg">
+            <div class="text-xs font-bold text-red-700 mb-1">⚠️ PAIN POINT</div>
+            <div class="text-xs text-gray-700">Heavy meeting load, repetitive explanations, communication overhead</div>
+          </div>
+        </div>
+
+        <!-- Work Stream 4 -->
+        <div class="border-2 border-orange-200 rounded-xl p-6 bg-gradient-to-br from-orange-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">⚡</span>
+            <h3 class="text-xl font-bold text-orange-900">Execution & Problem Solving</h3>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start gap-2">
+              <span class="text-orange-500 mt-1">▸</span>
+              <span><strong>Daily Tracking:</strong> Monitor production progress, material status, line health</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-orange-500 mt-1">▸</span>
+              <span><strong>Issue Resolution:</strong> Drive resources to solve blocking issues</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-orange-500 mt-1">▸</span>
+              <span><strong>Risk Mitigation:</strong> Evaluate and close gaps proactively</span>
+            </li>
+          </ul>
+          <div class="mt-4 pain-point p-3 rounded-lg">
+            <div class="text-xs font-bold text-red-700 mb-1">⚠️ PAIN POINT</div>
+            <div class="text-xs text-gray-700">Dynamic situations require constant monitoring, reactive rather than predictive</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Lifecycle Workflow -->
+    <section class="bg-white rounded-2xl shadow-xl p-8 page-break">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🔄</div>
+        <h2 class="text-3xl font-bold text-gray-900">Product Lifecycle Workflow</h2>
+      </div>
+
+      <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <p class="text-sm text-blue-900">
+          <strong>💡 Key Insight:</strong> Our work spans from supplier selection through EOL, with different focus areas at each stage. Below shows the complete workflow with manual work highlighted in red and AI opportunities in green.
+        </p>
+      </div>
+
+      <!-- Stage 1: Supplier Selection -->
+      <div class="workflow-stage bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 mb-6 border-2 border-purple-300">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+            <div>
+              <h3 class="text-xl font-bold text-purple-900">Supplier Selection</h3>
+              <p class="text-sm text-purple-700">Evaluating and scoring potential CMs</p>
+            </div>
+          </div>
+          <span class="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-semibold">Pre-NPI</span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-bold text-gray-600 mb-2">📋 KEY ACTIVITIES</div>
+            <ul class="text-sm space-y-1 text-gray-700">
+              <li>• Factory facility assessment</li>
+              <li>• System setup evaluation</li>
+              <li>• Operation capability scoring</li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-red-600 mb-2">⚠️ MANUAL WORK</div>
+            <div class="text-sm space-y-1">
+              <div class="pain-point p-2 rounded">Checklist-based evaluation (manual scoring)</div>
+              <div class="pain-point p-2 rounded">Report consolidation from multiple visits</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 ai-opportunity p-3 rounded-lg">
+          <div class="text-xs font-bold text-green-700 mb-1">🤖 AI OPPORTUNITY</div>
+          <div class="text-xs text-gray-700">
+            <strong>Automated Scoring System:</strong> AI-powered supplier evaluation based on historical data, image recognition for facility assessment, natural language processing for capability analysis
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-connector mb-6"></div>
+
+      <!-- Stage 2: NPI Phase -->
+      <div class="workflow-stage bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 mb-6 border-2 border-blue-300">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+            <div>
+              <h3 class="text-xl font-bold text-blue-900">NPI Phase (Proto → EVT → DVT → PVT)</h3>
+              <p class="text-sm text-blue-700">Ensuring factory readiness and early issue detection</p>
+            </div>
+          </div>
+          <span class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold">Development</span>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+          <div class="bg-white rounded-lg p-3 border border-blue-200">
+            <div class="text-xs font-bold text-blue-600 mb-2">Proto/EVT</div>
+            <ul class="text-xs space-y-1 text-gray-700">
+              <li>✓ Factory readiness</li>
+              <li>✓ Line setup</li>
+              <li>✓ Operator training</li>
+            </ul>
+          </div>
+          <div class="bg-white rounded-lg p-3 border border-blue-200">
+            <div class="text-xs font-bold text-blue-600 mb-2">DVT</div>
+            <ul class="text-xs space-y-1 text-gray-700">
+              <li>✓ Critical issue monitoring</li>
+              <li>✓ MP-impact assessment</li>
+            </ul>
+          </div>
+          <div class="bg-white rounded-lg p-3 border border-blue-200">
+            <div class="text-xs font-bold text-blue-600 mb-2">PVT</div>
+            <ul class="text-xs space-y-1 text-gray-700">
+              <li>✓ All lines qualified</li>
+              <li>✓ RAMP planning starts</li>
+              <li>✓ Capacity simulation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-bold text-red-600 mb-2">⚠️ MANUAL WORK</div>
+            <div class="text-sm space-y-1">
+              <div class="pain-point p-2 rounded">Manual readiness checklist tracking</div>
+              <div class="pain-point p-2 rounded">Excel-based capacity planning</div>
+              <div class="pain-point p-2 rounded">Email-based issue follow-up</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-green-700 mb-2">🤖 AI OPPORTUNITIES</div>
+            <div class="text-sm space-y-1">
+              <div class="ai-opportunity p-2 rounded">Automated capacity simulation (like EDO Production Plan Engine)</div>
+              <div class="ai-opportunity p-2 rounded">AI-powered issue prediction based on historical patterns</div>
+              <div class="ai-opportunity p-2 rounded">Automated readiness dashboard with real-time sync</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-connector mb-6"></div>
+
+      <!-- Stage 3: Mass Production -->
+      <div class="workflow-stage bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6 mb-6 border-2 border-green-300">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+            <div>
+              <h3 class="text-xl font-bold text-green-900">Mass Production Execution</h3>
+              <p class="text-sm text-green-700">Daily execution, problem solving, and fulfillment tracking</p>
+            </div>
+          </div>
+          <span class="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">Peak Load</span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-bold text-gray-600 mb-2">📋 KEY ACTIVITIES</div>
+            <ul class="text-sm space-y-1 text-gray-700">
+              <li>• Daily production meetings</li>
+              <li>• Volume fulfillment tracking</li>
+              <li>• Material status monitoring</li>
+              <li>• Line health tracking</li>
+              <li>• Risk identification & mitigation</li>
+              <li>• Cross-functional alignment</li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-red-600 mb-2">⚠️ MANUAL WORK (HEAVIEST STAGE)</div>
+            <div class="text-sm space-y-1">
+              <div class="pain-point p-2 rounded">Daily data collection via email/Excel</div>
+              <div class="pain-point p-2 rounded">Manual report generation (multiple formats)</div>
+              <div class="pain-point p-2 rounded">Repetitive meeting updates</div>
+              <div class="pain-point p-2 rounded">Excel-based plan updates</div>
+              <div class="pain-point p-2 rounded">High interpretation/explanation cost</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid md:grid-cols-2 gap-4">
+          <div class="ai-opportunity p-3 rounded-lg">
+            <div class="text-xs font-bold text-green-700 mb-1">🤖 AI OPPORTUNITY #1: EDO System Integration</div>
+            <div class="text-xs text-gray-700">
+              Automated data sync from suppliers → Real-time KPI dashboard → AI-generated executive summary
+            </div>
+          </div>
+          <div class="ai-opportunity p-3 rounded-lg">
+            <div class="text-xs font-bold text-green-700 mb-1">🤖 AI OPPORTUNITY #2: Predictive Analytics</div>
+            <div class="text-xs text-gray-700">
+              ML models to predict yield issues, material shortages, line downtime before they impact delivery
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-connector mb-6"></div>
+
+      <!-- Stage 4: Continuous Improvement -->
+      <div class="workflow-stage bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-6 mb-6 border-2 border-yellow-300">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold">4</div>
+            <div>
+              <h3 class="text-xl font-bold text-yellow-900">Continuous Improvement & ECO</h3>
+              <p class="text-sm text-yellow-700">Cost reduction, new material/process introduction</p>
+            </div>
+          </div>
+          <span class="px-4 py-2 bg-yellow-600 text-white rounded-full text-sm font-semibold">Optimization</span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-bold text-gray-600 mb-2">📋 KEY ACTIVITIES</div>
+            <ul class="text-sm space-y-1 text-gray-700">
+              <li>• ECO impact assessment</li>
+              <li>• New material qualification</li>
+              <li>• Cost reduction projects</li>
+              <li>• Demand fluctuation response</li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-red-600 mb-2">⚠️ MANUAL WORK</div>
+            <div class="text-sm space-y-1">
+              <div class="pain-point p-2 rounded">Manual impact simulation for each ECO</div>
+              <div class="pain-point p-2 rounded">Scenario planning for demand changes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 ai-opportunity p-3 rounded-lg">
+          <div class="text-xs font-bold text-green-700 mb-1">🤖 AI OPPORTUNITY</div>
+          <div class="text-xs text-gray-700">
+            <strong>What-If Simulation Engine:</strong> Instantly model ECO impact on capacity, lead time, cost - same as EDO's scenario simulation capability
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-connector mb-6"></div>
+
+      <!-- Stage 5: EOL -->
+      <div class="workflow-stage bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-6 border-2 border-red-300">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">5</div>
+            <div>
+              <h3 class="text-xl font-bold text-red-900">End of Life (EOL) Manufacturing</h3>
+              <p class="text-sm text-red-700">Optimizing final production based on material inventory</p>
+            </div>
+          </div>
+          <span class="px-4 py-2 bg-red-600 text-white rounded-full text-sm font-semibold">Wind Down</span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs font-bold text-gray-600 mb-2">📋 KEY ACTIVITIES</div>
+            <ul class="text-sm space-y-1 text-gray-700">
+              <li>• Material inventory analysis</li>
+              <li>• EOL schedule optimization</li>
+              <li>• Factory communication & alignment</li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-red-600 mb-2">⚠️ MANUAL WORK</div>
+            <div class="text-sm space-y-1">
+              <div class="pain-point p-2 rounded">Manual inventory reconciliation</div>
+              <div class="pain-point p-2 rounded">Excel-based EOL optimization</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 ai-opportunity p-3 rounded-lg">
+          <div class="text-xs font-bold text-green-700 mb-1">🤖 AI OPPORTUNITY</div>
+          <div class="text-xs text-gray-700">
+            <strong>Inventory-Driven EOL Planner:</strong> Auto-calculate optimal EOL schedule considering material shelf life, carrying cost, and demand tail-off
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Opportunities Summary -->
+    <section class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-xl p-8 page-break border-2 border-green-300">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🚀</div>
+        <h2 class="text-3xl font-bold text-gray-900">AI & Automation Opportunities</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Category 1 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-3xl">📊</span>
+            <h3 class="text-xl font-bold text-gray-900">Planning & Simulation</h3>
+          </div>
+          <div class="space-y-3">
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">1. Production Plan Automation</div>
+              <div class="text-xs text-gray-700">Replace Excel-based planning with EDO-like engine: UPH curves, yield curves, holiday calendars, automatic scenario generation</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: 80% time reduction</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">2. What-If Simulation Engine</div>
+              <div class="text-xs text-gray-700">AI-powered instant scenario comparison for demand changes, ECO impact, material shortage</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Faster decision cycles</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">3. Predictive Risk Model</div>
+              <div class="text-xs text-gray-700">ML models to predict yield drift, line downtime, material shortage before they happen</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Proactive vs reactive</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 2 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-3xl">🤖</span>
+            <h3 class="text-xl font-bold text-gray-900">Data & Reporting</h3>
+          </div>
+          <div class="space-y-3">
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">4. Automated Data Sync</div>
+              <div class="text-xs text-gray-700">API integration with supplier systems → eliminate email/Excel data collection</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Real-time data availability</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">5. AI-Generated Reports</div>
+              <div class="text-xs text-gray-700">Natural language generation for executive summaries, anomaly highlighting, recommendation synthesis</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: 70% reporting time reduction</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">6. Smart Data Consolidation</div>
+              <div class="text-xs text-gray-700">AI-powered data cleaning, format standardization, automatic reconciliation</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Consistent data quality</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 3 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-3xl">💬</span>
+            <h3 class="text-xl font-bold text-gray-900">Communication & Collaboration</h3>
+          </div>
+          <div class="space-y-3">
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">7. AI Meeting Assistant</div>
+              <div class="text-xs text-gray-700">Auto-generate meeting agendas, capture action items, send follow-up summaries</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Better meeting efficiency</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">8. Requirement Translation Engine</div>
+              <div class="text-xs text-gray-700">AI-powered conversion between internal requirements ↔ supplier specifications</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Clearer communication</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">9. Chatbot Q&A System</div>
+              <div class="text-xs text-gray-700">Internal knowledge base with AI chatbot for common questions (reduces explanation burden)</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Self-service info access</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 4 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-3xl">⚡</span>
+            <h3 class="text-xl font-bold text-gray-900">Execution & Monitoring</h3>
+          </div>
+          <div class="space-y-3">
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">10. Real-Time Dashboard</div>
+              <div class="text-xs text-gray-700">EDO-style live tracking: production vs plan, material status, line health, shipment readiness</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Instant visibility</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">11. Anomaly Detection</div>
+              <div class="text-xs text-gray-700">ML alerts for yield dips, cycle time increases, defect rate spikes</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Early warning system</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+              <div class="font-semibold text-sm text-green-900 mb-1">12. Automated Issue Triage</div>
+              <div class="text-xs text-gray-700">AI-powered severity assessment, automatic routing to right teams, suggested solutions from historical data</div>
+              <div class="text-xs text-green-700 font-semibold mt-1">💡 Impact: Faster resolution</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">🎯</span>
+          <h3 class="text-xl font-bold">Total Estimated Impact</h3>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4 text-center">
+          <div>
+            <div class="text-3xl font-bold mb-1">40-50%</div>
+            <div class="text-sm opacity-90">Manual Work Reduction</div>
+          </div>
+          <div>
+            <div class="text-3xl font-bold mb-1">3-5x</div>
+            <div class="text-sm opacity-90">Faster Decision Cycles</div>
+          </div>
+          <div>
+            <div class="text-3xl font-bold mb-1">2-3 Days</div>
+            <div class="text-sm opacity-90">Time Freed Per Person/Week</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDO System Alignment -->
+    <section class="bg-white rounded-2xl shadow-xl p-8 page-break">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🔗</div>
+        <h2 class="text-3xl font-bold text-gray-900">EDO System: Current Capabilities & Roadmap</h2>
+      </div>
+
+      <div class="mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg">
+        <p class="text-sm text-purple-900">
+          <strong>💡 The EDO (Execution Data & Operations) system</strong> has already started addressing several pain points. Below shows what's implemented and what's planned.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Implemented Features -->
+        <div class="border-2 border-green-300 rounded-xl p-6 bg-gradient-to-br from-green-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">✅</span>
+            <h3 class="text-xl font-bold text-green-900">Currently Implemented</h3>
+          </div>
+          <ul class="space-y-3 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Production Plan Engine:</strong>
+                <div class="text-gray-700">UPH curves, yield curves, holiday calendars, shipment logic with lead time</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Scenario Simulation:</strong>
+                <div class="text-gray-700">Unconstrained vs constrained (CTB) modes, side-by-side comparison</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Forecast Management:</strong>
+                <div class="text-gray-700">Excel upload, version control, historical tracking</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Visual Reports:</strong>
+                <div class="text-gray-700">Weekly metrics, daily details, gap analysis, attainment tracking</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-green-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Curve Presets Manager:</strong>
+                <div class="text-gray-700">Reusable RAMP curve library, customizable parameters</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Roadmap Features -->
+        <div class="border-2 border-blue-300 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-white">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🚧</span>
+            <h3 class="text-xl font-bold text-blue-900">Planned Enhancements</h3>
+          </div>
+          <ul class="space-y-3 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">API Data Integration:</strong>
+                <div class="text-gray-700">Direct sync with supplier MES systems → eliminate manual data entry</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">AI Copilot:</strong>
+                <div class="text-gray-700">Natural language queries, auto-generated insights, recommendation engine</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Predictive Analytics:</strong>
+                <div class="text-gray-700">Yield prediction, shortage alerts, anomaly detection</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Multi-Product Support:</strong>
+                <div class="text-gray-700">Portfolio-level planning, resource allocation optimization</div>
+              </div>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold mt-0.5">▸</span>
+              <div>
+                <strong class="text-gray-900">Collaborative Workspace:</strong>
+                <div class="text-gray-700">Real-time comments, approval workflows, shared dashboards</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl p-6 border-2 border-purple-300">
+        <h4 class="font-bold text-lg text-purple-900 mb-3">🎯 Strategic Alignment: From Manual to Intelligent</h4>
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+          <div class="bg-white rounded-lg p-4 shadow">
+            <div class="font-bold text-red-600 mb-2">❌ Before (Current State)</div>
+            <ul class="text-gray-700 space-y-1 text-xs">
+              <li>• Manual Excel planning (hours)</li>
+              <li>• Email-based data collection</li>
+              <li>• Repetitive report generation</li>
+              <li>• Reactive problem solving</li>
+            </ul>
+          </div>
+          <div class="bg-white rounded-lg p-4 shadow">
+            <div class="font-bold text-blue-600 mb-2">🔄 Transition (EDO v1)</div>
+            <ul class="text-gray-700 space-y-1 text-xs">
+              <li>• Automated planning engine</li>
+              <li>• Scenario simulation capability</li>
+              <li>• Standardized visualizations</li>
+              <li>• Version-controlled forecasts</li>
+            </ul>
+          </div>
+          <div class="bg-white rounded-lg p-4 shadow">
+            <div class="font-bold text-green-600 mb-2">✅ Future (EDO v2 + AI)</div>
+            <ul class="text-gray-700 space-y-1 text-xs">
+              <li>• Real-time data sync</li>
+              <li>• Predictive intelligence</li>
+              <li>• AI-generated insights</li>
+              <li>• Proactive recommendations</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementation Roadmap -->
+    <section class="bg-white rounded-2xl shadow-xl p-8 page-break">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🗓️</div>
+        <h2 class="text-3xl font-bold text-gray-900">2025 Implementation Roadmap</h2>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Q1 2025 -->
+        <div class="border-l-4 border-blue-500 pl-6 py-4 bg-gradient-to-r from-blue-50 to-white rounded-r-xl">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-bold">Q1 2025</span>
+            <h3 class="text-xl font-bold text-blue-900">Foundation & Automation</h3>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">🎯 Focus: Replace Manual Planning</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>✓ Complete Production Plan Engine rollout</li>
+                <li>✓ Train team on EDO system usage</li>
+                <li>✓ Migrate all planning workflows to EDO</li>
+              </ul>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">📊 Expected Impact</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>• 80% reduction in planning time</li>
+                <li>• Standardized simulation process</li>
+                <li>• Faster scenario comparison</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q2 2025 -->
+        <div class="border-l-4 border-green-500 pl-6 py-4 bg-gradient-to-r from-green-50 to-white rounded-r-xl">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-bold">Q2 2025</span>
+            <h3 class="text-xl font-bold text-green-900">Data Integration & Real-Time Visibility</h3>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">🎯 Focus: Eliminate Manual Data Collection</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>✓ API integration with top 3 suppliers</li>
+                <li>✓ Real-time dashboard deployment</li>
+                <li>✓ Automated report generation</li>
+              </ul>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">📊 Expected Impact</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>• Real-time data availability</li>
+                <li>• 70% reduction in reporting time</li>
+                <li>• Improved data accuracy</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3 2025 -->
+        <div class="border-l-4 border-purple-500 pl-6 py-4 bg-gradient-to-r from-purple-50 to-white rounded-r-xl">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="px-3 py-1 bg-purple-600 text-white rounded-full text-xs font-bold">Q3 2025</span>
+            <h3 class="text-xl font-bold text-purple-900">AI & Predictive Intelligence</h3>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">🎯 Focus: From Reactive to Proactive</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>✓ Deploy yield prediction model</li>
+                <li>✓ Material shortage early warning</li>
+                <li>✓ AI-powered risk assessment</li>
+              </ul>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">📊 Expected Impact</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>• 30% reduction in firefighting</li>
+                <li>• Earlier risk identification</li>
+                <li>• Better decision support</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4 2025 -->
+        <div class="border-l-4 border-orange-500 pl-6 py-4 bg-gradient-to-r from-orange-50 to-white rounded-r-xl">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="px-3 py-1 bg-orange-600 text-white rounded-full text-xs font-bold">Q4 2025</span>
+            <h3 class="text-xl font-bold text-orange-900">Optimization & Scale</h3>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">🎯 Focus: Continuous Improvement</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>✓ AI Copilot for natural language queries</li>
+                <li>✓ Multi-product portfolio planning</li>
+                <li>✓ Collaborative workspace rollout</li>
+              </ul>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-700 mb-2">📊 Expected Impact</div>
+              <ul class="space-y-1 text-gray-600">
+                <li>• Self-service capability</li>
+                <li>• Cross-program optimization</li>
+                <li>• Scalable for future programs</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-4">🎯 2025 Year-End Target</h3>
+        <div class="grid md:grid-cols-4 gap-4 text-center">
+          <div class="bg-white/20 rounded-lg p-4">
+            <div class="text-3xl font-bold mb-1">50%</div>
+            <div class="text-sm opacity-90">Manual Work Eliminated</div>
+          </div>
+          <div class="bg-white/20 rounded-lg p-4">
+            <div class="text-3xl font-bold mb-1">5x</div>
+            <div class="text-sm opacity-90">Faster Planning Cycles</div>
+          </div>
+          <div class="bg-white/20 rounded-lg p-4">
+            <div class="text-3xl font-bold mb-1">Real-Time</div>
+            <div class="text-sm opacity-90">Data Visibility</div>
+          </div>
+          <div class="bg-white/20 rounded-lg p-4">
+            <div class="text-3xl font-bold mb-1">Proactive</div>
+            <div class="text-sm opacity-90">Risk Management</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conclusion -->
+    <section class="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white rounded-2xl shadow-xl p-8">
+      <h2 class="text-3xl font-bold mb-6">🚀 Conclusion & Call to Action</h2>
+
+      <div class="space-y-4 text-lg leading-relaxed mb-8">
+        <p>
+          The Manufacturing Operations team plays a <strong>critical bridging role</strong> between internal strategy and factory execution. Our current workflows, while effective, are <strong>heavily manual and time-intensive</strong>, limiting our ability to scale and respond to dynamic situations.
+        </p>
+        <p>
+          By embracing <strong>AI-driven automation</strong> and continuing to build on the EDO system foundation, we can transform from a <strong>reactive, manual team to a proactive, data-driven organization</strong>. The opportunities identified in this report represent not just efficiency gains, but a fundamental shift in how we work.
+        </p>
+        <p>
+          <strong>2025 is the year to make this transformation real.</strong> With the roadmap outlined above, we can systematically address each pain point, deploy intelligent automation, and free our team to focus on high-value strategic work rather than repetitive tasks.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur">
+          <div class="text-4xl mb-3">💡</div>
+          <h3 class="font-bold text-xl mb-2">Phase 1: Foundation</h3>
+          <p class="text-sm opacity-90">Q1-Q2: Automate planning, integrate data sources, establish real-time visibility</p>
+        </div>
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur">
+          <div class="text-4xl mb-3">🤖</div>
+          <h3 class="font-bold text-xl mb-2">Phase 2: Intelligence</h3>
+          <p class="text-sm opacity-90">Q3: Deploy AI models for prediction, anomaly detection, and risk assessment</p>
+        </div>
+        <div class="bg-white/10 rounded-xl p-6 backdrop-blur">
+          <div class="text-4xl mb-3">🚀</div>
+          <h3 class="font-bold text-xl mb-2">Phase 3: Scale</h3>
+          <p class="text-sm opacity-90">Q4: AI Copilot, multi-product support, collaborative workspace</p>
+        </div>
+      </div>
+
+      <div class="mt-8 text-center">
+        <p class="text-2xl font-bold mb-2">Let's make 2025 the year of Operational Excellence through AI 🎯</p>
+        <p class="text-sm opacity-90">Questions? Feedback? Let's discuss how to bring this vision to life.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="bg-gray-900 text-gray-400 py-8 mt-12 no-print">
+    <div class="max-w-7xl mx-auto px-6 text-center text-sm">
+      <p>Manufacturing Operations Workflow Optimization Report 2025</p>
+      <p class="mt-2">Generated with AI-assisted analysis | For internal strategic planning</p>
+    </div>
+  </div>
+
+</body>
+</html>

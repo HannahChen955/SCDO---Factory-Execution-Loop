@@ -12,7 +12,17 @@ const PRODUCTION_PLAN_SEED_DATA = {
     output_factors: { day1: 0.5, day2: 1.0, day3_plus: 1.0 },
     shipment_lag_workdays: 2,
     shipment_pallet_size: 480, // Units per pallet - shipment will be rounded to multiples of this
-    weekly_window: 'MON_SAT'
+    weekly_window: 'MON_SAT',
+    inventory_audit: {
+      middle_year: {
+        days: 1,
+        dates: ['2026-06-30']
+      },
+      end_year: {
+        days: 1,
+        dates: ['2026-12-31']
+      }
+    }
   },
 
   // Sites
@@ -28,43 +38,85 @@ const PRODUCTION_PLAN_SEED_DATA = {
         name: '元旦 (New Year)',
         start: '2026-01-01',
         end: '2026-01-03',
-        notes: '3-day statutory holiday'
+        notes: '3-day statutory holiday',
+        triple_pay_dates: ['2026-01-01'],
+        eve_night_shift: {
+          date: '2025-12-31',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '春节 (Spring Festival)',
         start: '2026-02-15',
         end: '2026-02-23',
-        notes: '9-day holiday (includes makeup work days on Feb 14, 21)'
+        notes: '9-day holiday (includes makeup work days on Feb 14, 21)',
+        triple_pay_dates: ['2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19'],
+        eve_night_shift: {
+          date: '2026-02-15',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '清明节 (Qingming Festival)',
         start: '2026-04-04',
         end: '2026-04-06',
-        notes: '3-day statutory holiday'
+        notes: '3-day statutory holiday',
+        triple_pay_dates: ['2026-04-04'],
+        eve_night_shift: {
+          date: '2026-04-03',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '劳动节 (Labor Day)',
         start: '2026-05-01',
         end: '2026-05-05',
-        notes: '5-day statutory holiday'
+        notes: '5-day statutory holiday',
+        triple_pay_dates: ['2026-05-01', '2026-05-02', '2026-05-03'],
+        eve_night_shift: {
+          date: '2026-04-30',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '端午节 (Dragon Boat Festival)',
         start: '2026-06-19',
         end: '2026-06-21',
-        notes: '3-day statutory holiday'
+        notes: '3-day statutory holiday',
+        triple_pay_dates: ['2026-06-19'],
+        eve_night_shift: {
+          date: '2026-06-18',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '中秋节 (Mid-Autumn Festival)',
         start: '2026-09-25',
         end: '2026-09-27',
-        notes: '3-day statutory holiday'
+        notes: '3-day statutory holiday',
+        triple_pay_dates: ['2026-09-25'],
+        eve_night_shift: {
+          date: '2026-09-24',
+          input_hours: 0,
+          output_hours: 4
+        }
       },
       {
         name: '国庆节 (National Day)',
         start: '2026-10-01',
         end: '2026-10-07',
-        notes: '7-day statutory holiday (includes makeup work days on Sep 27, Oct 10)'
+        notes: '7-day statutory holiday (includes makeup work days on Sep 27, Oct 10)',
+        triple_pay_dates: ['2026-10-01', '2026-10-02', '2026-10-03'],
+        eve_night_shift: {
+          date: '2026-09-30',
+          input_hours: 0,
+          output_hours: 4
+        }
       }
     ],
     VN: [
@@ -137,6 +189,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
       base_uph: 120,
       shift_hours: 10,
       ramp_start_date: '2026-10-05',
+      uph_ramp_curve_preset: 'standard_30d',  // Use preset from Curve Presets Manager
       uph_ramp_curve: {
         length_workdays: 30,
         factors: [
@@ -145,6 +198,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
           0.96, 0.97, 0.98, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00, 1.00
         ]
       },
+      yield_ramp_curve_preset: 'standard_30d',  // Use preset from Curve Presets Manager
       yield_ramp_curve: {
         length_workdays: 30,
         factors: [
@@ -166,6 +220,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
       base_uph: 120,
       shift_hours: 10,
       ramp_start_date: '2026-10-12',
+      uph_ramp_curve_preset: 'standard_30d',  // Use preset from Curve Presets Manager
       uph_ramp_curve: {
         length_workdays: 30,
         factors: [
@@ -174,6 +229,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
           0.96, 0.97, 0.98, 0.98, 0.99, 0.99, 1.00, 1.00, 1.00, 1.00
         ]
       },
+      yield_ramp_curve_preset: 'standard_30d',  // Use preset from Curve Presets Manager
       yield_ramp_curve: {
         length_workdays: 30,
         factors: [
@@ -195,6 +251,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
       base_uph: 80,
       shift_hours: 10,
       ramp_start_date: '2026-10-01',
+      uph_ramp_curve_preset: 'fast_20d',  // Use preset from Curve Presets Manager
       uph_ramp_curve: {
         length_workdays: 20,
         factors: [
@@ -202,6 +259,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
           0.92, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.00, 1.00, 1.00
         ]
       },
+      yield_ramp_curve_preset: 'fast_20d',  // Use preset from Curve Presets Manager
       yield_ramp_curve: {
         length_workdays: 20,
         factors: [
@@ -222,6 +280,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
       base_uph: 80,
       shift_hours: 10,
       ramp_start_date: '2026-10-08',
+      uph_ramp_curve_preset: 'fast_20d',  // Use preset from Curve Presets Manager
       uph_ramp_curve: {
         length_workdays: 20,
         factors: [
@@ -229,6 +288,7 @@ const PRODUCTION_PLAN_SEED_DATA = {
           0.92, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.00, 1.00, 1.00
         ]
       },
+      yield_ramp_curve_preset: 'fast_20d',  // Use preset from Curve Presets Manager
       yield_ramp_curve: {
         length_workdays: 20,
         factors: [
@@ -379,6 +439,35 @@ if (typeof window !== 'undefined') {
     if (savedUnits) {
       PRODUCTION_PLAN_SEED_DATA.capacityUnits = JSON.parse(savedUnits);
       console.log('[Seed Data] Loaded saved capacity units from localStorage:', PRODUCTION_PLAN_SEED_DATA.capacityUnits.length, 'units');
+
+      // ⚠️ CRITICAL: Refresh curve factors from presets
+      // curve_presets_manager.js must be loaded BEFORE production_plan_seed_data.js
+      if (window.curvePresets) {
+        PRODUCTION_PLAN_SEED_DATA.capacityUnits.forEach((unit, index) => {
+          // Refresh UPH curve from preset
+          if (unit.uph_ramp_curve_preset && unit.uph_ramp_curve_preset !== 'custom') {
+            const preset = window.curvePresets?.uph?.[unit.uph_ramp_curve_preset];
+            if (preset) {
+              unit.uph_ramp_curve = {
+                length_workdays: preset.length,
+                factors: [...preset.factors]
+              };
+              console.log(`[Seed Data]   ✅ Unit ${index} (${unit.unit_id}): Refreshed UPH curve from preset '${unit.uph_ramp_curve_preset}'`);
+            }
+          }
+          // Refresh Yield curve from preset
+          if (unit.yield_ramp_curve_preset && unit.yield_ramp_curve_preset !== 'custom') {
+            const preset = window.curvePresets?.yield?.[unit.yield_ramp_curve_preset];
+            if (preset) {
+              unit.yield_ramp_curve = {
+                length_workdays: preset.length,
+                factors: [...preset.factors]
+              };
+              console.log(`[Seed Data]   ✅ Unit ${index} (${unit.unit_id}): Refreshed Yield curve from preset '${unit.yield_ramp_curve_preset}'`);
+            }
+          }
+        });
+      }
     }
 
     if (savedProgramConfig) {
@@ -397,5 +486,36 @@ if (typeof window !== 'undefined') {
     }
   } catch (error) {
     console.error('[Seed Data] Error loading saved configuration:', error);
+  }
+
+  // ⚠️ CRITICAL: Also refresh presets for default seed data (not from localStorage)
+  // This ensures that even on first load, we use the latest preset definitions
+  // curve_presets_manager.js must be loaded BEFORE production_plan_seed_data.js
+  if (window.curvePresets && !localStorage.getItem('productionPlan_capacity_units_config')) {
+    console.log('[Seed Data] Refreshing curve presets for default seed data...');
+    PRODUCTION_PLAN_SEED_DATA.capacityUnits.forEach((unit, index) => {
+      // Refresh UPH curve from preset
+      if (unit.uph_ramp_curve_preset && unit.uph_ramp_curve_preset !== 'custom') {
+        const preset = window.curvePresets?.uph?.[unit.uph_ramp_curve_preset];
+        if (preset) {
+          unit.uph_ramp_curve = {
+            length_workdays: preset.length,
+            factors: [...preset.factors]
+          };
+          console.log(`[Seed Data]   ✅ Unit ${index} (${unit.unit_id}): Applied UPH curve preset '${unit.uph_ramp_curve_preset}'`);
+        }
+      }
+      // Refresh Yield curve from preset
+      if (unit.yield_ramp_curve_preset && unit.yield_ramp_curve_preset !== 'custom') {
+        const preset = window.curvePresets?.yield?.[unit.yield_ramp_curve_preset];
+        if (preset) {
+          unit.yield_ramp_curve = {
+            length_workdays: preset.length,
+            factors: [...preset.factors]
+          };
+          console.log(`[Seed Data]   ✅ Unit ${index} (${unit.unit_id}): Applied Yield curve preset '${unit.yield_ramp_curve_preset}'`);
+        }
+      }
+    });
   }
 }

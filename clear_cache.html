@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Production Plan Cache</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 p-8">
+  <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">🧹 Clear Production Plan Cache</h1>
+
+    <div class="space-y-4">
+      <button onclick="clearAll()" class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700">
+        Clear All Configuration Cache
+      </button>
+
+      <button onclick="clearCapacityUnits()" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-700">
+        Clear Capacity Units Only
+      </button>
+
+      <button onclick="showCurrentCache()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700">
+        Show Current Cache
+      </button>
+    </div>
+
+    <div id="output" class="mt-6 p-4 bg-slate-100 rounded-lg font-mono text-sm whitespace-pre-wrap"></div>
+  </div>
+
+  <script>
+    function clearAll() {
+      const keys = [
+        'productionPlan_sites_config',
+        'productionPlan_capacity_units_config',
+        'productionPlan_program_config',
+        'productionPlan_country_holidays',
+        'productionPlan_site_overrides'
+      ];
+
+      keys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('✅ Cleared:', key);
+      });
+
+      document.getElementById('output').textContent = '✅ All configuration cache cleared!\n\nKeys removed:\n' + keys.join('\n');
+    }
+
+    function clearCapacityUnits() {
+      localStorage.removeItem('productionPlan_capacity_units_config');
+      document.getElementById('output').textContent = '✅ Capacity units cache cleared!';
+      console.log('✅ Cleared: productionPlan_capacity_units_config');
+    }
+
+    function showCurrentCache() {
+      const units = localStorage.getItem('productionPlan_capacity_units_config');
+      if (units) {
+        const parsed = JSON.parse(units);
+        let output = 'Found ' + parsed.length + ' capacity units:\n\n';
+        parsed.forEach((unit, idx) => {
+          output += idx + ': ' + unit.unit_id + '\n';
+          output += '   UPH Preset: ' + (unit.uph_ramp_curve_preset || 'NOT SET') + '\n';
+          output += '   Yield Preset: ' + (unit.yield_ramp_curve_preset || 'NOT SET') + '\n';
+          output += '   First 5 UPH factors: ' + unit.uph_ramp_curve.factors.slice(0, 5).join(', ') + '\n\n';
+        });
+        document.getElementById('output').textContent = output;
+      } else {
+        document.getElementById('output').textContent = '❌ No capacity units cache found';
+      }
+    }
+  </script>
+</body>
+</html>
