@@ -93,4 +93,26 @@ git push origin main
 
 ---
 
-**Last Updated:** 2026-02-24
+## 🚀 Local Development Server
+
+### Starting the server:
+```bash
+# Navigate to FDOS directory
+cd /Users/chenhan/Documents/FDOS
+
+# Start HTTP server on port 8000
+python3 -m http.server 8000
+```
+
+### Access the application:
+- **Main Application:** http://localhost:8000/index_v2.html
+- **Server Port:** 8000
+
+### Notes:
+- The server must be running to access the application
+- Use Python's built-in HTTP server for local development
+- If you restart your computer, you'll need to start the server again
+
+---
+
+**Last Updated:** 2026-02-26

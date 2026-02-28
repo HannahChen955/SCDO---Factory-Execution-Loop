@@ -28,101 +28,16 @@ function getWeekDisplayDate(weekId) {
 
 // Initialize data storage with mock data if not exists
 function initializeDataStorage() {
-  // Initialize Forecast data with mock data
+  // Initialize empty arrays - NO MOCK DATA
+  // User will upload their own Forecast and CTB data
   if (!localStorage.getItem(STORAGE_KEYS.FORECAST_DATA)) {
-    const mockForecastData = [
-      {
-        version: "v1",
-        releaseDate: "2026-01-15",
-        uploadedAt: "2026-01-15T09:00:00.000Z",
-        fileName: "forecast_demo_v1.xlsx",
-        data: [
-          { week_id: "2026-W40", weekly_forecast: 45000, cum_forecast: 45000 },
-          { week_id: "2026-W41", weekly_forecast: 52000, cum_forecast: 97000 },
-          { week_id: "2026-W42", weekly_forecast: 48000, cum_forecast: 145000 },
-          { week_id: "2026-W43", weekly_forecast: 55000, cum_forecast: 200000 },
-          { week_id: "2026-W44", weekly_forecast: 50000, cum_forecast: 250000 },
-          { week_id: "2026-W45", weekly_forecast: 53000, cum_forecast: 303000 },
-          { week_id: "2026-W46", weekly_forecast: 51000, cum_forecast: 354000 },
-          { week_id: "2026-W47", weekly_forecast: 49000, cum_forecast: 403000 }
-        ]
-      },
-      {
-        version: "v2",
-        releaseDate: "2026-01-20",
-        uploadedAt: "2026-01-20T14:30:00.000Z",
-        fileName: "forecast_demo_v2.xlsx",
-        data: [
-          { week_id: "2026-W40", weekly_forecast: 48000, cum_forecast: 48000 },
-          { week_id: "2026-W41", weekly_forecast: 55000, cum_forecast: 103000 },
-          { week_id: "2026-W42", weekly_forecast: 50000, cum_forecast: 153000 },
-          { week_id: "2026-W43", weekly_forecast: 57000, cum_forecast: 210000 },
-          { week_id: "2026-W44", weekly_forecast: 52000, cum_forecast: 262000 },
-          { week_id: "2026-W45", weekly_forecast: 54000, cum_forecast: 316000 },
-          { week_id: "2026-W46", weekly_forecast: 53000, cum_forecast: 369000 },
-          { week_id: "2026-W47", weekly_forecast: 51000, cum_forecast: 420000 }
-        ]
-      }
-    ];
-    localStorage.setItem(STORAGE_KEYS.FORECAST_DATA, JSON.stringify(mockForecastData));
+    localStorage.setItem(STORAGE_KEYS.FORECAST_DATA, JSON.stringify([]));
   }
 
-  // Initialize CTB data with mock data
   if (!localStorage.getItem(STORAGE_KEYS.CTB_DATA)) {
-    const mockCTBData = [
-      {
-        version: "v1",
-        updateDate: "2026-01-16",
-        uploadedAt: "2026-01-16T10:00:00.000Z",
-        fileName: "ctb_demo_v1.xlsx",
-        data: [
-          { week_id: "2026-W40", site: "VN01", weekly_ctb: 28000, cum_ctb: 28000 },
-          { week_id: "2026-W40", site: "VN02", weekly_ctb: 15000, cum_ctb: 15000 },
-          { week_id: "2026-W41", site: "VN01", weekly_ctb: 30000, cum_ctb: 58000 },
-          { week_id: "2026-W41", site: "VN02", weekly_ctb: 18000, cum_ctb: 33000 },
-          { week_id: "2026-W42", site: "VN01", weekly_ctb: 29000, cum_ctb: 87000 },
-          { week_id: "2026-W42", site: "VN02", weekly_ctb: 16000, cum_ctb: 49000 },
-          { week_id: "2026-W43", site: "VN01", weekly_ctb: 32000, cum_ctb: 119000 },
-          { week_id: "2026-W43", site: "VN02", weekly_ctb: 19000, cum_ctb: 68000 },
-          { week_id: "2026-W44", site: "VN01", weekly_ctb: 31000, cum_ctb: 150000 },
-          { week_id: "2026-W44", site: "VN02", weekly_ctb: 17000, cum_ctb: 85000 },
-          { week_id: "2026-W45", site: "VN01", weekly_ctb: 30000, cum_ctb: 180000 },
-          { week_id: "2026-W45", site: "VN02", weekly_ctb: 18000, cum_ctb: 103000 },
-          { week_id: "2026-W46", site: "VN01", weekly_ctb: 29000, cum_ctb: 209000 },
-          { week_id: "2026-W46", site: "VN02", weekly_ctb: 17000, cum_ctb: 120000 },
-          { week_id: "2026-W47", site: "VN01", weekly_ctb: 28000, cum_ctb: 237000 },
-          { week_id: "2026-W47", site: "VN02", weekly_ctb: 16000, cum_ctb: 136000 }
-        ]
-      },
-      {
-        version: "v2",
-        updateDate: "2026-01-21",
-        uploadedAt: "2026-01-21T11:00:00.000Z",
-        fileName: "ctb_demo_v2.xlsx",
-        data: [
-          { week_id: "2026-W40", site: "VN01", weekly_ctb: 30000, cum_ctb: 30000 },
-          { week_id: "2026-W40", site: "VN02", weekly_ctb: 16000, cum_ctb: 16000 },
-          { week_id: "2026-W41", site: "VN01", weekly_ctb: 32000, cum_ctb: 62000 },
-          { week_id: "2026-W41", site: "VN02", weekly_ctb: 19000, cum_ctb: 35000 },
-          { week_id: "2026-W42", site: "VN01", weekly_ctb: 31000, cum_ctb: 93000 },
-          { week_id: "2026-W42", site: "VN02", weekly_ctb: 17000, cum_ctb: 52000 },
-          { week_id: "2026-W43", site: "VN01", weekly_ctb: 33000, cum_ctb: 126000 },
-          { week_id: "2026-W43", site: "VN02", weekly_ctb: 20000, cum_ctb: 72000 },
-          { week_id: "2026-W44", site: "VN01", weekly_ctb: 32000, cum_ctb: 158000 },
-          { week_id: "2026-W44", site: "VN02", weekly_ctb: 18000, cum_ctb: 90000 },
-          { week_id: "2026-W45", site: "VN01", weekly_ctb: 31000, cum_ctb: 189000 },
-          { week_id: "2026-W45", site: "VN02", weekly_ctb: 19000, cum_ctb: 109000 },
-          { week_id: "2026-W46", site: "VN01", weekly_ctb: 30000, cum_ctb: 219000 },
-          { week_id: "2026-W46", site: "VN02", weekly_ctb: 18000, cum_ctb: 127000 },
-          { week_id: "2026-W47", site: "VN01", weekly_ctb: 29000, cum_ctb: 248000 },
-          { week_id: "2026-W47", site: "VN02", weekly_ctb: 17000, cum_ctb: 144000 }
-        ]
-      }
-    ];
-    localStorage.setItem(STORAGE_KEYS.CTB_DATA, JSON.stringify(mockCTBData));
+    localStorage.setItem(STORAGE_KEYS.CTB_DATA, JSON.stringify([]));
   }
 
-  // Initialize Plan Versions (empty by default)
   if (!localStorage.getItem(STORAGE_KEYS.PLAN_VERSIONS)) {
     localStorage.setItem(STORAGE_KEYS.PLAN_VERSIONS, JSON.stringify([]));
   }
@@ -1536,23 +1451,40 @@ function parseHorizontalForecast(sheetData) {
       continue;
     }
 
-    displayDate = dateValue.toString();
+    let year, month, day;
 
-    // Parse yyyy/mm/dd date to calculate Saturday (week_id)
-    const parts = displayDate.split('/');
-    if (parts.length !== 3) {
-      errors.push(`Column ${col}: Invalid date format "${dateValue}". Expected yyyy/mm/dd format (e.g., 2026/09/26)`);
-      continue;
+    // Check if dateValue is a number (Excel serial date)
+    if (typeof dateValue === 'number') {
+      // Convert Excel serial date to JavaScript Date
+      // Excel dates start from 1900-01-01 (but Excel incorrectly treats 1900 as a leap year)
+      const excelEpoch = new Date(1899, 11, 30); // 1899-12-30
+      const jsDate = new Date(excelEpoch.getTime() + (dateValue * 86400000));
+
+      year = jsDate.getFullYear();
+      month = jsDate.getMonth() + 1;
+      day = jsDate.getDate();
+    } else {
+      // Parse string date in yyyy/mm/dd or yyyy/m/d format
+      displayDate = dateValue.toString().trim();
+
+      const parts = displayDate.split('/');
+      if (parts.length !== 3) {
+        errors.push(`Column ${col}: Invalid date format "${dateValue}". Expected yyyy/mm/dd format (e.g., 2026/09/26)`);
+        continue;
+      }
+
+      year = parseInt(parts[0]);
+      month = parseInt(parts[1]);
+      day = parseInt(parts[2]);
     }
-
-    const year = parseInt(parts[0]);
-    const month = parseInt(parts[1]);
-    const day = parseInt(parts[2]);
 
     if (isNaN(year) || isNaN(month) || isNaN(day) || year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
       errors.push(`Column ${col}: Invalid date values "${dateValue}". Expected valid yyyy/mm/dd (e.g., 2026/09/26)`);
       continue;
     }
+
+    // Normalize date to yyyy/mm/dd format with zero-padding
+    displayDate = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
 
     // Create date object
     const inputDate = new Date(year, month - 1, day);
@@ -1636,7 +1568,7 @@ async function readExcelFile(file) {
         }
 
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
 
         // Get first sheet
         const sheetName = workbook.SheetNames[0];
@@ -1646,7 +1578,7 @@ async function readExcelFile(file) {
         const sheetData = XLSX.utils.sheet_to_json(worksheet, {
           header: 1,  // Use array of arrays instead of objects
           defval: null,  // Use null for empty cells
-          raw: false  // Format values as displayed
+          raw: true  // Get raw values to handle dates properly
         });
 
         // Parse horizontal forecast format

@@ -35,6 +35,7 @@ const Router = {
       'mo-kpis': 'moKpis',
       'data-foundation': 'dataFoundation',
       'white-paper': 'whitePaper',
+      'team-ai-strategy': 'teamAIStrategy',
       // Program workspace sub-views
       'delivery-command-center': 'home',
       'production-plan': 'production-plan',
@@ -86,6 +87,7 @@ const Router = {
       'moKpis': 'mo-kpis',
       'dataFoundation': 'data-foundation',
       'whitePaper': 'white-paper',
+      'teamAIStrategy': 'team-ai-strategy',
       // Program workspace sub-views
       'production-plan': 'mo-dashboard',
       'mfg-leadtime': 'mo-dashboard',

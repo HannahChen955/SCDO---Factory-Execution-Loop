@@ -23,6 +23,23 @@ window.STATE = STATE;
 const $ = (id) => document.getElementById(id);
 
 // ========================================
+// Environment Detection - Hide localhost-only features in production
+// ========================================
+(function() {
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  if (!isLocalhost) {
+    // Hide all localhost-only elements when deployed to production/Vercel
+    document.addEventListener('DOMContentLoaded', function() {
+      const localhostOnlyElements = document.querySelectorAll('.localhost-only');
+      localhostOnlyElements.forEach(el => {
+        el.style.display = 'none';
+      });
+    });
+  }
+})();
+
+// ========================================
 // Date Format Helper
 // ========================================
 // Extract date portion from week_id format "2026-W39 (09/26)" -> "09/26"
@@ -492,8 +509,6 @@ function updateAuditDates(period) {
     input.onchange = () => markConfigAsModified();
     container.appendChild(input);
   }
-
-  markConfigAsModified();
 }
 
 /**
@@ -977,8 +992,8 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper") {
-    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper)
+  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper" || STATE.activeView === "teamAIStrategy") {
+    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper, Team AI Strategy)
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -1049,6 +1064,9 @@ function render() {
       break;
     case "whitePaper":
       renderWhitePaper();
+      break;
+    case "teamAIStrategy":
+      renderTeamAIStrategy();
       break;
     default:
       renderOverview();
@@ -5150,7 +5168,7 @@ function renderProductionPlanGenerate() {
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="text-xs text-slate-500 block mb-1">Days</label>
-                      <select id="configAuditMiddleDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('middle')">
+                      <select id="configAuditMiddleDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('middle'); markConfigAsModified();">
                         <option value="1" selected>1 day</option>
                         <option value="2">2 days</option>
                       </select>
@@ -5168,7 +5186,7 @@ function renderProductionPlanGenerate() {
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="text-xs text-slate-500 block mb-1">Days</label>
-                      <select id="configAuditEndDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('end')">
+                      <select id="configAuditEndDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('end'); markConfigAsModified();">
                         <option value="1" selected>1 day</option>
                         <option value="2">2 days</option>
                       </select>
@@ -6816,7 +6834,8 @@ window.confirmSaveSimulation = function() {
     rampCurve: 'standard', // TODO: Get from config
     otEnabled: false, // TODO: Get from config
     shiftHours: config.shiftHours,
-    workingDays: config.workingDays
+    workingDays: config.workingDays,
+    weeklyDemand: seedData.weeklyDemand || [] // Include demand forecast data
   };
 
   // Create simulation
@@ -11624,9 +11643,8 @@ function renderWhitePaper() {
   `;
 }
 
-/* REMOVED - Team AI Strategy (for internal use only)
 /**
- * Render Team AI Strategy (Global Page)
+ * Render Team AI Strategy (Global Page - Localhost only)
  */
 function renderTeamAIStrategy() {
   const content = $("content");
@@ -12433,7 +12451,6 @@ flowchart LR
     }
   });
 }
-// END REMOVED - Team AI Strategy */
 
 /**
  * Render Production Plan Logic from markdown documentation

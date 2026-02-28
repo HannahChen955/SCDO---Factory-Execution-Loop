@@ -485,6 +485,37 @@
       const tbody = document.getElementById('weeklyMetricsBody');
       const thead = document.getElementById('weeklyMetricsTable').querySelector('thead tr');
 
+      // FIX: If demand is missing (all zeros), try to load from localStorage forecast data
+      const totalDemand = weeklyMetrics.reduce((sum, w) => sum + (w.demand || 0), 0);
+      if (totalDemand === 0) {
+        console.log('[Report] Demand data is missing, attempting to load from forecast...');
+        try {
+          const forecastVersions = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+          if (forecastVersions.length > 0) {
+            const latestForecast = forecastVersions[forecastVersions.length - 1];
+            console.log('[Report] Found forecast data:', latestForecast.fileName, 'with', latestForecast.data.length, 'weeks');
+
+            // Create a map of week_id to demand_qty (both should be in yyyy/mm/dd format now)
+            const demandMap = {};
+            latestForecast.data.forEach(row => {
+              demandMap[row.week_id] = row.weekly_forecast;
+            });
+
+            // Merge demand data into weeklyMetrics
+            let matchCount = 0;
+            weeklyMetrics.forEach(week => {
+              if (demandMap[week.week_id]) {
+                week.demand = demandMap[week.week_id];
+                matchCount++;
+              }
+            });
+            console.log('[Report] ✅ Successfully loaded demand data from forecast. Matched', matchCount, 'of', weeklyMetrics.length, 'weeks');
+          }
+        } catch (error) {
+          console.error('[Report] Failed to load forecast data:', error);
+        }
+      }
+
       // Calculate cumulative values
       let cumInput = 0, cumOutput = 0, cumShipment = 0, cumDemand = 0;
       const metricsWithCum = weeklyMetrics.map(week => {
